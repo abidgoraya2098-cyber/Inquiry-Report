@@ -265,28 +265,15 @@ export default function App() {
           (window as any).deferredInstallPrompt = null;
           setShowInstallModal(false);
           setShowInstallBanner(false);
+          return;
         }
-        // If user dismissed Chrome native dialog, do not show instruction modal
         return;
       } catch (err) {
         console.warn('PWA native prompt error:', err);
       }
     }
 
-    // If iOS Safari (which doesn't support beforeinstallprompt API)
-    if (installPlatform === 'ios') {
-      setShowInstallModal(true);
-      return;
-    }
-
-    // If in-app browser (e.g. WhatsApp / Facebook)
-    if (isInAppBrowser) {
-      setShowInstallModal(true);
-      return;
-    }
-
-    // On Android/PC Chrome if prompt not ready yet
-    alert("گوگل کروم کی ایڈریس بار میں دائیں جانب موجود 'Install' آئیکن پر کلک کریں، یا کروم مینیو (⋮) سے 'Install app' منتخب کریں۔");
+    setShowInstallModal(true);
   };
 
   // App Shell View State (Desktop vs Mobile Preview Wrapper)
@@ -3028,171 +3015,84 @@ export default function App() {
       </div>
 
       {/* =========================================================================
-          PWA DOWNLOAD & INSTALLATION GUIDE MODAL
+          GOOGLE CHROME PWA INSTALL POPUP (گوگل کروم ایپ انسٹالیشن پاپ اپ)
           ========================================================================= */}
       {showInstallModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto no-print">
-          <div className="bg-white text-slate-900 border border-slate-200 rounded-[28px] max-w-md w-full overflow-hidden shadow-2xl relative p-6 font-sans" dir="rtl">
+        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto no-print" dir="rtl">
+          <div className="bg-white text-slate-900 border border-slate-200 rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl relative p-6 font-sans text-center animate-scaleUp">
             
-            {/* Modal Header */}
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                <Smartphone className="w-5 h-5 text-emerald-600" />
-                <span>ایپ انسٹالیشن رہنما</span>
-              </h3>
-              <button 
-                onClick={() => setShowInstallModal(false)}
-                className="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-all cursor-pointer"
-                title="بند کریں"
-              >
-                <Plus className="w-5 h-5 rotate-45" />
-              </button>
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowInstallModal(false)}
+              className="absolute top-4 left-4 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-all cursor-pointer"
+              title="بند کریں"
+            >
+              <Plus className="w-4 h-4 rotate-45" />
+            </button>
+
+            {/* Google Chrome Brand Header */}
+            <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-500 mb-4 font-mono">
+              <svg className="w-4 h-4 text-emerald-800" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="12" r="10" fill="#064e3b" />
+                <circle cx="12" cy="12" r="4" fill="#ffffff" />
+              </svg>
+              <span>Google Chrome App Install</span>
             </div>
 
-            {/* App Profile Row */}
-            <div className="flex items-center gap-3.5 py-3 my-1.5 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+            {/* Official App Crest Icon */}
+            <div className="flex justify-center mb-3">
               <img 
                 src={policeLogo} 
-                alt="پنجاب پولیس" 
-                className="w-12 h-12 rounded-2xl object-cover border-2 border-emerald-600 shadow-md bg-emerald-950 p-0.5 shrink-0"
+                alt="Inquiry Report" 
+                className="w-20 h-20 rounded-2xl object-cover border-2 border-emerald-600 shadow-lg bg-emerald-950 p-1"
                 referrerPolicy="no-referrer"
                 onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
               />
-              <div>
-                <h4 className="text-sm font-black text-slate-900 leading-snug font-naskh">
-                  انکوائری و تفتیش رپورٹ اسسٹنٹ
-                </h4>
-                <p className="text-[11px] font-bold text-slate-500 mt-0.5">
-                  گوجرانوالہ ریجن • پنجاب پولیس
-                </p>
-              </div>
             </div>
 
-            {/* In-App Browser Warning (WhatsApp / Facebook / Instagram) */}
-            {isInAppBrowser ? (
-              <div className="bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 my-3 text-right shadow-xs">
-                <div className="flex items-center gap-2 text-amber-950 font-black text-xs sm:text-sm mb-1">
-                  <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
-                  <span>آپ واٹس ایپ براؤزر کے اندر ہیں!</span>
-                </div>
-                <p className="text-xs font-bold text-slate-700 leading-relaxed font-naskh">
-                  واٹس ایپ کے اندر سے ایپ ڈائریکٹ انسٹال نہیں ہو سکتی۔ انسٹال کرنے کے لیے اوپر دائیں کونے کے 3 نقطوں (<span className="text-amber-950 font-black text-base">⋮</span>) پر کلک کر کے <span className="bg-amber-200 text-amber-950 px-1.5 py-0.5 rounded font-black">'Open in Chrome'</span> (کروم میں کھولیں) منتخب کریں۔
-                </p>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    setInstallCopiedNotice(true);
-                    setTimeout(() => setInstallCopiedNotice(false), 4000);
-                  }}
-                  className="w-full mt-3 bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black text-xs py-2 px-3 rounded-xl shadow transition-all cursor-pointer flex items-center justify-center gap-2 border border-amber-300"
-                >
-                  <Copy className="w-4 h-4" />
-                  <span>ویب سائٹ لنک کاپی کریں (کروم میں کھولنے کے لیے)</span>
-                </button>
-              </div>
-            ) : (
-              /* Mint Green Instruction Alert Box */
-              <div className="bg-[#eefbf4] border border-[#a7f3d0] rounded-2xl p-4 my-3 flex items-start gap-3 shadow-xs text-right">
-                <Sparkles className="w-5 h-5 text-[#00a86b] shrink-0 mt-0.5" />
-                <p className="text-xs sm:text-sm font-bold text-[#065f46] leading-relaxed font-naskh">
-                  کروم کے دائیں اوپر کونے کے تین نقطوں (<span className="text-emerald-900 font-black text-base">⋮</span>) پر کلک کر کے <span className="bg-emerald-200/80 text-emerald-950 px-1.5 py-0.5 rounded font-black font-sans">'Install app'</span> یا <span className="bg-emerald-200/80 text-emerald-950 px-1.5 py-0.5 rounded font-black font-sans">'Add to Home screen'</span> پر کلک کریں۔
-                </p>
-              </div>
-            )}
+            {/* Official App Name - strictly in English "Inquiry Report" */}
+            <h3 className="text-xl font-black text-slate-900 tracking-tight font-sans">
+              Inquiry Report
+            </h3>
+            <p className="text-xs font-bold text-emerald-800 mt-1 font-naskh">
+              ریجنل انویسٹی گیشن برانچ گوجرانوالہ
+            </p>
+            <p className="text-[11px] text-slate-400 font-mono mt-1 dir-ltr">
+              {typeof window !== "undefined" ? window.location.hostname : "inquiry-report.vercel.app"}
+            </p>
 
-            {/* Platform Option Selector Tabs (Android / iOS / PC) */}
-            <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded-xl my-3 text-[11px] font-black">
+            {/* Direct Action Buttons */}
+            <div className="flex items-center justify-center gap-3 pt-5 mt-4 border-t border-slate-100">
               <button
-                onClick={() => setInstallPlatform("android")}
-                className={`py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                  installPlatform === "android" ? "bg-white text-emerald-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-                <span>اینڈرائیڈ</span>
-              </button>
-
-              <button
-                onClick={() => setInstallPlatform("ios")}
-                className={`py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                  installPlatform === "ios" ? "bg-white text-emerald-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                <Smartphone className="w-3.5 h-3.5 text-sky-600" />
-                <span>آئی فون (iOS)</span>
-              </button>
-
-              <button
-                onClick={() => setInstallPlatform("pc")}
-                className={`py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1 ${
-                  installPlatform === "pc" ? "bg-white text-emerald-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
-                }`}
-              >
-                <Monitor className="w-3.5 h-3.5" />
-                <span>کمپیوٹر (PC)</span>
-              </button>
-            </div>
-
-            {/* Extra Guidance per Platform if needed */}
-            {installPlatform === "ios" && (
-              <p className="text-[11px] text-slate-600 bg-amber-50 border border-amber-200 rounded-xl p-2.5 my-2 font-semibold">
-                آئی فون صارفین: Safari براؤزر میں نیچے Share آئیکن پر کلک کر کے <span className="font-bold text-amber-900">'Add to Home Screen'</span> منتخب کریں۔
-              </p>
-            )}
-
-            {installPlatform === "pc" && (
-              <p className="text-[11px] text-slate-600 bg-sky-50 border border-sky-200 rounded-xl p-2.5 my-2 font-semibold">
-                کمپیوٹر صارفین: Chrome یا Edge ایڈریس بار کے دائیں جانب موجود Monitor / Install آئیکن پر کلک کریں۔
-              </p>
-            )}
-
-            {/* Action Buttons Row */}
-            <div className="flex flex-col space-y-2.5 pt-3 mt-2 border-t border-slate-100">
-              {installCopiedNotice && (
-                <div className="bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs p-2.5 rounded-xl font-bold text-center animate-fade-in flex items-center justify-center gap-1.5">
-                  <Check className="w-4 h-4 text-emerald-700 shrink-0" />
-                  <span>ویب سائٹ کا لنک کاپی ہو چکا ہے! اسے کروم میں پیسٹ کر کے کھولیں۔</span>
-                </div>
-              )}
-
-              <div className="flex items-center justify-between gap-3">
-                <button
-                  onClick={async () => {
-                    const promptEvent = deferredPrompt || (window as any).deferredInstallPrompt;
-                    if (promptEvent) {
-                      try {
-                        promptEvent.prompt();
-                        const choice = await promptEvent.userChoice;
-                        if (choice && choice.outcome === "accepted") {
-                          setDeferredPrompt(null);
-                          (window as any).deferredInstallPrompt = null;
-                          setShowInstallModal(false);
-                          setShowInstallBanner(false);
-                        }
-                      } catch (e) {
-                        navigator.clipboard.writeText(window.location.href);
-                        setInstallCopiedNotice(true);
-                        setTimeout(() => setInstallCopiedNotice(false), 4000);
+                onClick={async () => {
+                  const promptEvent = deferredPrompt || (window as any).deferredInstallPrompt;
+                  if (promptEvent && typeof promptEvent.prompt === 'function') {
+                    try {
+                      await promptEvent.prompt();
+                      const choice = await promptEvent.userChoice;
+                      if (choice && choice.outcome === 'accepted') {
+                        setDeferredPrompt(null);
+                        (window as any).deferredInstallPrompt = null;
+                        setShowInstallBanner(false);
                       }
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                      setInstallCopiedNotice(true);
-                      setTimeout(() => setInstallCopiedNotice(false), 4000);
+                    } catch (e) {
+                      console.warn('Install prompt error:', e);
                     }
-                  }}
-                  className="flex-1 bg-[#00a86b] hover:bg-[#008f5a] active:scale-95 text-white font-extrabold py-2.5 rounded-xl text-sm transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>انسٹال کریں</span>
-                </button>
+                  }
+                  setShowInstallModal(false);
+                }}
+                className="flex-1 bg-[#00a86b] hover:bg-[#008f5a] active:scale-95 text-white font-extrabold py-3 px-4 rounded-xl text-sm transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 font-naskh"
+              >
+                <Download className="w-4 h-4" />
+                <span>انسٹال کریں (Install)</span>
+              </button>
 
-                <button
-                  onClick={() => setShowInstallModal(false)}
-                  className="text-slate-500 hover:text-slate-800 font-extrabold px-4 py-2.5 text-sm transition-all cursor-pointer"
-                >
-                  منسوخ
-                </button>
-              </div>
+              <button
+                onClick={() => setShowInstallModal(false)}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 py-3 rounded-xl text-sm transition-all cursor-pointer border border-slate-200"
+              >
+                منسوخ
+              </button>
             </div>
 
           </div>
