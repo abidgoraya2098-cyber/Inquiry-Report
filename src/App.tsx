@@ -256,24 +256,37 @@ export default function App() {
 
   const handleInstallClick = async () => {
     const promptEvent = deferredPrompt || (window as any).deferredInstallPrompt;
-    if (promptEvent) {
+    if (promptEvent && typeof promptEvent.prompt === 'function') {
       try {
-        promptEvent.prompt();
+        await promptEvent.prompt();
         const choice = await promptEvent.userChoice;
-        if (choice && choice.outcome === "accepted") {
+        if (choice && choice.outcome === 'accepted') {
           setDeferredPrompt(null);
           (window as any).deferredInstallPrompt = null;
           setShowInstallModal(false);
           setShowInstallBanner(false);
-        } else {
-          setShowInstallModal(true);
         }
+        // If user dismissed Chrome native dialog, do not show instruction modal
+        return;
       } catch (err) {
-        setShowInstallModal(true);
+        console.warn('PWA native prompt error:', err);
       }
-    } else {
-      setShowInstallModal(true);
     }
+
+    // If iOS Safari (which doesn't support beforeinstallprompt API)
+    if (installPlatform === 'ios') {
+      setShowInstallModal(true);
+      return;
+    }
+
+    // If in-app browser (e.g. WhatsApp / Facebook)
+    if (isInAppBrowser) {
+      setShowInstallModal(true);
+      return;
+    }
+
+    // On Android/PC Chrome if prompt not ready yet
+    alert("گوگل کروم کی ایڈریس بار میں دائیں جانب موجود 'Install' آئیکن پر کلک کریں، یا کروم مینیو (⋮) سے 'Install app' منتخب کریں۔");
   };
 
   // App Shell View State (Desktop vs Mobile Preview Wrapper)
@@ -1175,10 +1188,10 @@ export default function App() {
                 </div>
                 <div>
                   <h3 className="text-sm sm:text-base font-extrabold text-amber-300 tracking-tight font-naskh flex items-center gap-2">
-                    <span>انکوائری و تفتیش اسسٹنٹ ایپ انسٹال کریں</span>
+                    <span>ایپ انسٹال کریں (Inquiry Report)</span>
                   </h3>
                   <p className="text-[11px] text-emerald-100 font-medium mt-0.5">
-                    اینڈرائیڈ، آئی فون اور ونڈوز کروم میں فوری انسٹالیشن
+                    موبائل اسکرین پر آفیشل پنجاب پولیس آئیکن اور "Inquiry Report" نام کے ساتھ
                   </p>
                 </div>
               </div>

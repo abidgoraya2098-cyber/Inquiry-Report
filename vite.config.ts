@@ -29,9 +29,9 @@ export default defineConfig(() => {
           'logo.jpg'
         ],
         manifest: {
-          name: 'انکوائری و تفتیش رپورٹ اسسٹنٹ - گوجرانوالہ',
-          short_name: 'انکوائری اسسٹنٹ',
-          description: 'انکوائری افسران کے لیے فریقین کے بیانات اور رپورٹس تیار کرنے کا آفیشل معاون ٹول',
+          name: 'Inquiry Report',
+          short_name: 'Inquiry Report',
+          description: 'انکوائری و تفتیش رپورٹ اسسٹنٹ - پنجاب پولیس',
           theme_color: '#064e3b',
           background_color: '#ffffff',
           display: 'standalone',
