@@ -1,0 +1,10 @@
+node_modules/
+build/
+dist/
+dev-dist/
+sessions.json
+.cache
+.DS_Store
+*.log
+.env*
+!.env.example
