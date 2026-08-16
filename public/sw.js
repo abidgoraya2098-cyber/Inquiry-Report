@@ -1,12 +1,16 @@
-const CACHE_NAME = 'police-inquiry-pwa-v4';
+const CACHE_NAME = 'police-inquiry-pwa-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon-192.png',
+  '/icon-192-maskable.png',
   '/icon-512.png',
+  '/icon-512-maskable.png',
   '/apple-touch-icon.png',
   '/favicon.png',
+  '/favicon.ico',
+  '/icon.svg',
   '/police_logo.jpg',
   '/logo.jpg'
 ];
@@ -15,7 +19,9 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return Promise.allSettled(
-        ASSETS_TO_CACHE.map((url) => cache.add(url).catch((err) => console.warn('PWA Cache warning:', url, err)))
+        ASSETS_TO_CACHE.map((url) => 
+          cache.add(url).catch((err) => console.warn('PWA Cache item warning:', url, err))
+        )
       );
     })
   );
@@ -40,7 +46,14 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  // Navigation mode -> network first with cache fallback
+  const url = new URL(event.request.url);
+
+  // Bypass API requests and external telemetry from Service Worker cache
+  if (url.pathname.startsWith('/api/') || url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Navigation mode (HTML pages) -> Network first, fallback to cached index.html
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
@@ -58,16 +71,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets -> cache first, stale-while-revalidate
+  // Static assets -> Cache First with background revalidation
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
-        }
-        return networkResponse;
-      }).catch(() => {/* Suppress offline fetch errors */});
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+          }
+          return networkResponse;
+        })
+        .catch(() => {/* Offline fallback */});
 
       return cachedResponse || fetchPromise;
     })

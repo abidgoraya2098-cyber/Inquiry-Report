@@ -25,6 +25,8 @@ app.use((req, res, next) => {
 });
 
 // Initialize Gemini API client safely
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+
 function getGeminiClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -145,7 +147,7 @@ ${observations || "موقع ملاحظہ کی تفاصیل کلام ریکارڈ
 - نتیجہ انکوائری (inquiryConclusion) کا اختتام ہمیشہ روایتی اور سرکاری فقرے جیسے 'رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے۔' پر ہونا چاہئیے۔`;
 
     const response = await client.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: GEMINI_MODEL,
       contents: prompt,
       config: {
         systemInstruction: systemInstruction,
@@ -225,7 +227,7 @@ ${context || "کوئی پس منظر فراہم نہیں کیا گیا"}
 5۔ اہم سوالات (Crucial Questions to Ask): تفتیش کو آگے بڑھانے کے لیے اس فریق سے مزید کیا سوالات پوچھے جانے چاہئیں؟`;
 
     const response = await client.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: GEMINI_MODEL,
       contents: prompt,
       config: {
         systemInstruction: "You are an expert police investigator and legal analyst. Extract structured insights from raw Urdu statements to help an inquiry officer discover loopholes and plan next steps.",
@@ -262,7 +264,7 @@ Only correct spelling (e.g. ensure correct spelling of words like "بالمشا�
 Ensure there are no spelling mistakes in the output. Keep the output as raw Urdu text with zero commentary or extra English.`;
 
     const response = await client.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: GEMINI_MODEL,
       contents: `براہ کرم درج ذیل رپورٹ کے متن کا جائزہ لیں اور اس میں موجود املا (Spelling) اور گرامر (Grammar) کی تمام غلطیوں کو درست کریں۔ رپورٹ کے باضابطہ پیٹرن، ناموں، اور دیگر قانونی الفاظ کو تبدیل نہ کریں۔ صرف املا اور گرامر کو سو فیصد درست کر کے فائنل متن واپس فراہم کریں:
 
 """
@@ -312,7 +314,7 @@ app.post("/api/transcribe-image", async (req, res) => {
     const client = getGeminiClient();
 
     const response = await client.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: GEMINI_MODEL,
       contents: [
         {
           inlineData: {

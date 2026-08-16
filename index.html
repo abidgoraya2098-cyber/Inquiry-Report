@@ -8,33 +8,47 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Inquiry Report" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="application-name" content="انکوائری رپورٹ اسسٹنٹ" />
+    
+    <!-- PWA & Favicon links -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="shortcut icon" href="/favicon.png" />
-    <link rel="manifest" href="/manifest.json" />
+
     <title>انکوائری و تفتیش رپورٹ اسسٹنٹ - گوجرانوالہ</title>
+
     <script>
+      // Capture Google Chrome beforeinstallprompt event early
       window.deferredInstallPrompt = null;
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         window.deferredInstallPrompt = e;
-        if (window.onPWAInstallAvailable) {
+        window.dispatchEvent(new CustomEvent('pwa-install-ready', { detail: e }));
+        if (typeof window.onPWAInstallAvailable === 'function') {
           window.onPWAInstallAvailable(e);
         }
+        console.log('PWA beforeinstallprompt captured successfully.');
       });
+
+      window.addEventListener('appinstalled', () => {
+        window.deferredInstallPrompt = null;
+        console.log('PWA application installed on device.');
+      });
+
+      // Register PWA Service Worker safely
       if ('serviceWorker' in navigator) {
-        const registerSW = () => {
+        window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js', { scope: '/' })
-            .then((reg) => console.log('PWA ServiceWorker registered:', reg.scope))
-            .catch((err) => console.warn('PWA ServiceWorker error:', err));
-        };
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-          registerSW();
-        } else {
-          window.addEventListener('DOMContentLoaded', registerSW);
-          window.addEventListener('load', registerSW);
-        }
+            .then((reg) => {
+              console.log('PWA ServiceWorker registered with scope:', reg.scope);
+            })
+            .catch((err) => {
+              console.warn('PWA ServiceWorker registration error:', err);
+            });
+        });
       }
     </script>
   </head>

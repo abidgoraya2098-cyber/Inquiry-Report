@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig} from 'vite';
+import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
@@ -16,19 +16,34 @@ export default defineConfig(() => {
         devOptions: {
           enabled: false,
         },
-        includeAssets: ['apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-192-maskable.png', 'icon-512-maskable.png', 'favicon.png', 'icon.svg'],
+        includeAssets: [
+          'apple-touch-icon.png', 
+          'icon-192.png', 
+          'icon-512.png', 
+          'icon-192-maskable.png', 
+          'icon-512-maskable.png', 
+          'favicon.png', 
+          'favicon.ico',
+          'icon.svg',
+          'police_logo.jpg',
+          'logo.jpg'
+        ],
         manifest: {
           name: 'انکوائری و تفتیش رپورٹ اسسٹنٹ - گوجرانوالہ',
           short_name: 'انکوائری اسسٹنٹ',
-          description: 'انکوائری افسران کے لیے فریقین کے بیانات اور رپورٹس تیار کرنے کا معاون ٹول',
-          theme_color: '#022c22',
-          background_color: '#0f172a',
+          description: 'انکوائری افسران کے لیے فریقین کے بیانات اور رپورٹس تیار کرنے کا آفیشل معاون ٹول',
+          theme_color: '#064e3b',
+          background_color: '#ffffff',
           display: 'standalone',
-          orientation: 'portrait-primary',
+          display_override: ['window-controls-overlay', 'standalone', 'minimal-ui'],
+          orientation: 'any',
           start_url: '/',
           scope: '/',
-          id: 'inquiry-reports-assistant-v1',
+          id: '/?source=pwa',
+          lang: 'ur',
+          dir: 'rtl',
           prefer_related_applications: false,
+          categories: ['productivity', 'utilities', 'government'],
           icons: [
             {
               src: '/icon-192.png',
@@ -53,13 +68,31 @@ export default defineConfig(() => {
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable'
+            },
+            {
+              src: '/apple-touch-icon.png',
+              sizes: '180x180',
+              type: 'image/png',
+              purpose: 'any'
+            },
+            {
+              src: '/icon.svg',
+              sizes: '512x512',
+              type: 'image/svg+xml',
+              purpose: 'any maskable'
+            },
+            {
+              src: '/police_logo.jpg',
+              sizes: '512x512',
+              type: 'image/jpeg',
+              purpose: 'any'
             }
           ]
         },
         workbox: {
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api/],
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest,json,jpg}'],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -104,8 +137,7 @@ export default defineConfig(() => {
         output: {
           manualChunks: {
             vendor: ['react', 'react-dom', 'motion', 'lucide-react'],
-            pdfjs: ['pdfjs-dist'],
-            genai: ['@google/genai']
+            pdfjs: ['pdfjs-dist']
           }
         }
       }

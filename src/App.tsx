@@ -230,9 +230,26 @@ export default function App() {
       setDeferredPrompt(e);
       (window as any).deferredInstallPrompt = e;
     };
+    const handlePwaReady = (e: any) => {
+      const prompt = e.detail || e;
+      setDeferredPrompt(prompt);
+      (window as any).deferredInstallPrompt = prompt;
+    };
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+      (window as any).deferredInstallPrompt = null;
+      setShowInstallBanner(false);
+      setShowInstallModal(false);
+    };
+
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("pwa-install-ready", handlePwaReady);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("pwa-install-ready", handlePwaReady);
+      window.removeEventListener("appinstalled", handleAppInstalled);
       (window as any).onPWAInstallAvailable = null;
     };
   }, []);

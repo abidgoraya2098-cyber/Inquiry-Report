@@ -1,6 +1,0 @@
-{
-  "name": "انکوائری و تفتیش رپورٹ اسسٹنٹ - گوجرانوالہ",
-  "description": "پنجاب پولیس گوجرانوالہ ریجن کے انکوائری افسران کے لیے ایک مددگار ایپ جو فریقین کے بیانات اور ثبوتوں کا تجزیہ کر کے اردو میں تفصیلی نتیجہ انکوائری اور حتمی رپورٹ تیار کرتی ہے۔",
-  "requestFramePermissions": ["camera", "microphone"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
