@@ -1,4 +1,4 @@
-const CACHE_NAME = 'police-inquiry-pwa-v5';
+const CACHE_NAME = 'inquiry-report-pwa-v6';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',

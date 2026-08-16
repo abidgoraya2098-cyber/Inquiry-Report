@@ -49,12 +49,6 @@
       "src": "/icon.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/police_logo.jpg",
-      "sizes": "512x512",
-      "type": "image/jpeg",
       "purpose": "any"
     }
   ]
