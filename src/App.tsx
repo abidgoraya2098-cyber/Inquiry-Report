@@ -199,9 +199,22 @@ export default function App() {
   const [installPlatform, setInstallPlatform] = useState<"android" | "ios" | "pc">("android");
   const [installCopiedNotice, setInstallCopiedNotice] = useState(false);
   const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+  const [isAppInstalled, setIsAppInstalled] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const isStandalone = window.matchMedia("(display-mode: standalone)").matches || 
+                           (navigator as any).standalone === true ||
+                           document.referrer.includes("android-app://") ||
+                           localStorage.getItem("pwa_installed") === "true";
+      return isStandalone;
+    }
+    return false;
+  });
   const [showInstallBanner, setShowInstallBanner] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
-      const isStandalone = window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone === true;
+      const isStandalone = window.matchMedia("(display-mode: standalone)").matches || 
+                           (navigator as any).standalone === true ||
+                           document.referrer.includes("android-app://") ||
+                           localStorage.getItem("pwa_installed") === "true";
       return !isStandalone;
     }
     return true;
@@ -209,6 +222,15 @@ export default function App() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const isStandalone = window.matchMedia("(display-mode: standalone)").matches || 
+                           (navigator as any).standalone === true ||
+                           document.referrer.includes("android-app://") ||
+                           localStorage.getItem("pwa_installed") === "true";
+      if (isStandalone) {
+        setIsAppInstalled(true);
+        setShowInstallBanner(false);
+      }
+
       const ua = navigator.userAgent.toLowerCase();
       const inApp = /fban|fbav|instagram|whatsapp|line|twitter|micromessenger|wv|snapchat/.test(ua);
       setIsInAppBrowser(inApp);
@@ -237,6 +259,10 @@ export default function App() {
       (window as any).deferredInstallPrompt = prompt;
     };
     const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      if (typeof localStorage !== "undefined") {
+        localStorage.setItem("pwa_installed", "true");
+      }
       setDeferredPrompt(null);
       (window as any).deferredInstallPrompt = null;
       setShowInstallBanner(false);
@@ -1074,89 +1100,101 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 flex flex-col font-sans selection:bg-emerald-600 selection:text-white" dir="rtl">
-      <header className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-950 text-white border-b-4 border-amber-400 shadow-xl no-print z-10">
-        <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-3">
+      <header className="bg-white text-slate-900 border-b-2 border-slate-200/90 shadow-xs no-print z-10">
+        <div className="max-w-7xl mx-auto px-4 py-2.5 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-3">
           
           {/* Logo & Identity */}
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-3">
             <img 
               src={policeLogo} 
               alt="پنجاب پولیس گوجرانوالہ" 
-              className="w-12 h-12 rounded-full border-2 border-amber-500 object-cover shadow-lg shrink-0" 
+              className="w-11 h-11 rounded-full border-2 border-amber-500 object-cover shadow-xs shrink-0" 
               referrerPolicy="no-referrer"
               onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
             />
             <div>
-              <div className="flex items-center gap-2">
-                <span className="bg-emerald-800 text-amber-300 text-[9px] px-2 py-0.5 rounded-md font-bold border border-emerald-700">آفیشل انکوائری آفیسر</span>
-                <span className="text-amber-400 text-xs font-bold">پنجاب پولیس گوجرانوالہ</span>
+              <div className="flex items-center gap-1.5">
+                <span className="bg-emerald-100 text-emerald-900 text-[9px] px-2 py-0.5 rounded-md font-extrabold border border-emerald-200">آفیشل انکوائری آفیسر</span>
+                <span className="text-emerald-800 text-xs font-bold">پنجاب پولیس گوجرانوالہ</span>
               </div>
-              <h1 className="text-lg font-extrabold text-white mt-0.5 flex items-center gap-1">
-                انکوائری رپورٹ
-                <span className="text-amber-500 text-[10px] font-bold bg-[#0b1b36] px-1.5 py-0.25 rounded border border-[#1d3557]">ریجنل انویسٹی گیشن برانچ</span>
+              <h1 className="text-base sm:text-lg font-black text-slate-900 mt-0.5 flex items-center gap-1.5 font-naskh">
+                انکوائری رپورٹ اسسٹنٹ
+                <span className="text-emerald-800 text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">ریجنل انویسٹی گیشن برانچ</span>
               </h1>
             </div>
           </div>
 
           {/* Visual Mode Selector and Quick Actions */}
-          <div className="flex items-center gap-3 flex-wrap justify-center">
+          <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
             
             {/* VIEW MODE TOGGLE (Play store vs Desktop view) */}
-            <div className="bg-emerald-900/80 border border-emerald-800 rounded-xl p-1 flex items-center shadow-inner">
+            <div className="bg-slate-100 border border-slate-200 rounded-lg p-0.5 flex items-center shadow-xs text-[10px] font-bold">
               <button
                 onClick={() => setViewMode("desktop")}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                   viewMode === "desktop"
-                    ? "bg-amber-500 text-emerald-950 shadow-md"
-                    : "text-slate-300 hover:text-white"
+                    ? "bg-white text-emerald-950 shadow-xs font-extrabold"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                <Monitor className="w-3.5 h-3.5" />
+                <Monitor className="w-3 h-3 text-emerald-800" />
                 <span>ڈیسک ٹاپ ڈیش بورڈ</span>
               </button>
               
               <button
                 onClick={() => setViewMode("mobile")}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                   viewMode === "mobile"
-                    ? "bg-amber-500 text-emerald-950 shadow-md"
-                    : "text-slate-300 hover:text-white"
+                    ? "bg-white text-emerald-950 shadow-xs font-extrabold"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                <Smartphone className="w-3.5 h-3.5" />
-                <span>📱 موبائل ایپ لے آؤٹ</span>
+                <Smartphone className="w-3 h-3 text-indigo-700" />
+                <span>📱 موبائل ایپ</span>
               </button>
             </div>
 
-            {/* SHARE PORTAL BUTTON */}
+            {/* Compact SEARCH SAVED INQUIRIES BUTTON */}
             <button 
-              onClick={() => setShowShareModal(true)}
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3 py-1.5 rounded-xl border border-amber-300 font-extrabold text-xs transition-all flex items-center gap-1.5 shadow-md shadow-amber-950/30 cursor-pointer active:scale-95"
-              title="پورٹل کا لنک اور کیو آر کوڈ شیئر کریں"
+              onClick={() => setShowSearchModal(true)}
+              className="bg-slate-50 hover:bg-slate-100 text-slate-800 hover:text-emerald-900 border border-slate-300 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs active:scale-95 shrink-0"
+              title="محفوظ انکوائری رپورٹس تلاش کریں"
             >
-              <Share2 className="w-3.5 h-3.5 text-slate-950" />
-              <span>شیئر کریں (QR Code)</span>
+              <History className="w-3.5 h-3.5 text-emerald-700" />
+              <span>محفوظ فائلز ({inquiries.length})</span>
             </button>
 
             {/* Quick new template button */}
             <button 
               onClick={handleNewInquiry}
-              className="bg-emerald-800 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl border border-emerald-700 font-bold text-xs transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-md"
+              className="bg-emerald-800 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg border border-emerald-700 font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-xs shrink-0"
               title="نیا خالی انکوائری ٹیمپلیٹ مرتب کریں"
             >
-              <Plus className="w-3.5 h-3.5 text-amber-400" />
+              <Plus className="w-3.5 h-3.5 text-amber-300" />
               <span>نیا ٹیمپلیٹ</span>
             </button>
 
-            {/* SEARCH SAVED INQUIRIES SMALL BUTTON */}
+            {/* SHARE PORTAL BUTTON */}
             <button 
-              onClick={() => setShowSearchModal(true)}
-              className="bg-[#0c2242] hover:bg-[#13315c] text-amber-300 border border-amber-500/50 hover:border-amber-400 px-3 py-1.5 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-md active:scale-95"
-              title="محفوظ انکوائری رپورٹس کی تلاش اور فوری فہرست"
+              onClick={() => setShowShareModal(true)}
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-1 rounded-lg border border-amber-400 font-extrabold text-[11px] transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95 shrink-0"
+              title="پورٹل کا لنک اور کیو آر کوڈ شیئر کریں"
             >
-              <History className="w-3.5 h-3.5 text-amber-400" />
-              <span>محفوظ انکوائری سرچ 🔍</span>
+              <Share2 className="w-3.5 h-3.5" />
+              <span>شیئر QR</span>
             </button>
+
+            {/* Install Button (Only when not installed) */}
+            {!isAppInstalled && (
+              <button
+                onClick={handleInstallClick}
+                className="bg-[#01875f] hover:bg-[#00704e] text-white px-2.5 py-1 rounded-lg font-extrabold text-[11px] flex items-center gap-1 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
+                title="ایپ انسٹال کریں"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>انسٹال کریں</span>
+              </button>
+            )}
 
             {/* Admin Controls Dashboard Button (only shown if isAdmin is true) */}
             {isAdmin && (
@@ -1167,25 +1205,25 @@ export default function App() {
                     fetchSessions();
                   }
                 }}
-                className={`px-3 py-1.5 rounded-xl border font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-md ${
+                className={`px-2.5 py-1 rounded-lg border font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
                   showAdminPanel 
                     ? "bg-amber-500 text-slate-950 border-amber-600" 
-                    : "bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border-indigo-800"
+                    : "bg-indigo-900 text-white border-indigo-800"
                 }`}
-                title="ایڈمنسٹریٹر پینل - صارفین کی لوکیشن اور نگرانی"
+                title="ایڈمنسٹریٹر پینل"
               >
-                <Shield className="w-3.5 h-3.5 text-amber-400" />
-                <span>نگرانی پینل (Admin)</span>
+                <Shield className="w-3.5 h-3.5 text-amber-300" />
+                <span>نگرانی پینل</span>
               </button>
             )}
 
             {/* Log Out button */}
             <button 
               onClick={handleLogout}
-              className="bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-200 px-3 py-1.5 rounded-xl font-bold text-xs transition-all flex items-center gap-1 cursor-pointer shadow-md"
+              className="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs shrink-0"
               title="سسٹم سے لاگ آؤٹ کریں"
             >
-              <LogOut className="w-3.5 h-3.5 text-rose-400" />
+              <LogOut className="w-3 h-3 text-rose-600" />
               <span>لاگ آؤٹ</span>
             </button>
           </div>
@@ -1193,9 +1231,9 @@ export default function App() {
         </div>
       </header>
 
-      {/* Prominent PWA Install Notification Card - Designed exactly like user screenshot */}
-      {showInstallBanner && (
-        <div className="bg-gradient-to-br from-[#022c22] via-[#064e3b] to-[#022c22] border-b-2 border-amber-400/80 px-4 py-3 text-white shadow-2xl relative z-30 no-print" dir="rtl">
+      {/* Prominent PWA Install Notification Card - Only shown if not installed */}
+      {!isAppInstalled && showInstallBanner && (
+        <div className="bg-gradient-to-br from-[#022c22] via-[#064e3b] to-[#022c22] border-b-2 border-amber-400/80 px-4 py-3 text-white shadow-md relative z-30 no-print" dir="rtl">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
             
             {/* Right side: Crest Logo & Title */}
@@ -1640,66 +1678,68 @@ export default function App() {
 
             </div>
 
-            {/* Google Play Store Styled App Badge & Download Center */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-right space-y-3 relative overflow-hidden text-slate-900">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
-              
-              <div className="flex items-start gap-3">
-                {/* Simulated App Icon */}
-                <div className="w-12 h-12 bg-emerald-950 rounded-2xl p-0.5 shadow border border-emerald-800 flex items-center justify-center shrink-0 relative overflow-hidden select-none">
-                  <img 
-                    src={policeLogo} 
-                    alt="Punjab Police Logo" 
-                    className="w-11 h-11 object-cover rounded-xl"
-                    referrerPolicy="no-referrer"
-                  />
-                  {/* Small Google Play colorful triangle overlay on corner */}
-                  <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-[#01875f] rounded-full border border-white flex items-center justify-center">
-                    <span className="text-[7px] text-white font-extrabold">▶</span>
+            {/* Google Play Store Styled App Badge & Download Center - Only shown if app is not installed */}
+            {!isAppInstalled && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-right space-y-3 relative overflow-hidden text-slate-900">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
+                
+                <div className="flex items-start gap-3">
+                  {/* Simulated App Icon */}
+                  <div className="w-12 h-12 bg-emerald-950 rounded-2xl p-0.5 shadow border border-emerald-800 flex items-center justify-center shrink-0 relative overflow-hidden select-none">
+                    <img 
+                      src={policeLogo} 
+                      alt="Punjab Police Logo" 
+                      className="w-11 h-11 object-cover rounded-xl"
+                      referrerPolicy="no-referrer"
+                    />
+                    {/* Small Google Play colorful triangle overlay on corner */}
+                    <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-[#01875f] rounded-full border border-white flex items-center justify-center">
+                      <span className="text-[7px] text-white font-extrabold">▶</span>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[9px] text-emerald-800 font-black flex items-center gap-0.5 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">
+                        <span>تصدیق شدہ</span>
+                        <Shield className="w-2.5 h-2.5 text-emerald-700" />
+                      </span>
+                    </div>
+                    <h4 className="font-black text-slate-900 text-[11px] truncate mt-1">پنجاب پولیس انکوائری رپورٹ</h4>
+                    <p className="text-[9px] text-slate-500 font-bold">پنجاب پولیس گوجرانوالہ ریجن</p>
                   </div>
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[9px] text-emerald-800 font-black flex items-center gap-0.5 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">
-                      <span>تصدیق شدہ</span>
-                      <Shield className="w-2.5 h-2.5 text-emerald-700" />
-                    </span>
+                {/* Stats like Play Store */}
+                <div className="grid grid-cols-3 gap-1 border-y border-slate-100 py-2 text-center text-slate-800 font-bold">
+                  <div>
+                    <p className="text-[11px] font-black text-amber-600">4.9 ★</p>
+                    <p className="text-[8px] text-slate-500">رائے دہندگان</p>
                   </div>
-                  <h4 className="font-black text-slate-900 text-[11px] truncate mt-1">پنجاب پولیس انکوائری رپورٹ</h4>
-                  <p className="text-[9px] text-slate-500 font-bold">پنجاب پولیس گوجرانوالہ ریجن</p>
+                  <div className="border-x border-slate-100">
+                    <p className="text-[11px] font-black">2.1 MB</p>
+                    <p className="text-[8px] text-slate-500">سائز فائل</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-black">100%</p>
+                    <p className="text-[8px] text-slate-500">آف لائن کام</p>
+                  </div>
                 </div>
+
+                {/* Direct Download/Install button styled exactly like Google Play green */}
+                <button
+                  onClick={handleInstallClick}
+                  className="w-full bg-[#01875f] hover:bg-[#00704e] text-white py-2 px-3 rounded-xl font-extrabold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-white" />
+                  <span>اینڈرائڈ،آئی فون اور کمپیوٹر پر انسٹال کریں</span>
+                </button>
+
+                <p className="text-[8px] text-slate-500 text-center leading-normal font-medium">
+                  گوگل پلے اسٹور کی طرح اصلی لوگو اور لائیو شارٹ کٹ کے ساتھ ہوم اسکرین پر ڈاؤن لوڈ کریں۔
+                </p>
               </div>
-
-              {/* Stats like Play Store */}
-              <div className="grid grid-cols-3 gap-1 border-y border-slate-100 py-2 text-center text-slate-800 font-bold">
-                <div>
-                  <p className="text-[11px] font-black text-amber-600">4.9 ★</p>
-                  <p className="text-[8px] text-slate-500">رائے دہندگان</p>
-                </div>
-                <div className="border-x border-slate-100">
-                  <p className="text-[11px] font-black">2.1 MB</p>
-                  <p className="text-[8px] text-slate-500">سائز فائل</p>
-                </div>
-                <div>
-                  <p className="text-[11px] font-black">100%</p>
-                  <p className="text-[8px] text-slate-500">آف لائن کام</p>
-                </div>
-              </div>
-
-              {/* Direct Download/Install button styled exactly like Google Play green */}
-              <button
-                onClick={handleInstallClick}
-                className="w-full bg-[#01875f] hover:bg-[#00704e] text-white py-2 px-3 rounded-xl font-extrabold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
-              >
-                <Download className="w-3.5 h-3.5 text-white" />
-                <span>اینڈرائڈ،آئی فون اور کمپیوٹر پر انسٹال کریں</span>
-              </button>
-
-              <p className="text-[8px] text-slate-500 text-center leading-normal font-medium">
-                گوگل پلے اسٹور کی طرح اصلی لوگو اور لائیو شارٹ کٹ کے ساتھ ہوم اسکرین پر ڈاؤن لوڈ کریں۔
-              </p>
-            </div>
+            )}
 
           </div>
 
@@ -2257,13 +2297,15 @@ export default function App() {
 
                 {/* Add dynamic record & download buttons */}
                 <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={handleInstallClick}
-                    className="bg-emerald-900 border border-emerald-800 text-amber-400 p-1.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center"
-                    title="ایپ ڈاؤن لوڈ کریں"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                  </button>
+                  {!isAppInstalled && (
+                    <button
+                      onClick={handleInstallClick}
+                      className="bg-emerald-900 border border-emerald-800 text-amber-400 p-1.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center"
+                      title="ایپ ڈاؤن لوڈ کریں"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   <button
                     onClick={handleNewInquiry}
                     className="bg-amber-500 hover:bg-amber-600 text-emerald-950 p-1.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center"
@@ -2375,37 +2417,39 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Mobile View Google Play App badge */}
-                    <div className="bg-white p-4 rounded-2xl border border-emerald-600/20 shadow-sm text-right space-y-3 relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-20 h-20 bg-[#01875f]/5 rounded-full blur-lg pointer-events-none" />
-                      
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-10 h-10 bg-white rounded-xl p-1 border border-slate-200 flex items-center justify-center relative shrink-0">
-                          <img 
-                            src={policeLogo} 
-                            alt="Punjab Police" 
-                            className="w-8 h-8 rounded-full object-cover"
-                            referrerPolicy="no-referrer"
-                          />
-                          <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-[#01875f] rounded-full border border-white flex items-center justify-center">
-                            <span className="text-[5px] text-white">▶</span>
+                    {/* Mobile View Google Play App badge - only shown if not installed */}
+                    {!isAppInstalled && (
+                      <div className="bg-white p-4 rounded-2xl border border-emerald-600/20 shadow-sm text-right space-y-3 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-20 h-20 bg-[#01875f]/5 rounded-full blur-lg pointer-events-none" />
+                        
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-10 h-10 bg-white rounded-xl p-1 border border-slate-200 flex items-center justify-center relative shrink-0">
+                            <img 
+                              src={policeLogo} 
+                              alt="Punjab Police" 
+                              className="w-8 h-8 rounded-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                            <div className="absolute -bottom-1 -left-1 w-4 h-4 bg-[#01875f] rounded-full border border-white flex items-center justify-center">
+                              <span className="text-[5px] text-white">▶</span>
+                            </div>
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-extrabold text-slate-800 text-[11px] truncate">پنجاب پولیس انکوائری رپورٹ</h4>
+                            <p className="text-[9px] text-[#01875f] font-extrabold">آفیشل موبائل ایپ انسٹالیشن</p>
                           </div>
                         </div>
 
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-extrabold text-slate-800 text-[11px] truncate">پنجاب پولیس انکوائری رپورٹ</h4>
-                          <p className="text-[9px] text-[#01875f] font-extrabold">آفیشل موبائل ایپ انسٹالیشن</p>
-                        </div>
+                        <button
+                          onClick={handleInstallClick}
+                          className="w-full bg-[#01875f] hover:bg-[#00704e] text-white py-2 rounded-xl font-extrabold text-[10px] flex items-center justify-center gap-1 shadow-sm cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5 text-white" />
+                          <span>اصلی آئیکن کے ساتھ انسٹال کریں</span>
+                        </button>
                       </div>
-
-                      <button
-                        onClick={handleInstallClick}
-                        className="w-full bg-[#01875f] hover:bg-[#00704e] text-white py-2 rounded-xl font-extrabold text-[10px] flex items-center justify-center gap-1 shadow-sm cursor-pointer"
-                      >
-                        <Download className="w-3.5 h-3.5 text-white" />
-                        <span>اصلی آئیکن کے ساتھ انسٹال کریں</span>
-                      </button>
-                    </div>
+                    )}
                   </div>
                 )}
 

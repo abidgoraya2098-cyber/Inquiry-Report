@@ -24,13 +24,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// Initialize Gemini API client safely
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+// Initialize Gemini API client safely with cascading model fallbacks
+const CANDIDATE_MODELS = [
+  process.env.GEMINI_MODEL || "gemini-2.0-flash",
+  "gemini-1.5-flash",
+  "gemini-2.5-flash",
+  "gemini-1.5-pro",
+  "gemini-flash-latest"
+];
 
 function getGeminiClient(): GoogleGenAI {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY missing: ورسل (Vercel) یا سرور پر Gemini API Key موجود نہیں ہے۔ Vercel Dashboard -> Settings -> Environment Variables میں GEMINI_API_KEY شامل کریں۔");
+    throw new Error("GEMINI_API_KEY missing: ورسل (Vercel) یا سرور کی Settings -> Environment Variables میں GEMINI_API_KEY شامل کریں۔");
   }
   return new GoogleGenAI({
     apiKey: apiKey,
@@ -40,6 +46,25 @@ function getGeminiClient(): GoogleGenAI {
       },
     },
   });
+}
+
+async function generateWithFallback(client: GoogleGenAI, config: any) {
+  let lastError: any = null;
+  for (const modelName of CANDIDATE_MODELS) {
+    try {
+      const response = await client.models.generateContent({
+        ...config,
+        model: modelName,
+      });
+      if (response && response.text) {
+        return response;
+      }
+    } catch (err: any) {
+      console.warn(`Attempt with ${modelName} notice:`, err?.message || err);
+      lastError = err;
+    }
+  }
+  throw lastError || new Error("Gemini API ماڈلز سے رابطہ ناکام رہا۔ براہ کرم API Key چیک کریں۔");
 }
 
 // API Routes
@@ -146,8 +171,7 @@ ${observations || "موقع ملاحظہ کی تفاصیل کلام ریکارڈ
 - factsAndFindings کے تمام نکات کو '1۔' ، '2۔' وغیرہ جیسے فقروں سے شروع کریں اور ہر نقطہ تفصیلی، بامعنی اور قانونی طور پر ٹھوس ہونا چاہیے۔
 - نتیجہ انکوائری (inquiryConclusion) کا اختتام ہمیشہ روایتی اور سرکاری فقرے جیسے 'رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے۔' پر ہونا چاہئیے۔`;
 
-    const response = await client.models.generateContent({
-      model: GEMINI_MODEL,
+    const response = await generateWithFallback(client, {
       contents: prompt,
       config: {
         systemInstruction: systemInstruction,
@@ -226,8 +250,7 @@ ${context || "کوئی پس منظر فراہم نہیں کیا گیا"}
 4۔ تضادات اور مشکوک باتیں (Contradictions / Suspicious details): کیا بیان میں کوئی منطقی جھول، تضادات، یا مبالغہ آرائی محسوس ہوتی ہے؟
 5۔ اہم سوالات (Crucial Questions to Ask): تفتیش کو آگے بڑھانے کے لیے اس فریق سے مزید کیا سوالات پوچھے جانے چاہئیں؟`;
 
-    const response = await client.models.generateContent({
-      model: GEMINI_MODEL,
+    const response = await generateWithFallback(client, {
       contents: prompt,
       config: {
         systemInstruction: "You are an expert police investigator and legal analyst. Extract structured insights from raw Urdu statements to help an inquiry officer discover loopholes and plan next steps.",
@@ -242,7 +265,7 @@ ${context || "کوئی پس منظر فراہم نہیں کیا گیا"}
   }
 });
 
-// AI Spelling and Grammar Correction endpoint using Gemini 3.6 Flash
+// AI Spelling and Grammar Correction endpoint
 app.post("/api/correct-spelling", async (req, res) => {
   try {
     if (!process.env.GEMINI_API_KEY) {
@@ -263,8 +286,7 @@ Keep all the layout fields, formal structure, margins, symbols, and names intact
 Only correct spelling (e.g. ensure correct spelling of words like "بالمشافہ", "درخواست گزار", "الزام علیہ", "نتیجہ انکوائری").
 Ensure there are no spelling mistakes in the output. Keep the output as raw Urdu text with zero commentary or extra English.`;
 
-    const response = await client.models.generateContent({
-      model: GEMINI_MODEL,
+    const response = await generateWithFallback(client, {
       contents: `براہ کرم درج ذیل رپورٹ کے متن کا جائزہ لیں اور اس میں موجود املا (Spelling) اور گرامر (Grammar) کی تمام غلطیوں کو درست کریں۔ رپورٹ کے باضابطہ پیٹرن، ناموں، اور دیگر قانونی الفاظ کو تبدیل نہ کریں۔ صرف املا اور گرامر کو سو فیصد درست کر کے فائنل متن واپس فراہم کریں:
 
 """
@@ -283,7 +305,7 @@ ${text}
   }
 });
 
-// Image transcript / OCR endpoint using Gemini 3.6 Flash
+// Image transcript / OCR endpoint
 app.post("/api/transcribe-image", async (req, res) => {
   try {
     if (!process.env.GEMINI_API_KEY) {
@@ -313,8 +335,7 @@ app.post("/api/transcribe-image", async (req, res) => {
 
     const client = getGeminiClient();
 
-    const response = await client.models.generateContent({
-      model: GEMINI_MODEL,
+    const response = await generateWithFallback(client, {
       contents: [
         {
           inlineData: {
