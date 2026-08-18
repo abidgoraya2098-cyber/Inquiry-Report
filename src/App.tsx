@@ -187,6 +187,7 @@ export default function App() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedInquiryId, setSelectedInquiryId] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Search Saved Inquiries Modal State
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -445,6 +446,7 @@ export default function App() {
   const recognitionRef = useRef<any>(null);
   const listeningFieldRef = useRef<string | null>(null);
   const handleSpeechResultRef = useRef<any>(null);
+  const shouldListenRef = useRef<boolean>(false);
 
   // Splash Screen Fadeout
   useEffect(() => {
@@ -456,35 +458,57 @@ export default function App() {
 
   // Load speech support on mount
   useEffect(() => {
-    // Check Speech Recognition support
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (SpeechRecognition) {
       setSpeechSupported(true);
-      const rec = new SpeechRecognition();
-      rec.continuous = false;
-      rec.lang = "ur-PK"; // Urdu (Pakistan)
-      rec.interimResults = false;
+      try {
+        const rec = new SpeechRecognition();
+        rec.continuous = true;
+        rec.lang = "ur-PK"; // Urdu (Pakistan)
+        rec.interimResults = true;
+        rec.maxAlternatives = 1;
 
-      rec.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        const currentField = listeningFieldRef.current;
-        if (currentField && handleSpeechResultRef.current) {
-          handleSpeechResultRef.current(currentField, transcript);
-        }
-      };
+        rec.onresult = (event: any) => {
+          let finalTranscript = "";
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript + " ";
+            }
+          }
+          const text = finalTranscript.trim();
+          const currentField = listeningFieldRef.current;
+          if (text && currentField && handleSpeechResultRef.current) {
+            handleSpeechResultRef.current(currentField, text);
+          }
+        };
 
-      rec.onend = () => {
-        setListeningField(null);
-        listeningFieldRef.current = null;
-      };
+        rec.onend = () => {
+          if (shouldListenRef.current && listeningFieldRef.current) {
+            try {
+              rec.start();
+            } catch (e) {
+              // Ignore already active state
+            }
+          } else {
+            setListeningField(null);
+            listeningFieldRef.current = null;
+          }
+        };
 
-      rec.onerror = (err: any) => {
-        console.error("Speech recognition error:", err);
-        setListeningField(null);
-        listeningFieldRef.current = null;
-      };
+        rec.onerror = (err: any) => {
+          console.warn("Speech recognition notice:", err?.error || err);
+          if (err.error === "not-allowed" || err.error === "service-not-allowed") {
+            alert("مائیکروفون کی رسائی بلاک ہے۔ براہ کرم براؤزر ایڈریس بار میں مائیکروفون کا نشان دبا کر اجازت دیں تاکہ آپ آواز سے بول کر لکھ سکیں۔");
+            shouldListenRef.current = false;
+            setListeningField(null);
+            listeningFieldRef.current = null;
+          }
+        };
 
-      recognitionRef.current = rec;
+        recognitionRef.current = rec;
+      } catch (err) {
+        console.warn("Speech Recognition initialization failed:", err);
+      }
     }
   }, []);
 
@@ -513,24 +537,36 @@ export default function App() {
   // Start/Stop voice recognition
   const toggleSpeech = (fieldName: string) => {
     if (!speechSupported || !recognitionRef.current) {
-      alert("معذرت، آپ کا براؤزر اردو وائس ٹائپنگ کو سپورٹ نہیں کرتا۔ برائے مہربانی گوگل کروم (Google Chrome) استعمال کریں۔");
+      alert("معذرت، آپ کا براؤزر اردو وائس ٹائپنگ کو سپورٹ نہیں کرتا۔ برائے مہربانی گوگل کروم (Google Chrome) یا ایج (Edge) استعمال کریں۔");
       return;
     }
 
     if (listeningField === fieldName) {
-      recognitionRef.current.stop();
+      shouldListenRef.current = false;
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
       setListeningField(null);
       listeningFieldRef.current = null;
     } else {
       if (listeningField) {
-        recognitionRef.current.stop();
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {}
       }
+      shouldListenRef.current = true;
       setListeningField(fieldName);
       listeningFieldRef.current = fieldName;
       try {
         recognitionRef.current.start();
       } catch (e) {
-        console.error("Failed to start speech recognition", e);
+        setTimeout(() => {
+          if (shouldListenRef.current) {
+            try {
+              recognitionRef.current.start();
+            } catch (err) {}
+          }
+        }, 200);
       }
     }
   };
@@ -780,10 +816,14 @@ export default function App() {
       if (!data) {
         throw new Error("سرور سے جواب حاصل نہ ہو سکا۔");
       }
+      if (data.factsAndFindings && Array.isArray(data.factsAndFindings)) {
+        handleFieldChange("factsAndFindings", data.factsAndFindings);
+      }
       handleFieldChange("inquiryConclusion", data.inquiryConclusion || "");
       
-      // Auto-switch mobile view tab to preview
+      // Auto-switch mobile view tab to preview & open celebratory completion modal
       setMobileTab("preview");
+      setShowSuccessModal(true);
 
       const element = document.getElementById("report-preview-area");
       if (element) {
@@ -3411,6 +3451,149 @@ export default function App() {
                 className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200"
               >
                 بند کریں
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          REPORT GENERATION SUCCESS CELEBRATION MODAL POPUP (عابد گورائیہ صاحب رپورٹ پاپ اپ)
+          ========================================================================= */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fadeIn no-print" dir="rtl">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border-2 border-amber-400 text-center relative overflow-hidden space-y-5 animate-scaleUp">
+            {/* Ambient Background Glows */}
+            <div className="absolute -top-12 -right-12 w-36 h-36 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Official Police Emblem & Check Badge */}
+            <div className="flex flex-col items-center">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full bg-emerald-950 p-1 border-2 border-amber-400 shadow-xl flex items-center justify-center">
+                  <img 
+                    src={policeLogo} 
+                    alt="پنجاب پولیس نشان" 
+                    className="w-full h-full rounded-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
+                  />
+                </div>
+                <div className="absolute -bottom-1 -right-1 bg-emerald-600 text-white p-1.5 rounded-full border-2 border-white shadow-md">
+                  <Check className="w-4 h-4 stroke-[3]" />
+                </div>
+              </div>
+
+              {/* Exact Urdu message requested by the user */}
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-4 leading-snug font-naskh">
+                آپ کی رپورٹ میسر ریکارڈ کے مطابق <span className="text-emerald-800 font-nastaliq">عابد گورائیہ صاحب</span> تیار کر دی گئی ہے!
+              </h2>
+              <p className="text-xs text-slate-600 font-bold mt-2 leading-relaxed font-naskh">
+                تمام قلمبند بیانات، پنسل و قلمی تحریری درخواستیں اور شواہد باضابطہ سرکاری انکوائری رپورٹ میں کامیابی سے مدون کر دیے گئے ہیں۔
+              </p>
+            </div>
+
+            {/* Action Buttons Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+              {/* 1. Read Report */}
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  setMobileTab("preview");
+                  const element = document.getElementById("report-preview-area");
+                  if (element) element.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="bg-emerald-800 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-600"
+              >
+                <BookOpen className="w-4 h-4 text-amber-300" />
+                <span>رپورٹ مکمل پڑھیں</span>
+              </button>
+
+              {/* 2. Print / Save PDF */}
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  setMobileTab("preview");
+                  setTimeout(() => {
+                    window.print();
+                  }, 300);
+                }}
+                className="bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-black text-xs py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-700"
+              >
+                <Printer className="w-4 h-4 text-amber-400" />
+                <span>پرنٹ / PDF محفوظ کریں</span>
+              </button>
+
+              {/* 3. Download MS Word (.doc) */}
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  setMobileTab("preview");
+                  // Format and download Word document
+                  const title = `رپورٹ درخواست ازاں ${currentInquiry.complainantName || "سائل"}`;
+                  const docHtml = `
+                    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                    <head>
+                      <meta charset='utf-8'>
+                      <title>${title}</title>
+                      <style>
+                        @page { size: A4 portrait; margin: 1in; }
+                        body { font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Arial', serif; direction: rtl; text-align: right; line-height: 2.2; font-size: 14pt; }
+                        p { margin-bottom: 12pt; text-align: justify; }
+                      </style>
+                    </head>
+                    <body>
+                      <p><b>منجانب:</b> ${currentInquiry.senderDesignation || "سینیئر سپرنٹنڈنٹ آف پولیس"}</p>
+                      <p><b>بجانب:</b> ${currentInquiry.recipientDesignation || "جناب ریجنل پولیس آفیسر صاحب"}</p>
+                      <p><b>عنوان:</b> ${title}</p>
+                      <p><b>جنابِ عالی!</b></p>
+                      <p>تحریر ہے کہ درخواست عنوان بالا موصول ہونے پر فریقین کو طلب کر کے دریافت عمل میں لائی گئی ۔حالات اس طرح پائے گئے جو ذیل ہیں۔</p>
+                      <p><b>موقف درخواست گزار:</b> ${currentInquiry.complainantStatement || ""}</p>
+                      ${(currentInquiry.factsAndFindings || []).length > 0 ? `<p><b>اہم حقائق:</b><br/>${(currentInquiry.factsAndFindings || []).join("<br/>")}</p>` : ''}
+                      <p><b>نتیجہ انکوائری:</b> ${currentInquiry.inquiryConclusion || ""}</p>
+                      <p>رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے ۔</p>
+                    </body>
+                    </html>
+                  `;
+                  const blob = new Blob(['\\ufeff', docHtml], { type: 'application/msword;charset=utf-8' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `Inquiry_Report_${currentInquiry.complainantName || 'Abid_Goraya'}_${Date.now()}.doc`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+                className="bg-indigo-900 hover:bg-indigo-800 active:scale-95 text-white font-black text-xs py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-indigo-700"
+              >
+                <Download className="w-4 h-4 text-indigo-300" />
+                <span>ورڈ فائل ڈاؤن لوڈ (.doc)</span>
+              </button>
+
+              {/* 4. Copy Report */}
+              <button
+                onClick={() => {
+                  const text = `منجانب: ${currentInquiry.senderDesignation || ""}\\nبجانب: ${currentInquiry.recipientDesignation || ""}\\nعنوان: رپورٹ درخواست ازاں ${currentInquiry.complainantName || "سائل"}\\n\\nجنابِ عالی!\\nتحریر ہے کہ درخواست عنوان بالا موصول ہونے پر فریقین کو طلب کر کے دریافت عمل میں لائی گئی ۔حالات اس طرح پائے گئے جو ذیل ہیں۔\\n\\nموقف درخواست گزار:\\n${currentInquiry.complainantStatement || ""}\\n\\nنتیجہ انکوائری:\\n${currentInquiry.inquiryConclusion || ""}\\n\\nرپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے ۔`;
+                  navigator.clipboard.writeText(text);
+                  alert("رپورٹ کامیابی سے کاپی ہو گئی!");
+                  setShowSuccessModal(false);
+                  setMobileTab("preview");
+                }}
+                className="bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-black text-xs py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-400"
+              >
+                <Copy className="w-4 h-4" />
+                <span>مکمل رپورٹ کاپی کریں</span>
+              </button>
+            </div>
+
+            {/* Close Button */}
+            <div className="pt-1">
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="text-xs text-slate-500 hover:text-slate-800 font-bold underline cursor-pointer"
+              >
+                پاپ اپ بند کریں اور واپس فارم پر جائیں
               </button>
             </div>
 
