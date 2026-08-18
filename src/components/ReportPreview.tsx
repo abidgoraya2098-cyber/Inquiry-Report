@@ -274,13 +274,13 @@ ${getFormattedConclusion()}
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md border border-slate-200 p-4 sm:p-6 flex flex-col h-full space-y-4 no-print" id="report-preview-area">
+    <div className="bg-white rounded-2xl shadow-xs border border-slate-200 p-4 sm:p-5 flex flex-col h-full space-y-4 no-print" id="report-preview-area">
       
       {/* Header Controls */}
       <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-            <Scale className="w-4 h-4 text-emerald-800" />
+            <Scale className="w-4 h-4 text-slate-800" />
             <span>رپورٹ کا فائنل پرنٹ ریویو (Final Document Review)</span>
           </h3>
           <p className="text-[10px] text-slate-500 mt-0.5">باضابطہ نقشہ بمطابق مہر سرکاری و قواعدِ پولیس</p>
@@ -292,7 +292,7 @@ ${getFormattedConclusion()}
             <button
               type="button"
               onClick={() => setActiveFont("system")}
-              className={`px-2 py-1 rounded-md transition-all cursor-pointer ${activeFont === "system" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-900"}`}
+              className={`px-2 py-1 rounded-md transition-all cursor-pointer ${activeFont === "system" ? "bg-slate-900 text-white shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"}`}
               title="سادہ لکھائی"
             >
               سادہ
@@ -300,7 +300,7 @@ ${getFormattedConclusion()}
             <button
               type="button"
               onClick={() => setActiveFont("naskh")}
-              className={`px-2 py-1 rounded-md transition-all cursor-pointer ${activeFont === "naskh" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-900"}`}
+              className={`px-2 py-1 rounded-md transition-all cursor-pointer ${activeFont === "naskh" ? "bg-slate-900 text-white shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"}`}
               title="نسخ لکھائی"
             >
               نسخ
@@ -308,7 +308,7 @@ ${getFormattedConclusion()}
             <button
               type="button"
               onClick={() => setActiveFont("nastaleeq")}
-              className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${activeFont === "nastaleeq" ? "bg-emerald-850 text-white shadow-xs" : "text-slate-500 hover:text-slate-900"}`}
+              className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${activeFont === "nastaleeq" ? "bg-slate-900 text-white shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"}`}
               title="نوری نستعلیق لکھائی"
             >
               نستعلیق
@@ -324,8 +324,8 @@ ${getFormattedConclusion()}
             onClick={() => setEditMode(!editMode)}
             className={`text-xs px-2.5 py-1.5 rounded-lg font-bold shadow-xs border transition-all flex items-center gap-1 cursor-pointer ${
               editMode 
-                ? "bg-amber-100 text-amber-800 border-amber-300" 
-                : "bg-slate-50 text-slate-700 hover:bg-slate-100 border-slate-200"
+                ? "bg-slate-900 text-white border-slate-900" 
+                : "bg-white text-slate-700 hover:bg-slate-50 border-slate-300"
             }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
@@ -336,10 +336,10 @@ ${getFormattedConclusion()}
           <button
             type="button"
             onClick={handleDownloadWord}
-            className="bg-indigo-900 hover:bg-indigo-800 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+            className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-xs px-3 py-1.5 rounded-lg font-bold shadow-xs transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             title="ایم ایس ورڈ میں ڈاؤن لوڈ کریں"
           >
-            <FileDown className="w-3.5 h-3.5 text-indigo-300" />
+            <FileDown className="w-3.5 h-3.5 text-slate-700" />
             <span>ورڈ فائل (.doc)</span>
           </button>
 
@@ -347,21 +347,21 @@ ${getFormattedConclusion()}
           <button
             type="button"
             onClick={onPrint}
-            className="bg-emerald-950 hover:bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+            className="bg-[#0f172a] hover:bg-[#1e293b] text-white text-xs px-3 py-1.5 rounded-lg font-bold shadow-xs transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             title="پرنٹ یا پی ڈی ایف سیو کریں"
           >
-            <Printer className="w-3.5 h-3.5 text-amber-400" />
+            <Printer className="w-3.5 h-3.5 text-amber-300" />
             <span>پرنٹ / PDF</span>
           </button>
         </div>
       </div>
 
       {/* AI Assistance spelling box */}
-      <div className="bg-emerald-50/50 border border-emerald-100/80 p-3 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
           <div className="text-right">
-            <p className="text-[11px] font-extrabold text-emerald-950">مکمل اے آئی املا و گرامر درستگی سپورٹ</p>
+            <p className="text-[11px] font-bold text-slate-900">مکمل اے آئی املا و گرامر درستگی سپورٹ</p>
             <p className="text-[9px] text-slate-500">کاپی کرنے یا کنورٹ کرنے سے پہلے املا کی تمام غلطیوں کی خودکار اصلاح کریں</p>
           </div>
         </div>
@@ -373,17 +373,17 @@ ${getFormattedConclusion()}
           className={`text-[10px] px-3 py-1.5 rounded-lg font-bold shadow-xs border transition-all flex items-center gap-1 shrink-0 cursor-pointer ${
             isAiChecking
               ? "bg-slate-200 text-slate-400 cursor-not-allowed border-slate-300"
-              : "bg-emerald-800 text-white hover:bg-emerald-900 border-emerald-700"
+              : "bg-[#0f172a] hover:bg-[#1e293b] text-white border-slate-800"
           }`}
         >
           {isAiChecking ? (
             <>
-              <RotateCcw className="w-3 h-3 animate-spin" />
+              <RotateCcw className="w-3 h-3 animate-spin text-amber-300" />
               <span>املا کی اصلاح ہو رہی ہے...</span>
             </>
           ) : (
             <>
-              <Sparkles className="w-3 h-3 text-amber-400" />
+              <Sparkles className="w-3 h-3 text-amber-300" />
               <span>املا درست کریں (سو فیصد تصحیح)</span>
             </>
           )}
@@ -391,7 +391,7 @@ ${getFormattedConclusion()}
       </div>
 
       {aiMessage && (
-        <div className="bg-emerald-100 text-emerald-900 border border-emerald-200 text-[10px] font-bold p-2 rounded-lg text-center">
+        <div className="bg-slate-100 text-slate-900 border border-slate-200 text-[10px] font-bold p-2 rounded-lg text-center">
           {aiMessage}
         </div>
       )}
@@ -399,12 +399,12 @@ ${getFormattedConclusion()}
       {/* Main Body preview of document sheet */}
       {editMode ? (
         <div className="flex-1 flex flex-col space-y-2">
-          <div className="flex justify-between items-center text-[10px] text-slate-500 font-bold bg-amber-50 border border-amber-200/60 p-2 rounded-lg">
+          <div className="flex justify-between items-center text-[10px] text-slate-500 font-bold bg-slate-100 border border-slate-200 p-2 rounded-lg">
             <span>رپورٹ کے حتمی متن میں براہِ راست ترمیم کریں:</span>
             <button 
               type="button"
               onClick={handleReset}
-              className="text-amber-800 hover:text-rose-700 flex items-center gap-0.5 font-sans cursor-pointer"
+              className="text-slate-700 hover:text-rose-700 flex items-center gap-0.5 font-sans cursor-pointer"
               title="رپورٹ کو ری سیٹ کریں"
             >
               <RotateCcw className="w-3 h-3" />
@@ -414,145 +414,124 @@ ${getFormattedConclusion()}
           <textarea
             value={editedText}
             onChange={(e) => setEditedText(e.target.value)}
-            className="w-full flex-1 min-h-[400px] bg-slate-50 border border-slate-300 rounded-lg p-4 text-xs font-semibold leading-relaxed text-right text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-800"
+            className="w-full flex-1 min-h-[400px] bg-slate-50 border border-slate-300 rounded-lg p-4 text-xs font-semibold leading-relaxed text-right text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800"
             dir="rtl"
             style={{ fontFamily: activeFont === "nastaleeq" ? "Noto Nastaliq Urdu" : activeFont === "naskh" ? "Noto Naskh Urdu" : "inherit" }}
           />
         </div>
       ) : (
-        /* Sheet of Paper Web Preview */
         <div 
-          className={`flex-1 bg-amber-50/10 border border-slate-200 rounded-lg p-6 sm:p-8 overflow-y-auto max-h-[500px] text-right text-black shadow-inner space-y-5 ${getFontClass()}`} 
+          className={`flex-1 bg-white border border-slate-300 rounded-xl p-6 sm:p-10 shadow-xs space-y-6 text-slate-950 font-naskh select-text ${getFontClass()}`}
           dir="rtl"
         >
-          {/* Document Header */}
-          <div className="pb-3 space-y-2 text-right">
-            <div className="space-y-1 font-bold">
-              <div className="flex items-start" style={{ fontSize: '18px', lineHeight: '2' }}>
-                <span className="w-24 shrink-0 font-bold">منجانب:</span>
-                <div className="font-semibold flex-1">
-                  {getSenderLines().map((line, idx) => (
-                    <p key={idx}>{line}</p>
-                  ))}
-                </div>
+          {/* Official Letterhead Header */}
+          <div className="space-y-1.5 pb-4 border-b-2 border-slate-300 text-sm sm:text-base font-bold">
+            <div className="flex justify-between items-start gap-4">
+              <div className="space-y-0.5">
+                <p className="font-extrabold text-slate-900">منجانب: {senderDesignation}</p>
+                <p className="font-bold text-slate-800">بجانب: {recipientDesignation}</p>
+                {attention && <p className="font-semibold text-slate-700">{attention}</p>}
               </div>
-
-              <div className="flex items-start" style={{ fontSize: '18px', lineHeight: '2' }}>
-                <span className="w-24 shrink-0 font-bold">بجانب:</span>
-                <div className="font-semibold flex-1">
-                  <p>{recipientDesignation}</p>
-                </div>
+              <div className="text-left font-sans text-xs text-slate-600 space-y-1 shrink-0" dir="ltr">
+                <p>No: ______________</p>
+                <p>Dated: ____________</p>
               </div>
-
-              {attention && (
-                <div className="flex items-start" style={{ fontSize: '15px', lineHeight: '2' }}>
-                  <span className="w-24 shrink-0"></span>
-                  <p className="text-slate-700 font-bold flex-1">{attention}</p>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex justify-between items-center w-full pt-3 mt-2 font-bold text-slate-700" style={{ fontSize: '15px' }}>
-              <p>نمبر: <span className="font-semibold">____________________</span></p>
-              <p>تاریخ: <span className="font-semibold">____________________</span></p>
             </div>
           </div>
 
-          {/* Subject Area */}
-          <div className="space-y-1.5 pt-1">
-            <p className="font-extrabold text-right" style={{ fontSize: '18px', lineHeight: '2' }}>
-              عنوان : <span className="font-semibold underline decoration-2 decoration-black underline-offset-4">{getSubjectTitle()}</span>
+          {/* Subject & Reference */}
+          <div className="space-y-1 font-bold text-sm sm:text-base">
+            <p className="text-slate-950 font-extrabold flex items-baseline gap-2">
+              <span className="shrink-0">عنوان :</span>
+              <span className="underline underline-offset-4 decoration-slate-400">{getSubjectTitle()}</span>
             </p>
-            
-            <p className="font-bold text-right pt-0.5" style={{ fontSize: '15px', lineHeight: '2' }}>
-              بحوالہ یاداشت نمبری: <span className="font-semibold">____________________</span>
+            <p className="text-slate-600 text-xs sm:text-sm">
+              بحوالہ یاداشت نمبری: ______________
             </p>
           </div>
 
-          {/* Greeting */}
-          <div className="pt-2">
-            <p className="font-bold text-right" style={{ fontSize: '18px', lineHeight: '2' }}>
-              جنابِ عالی!
-            </p>
-            <p className="text-justify font-medium leading-loose" style={{ fontSize: '15px', lineHeight: '2.2' }}>
+          {/* Formal Salutation & Intro */}
+          <div className="space-y-2 text-sm sm:text-base leading-relaxed">
+            <p className="font-extrabold text-slate-900">جنابِ عالی!</p>
+            <p className="text-justify font-medium text-slate-800">
               تحریر ہے کہ درخواست عنوان بالا موصول ہونے پر فریقین کو طلب کر کے دریافت عمل میں لائی گئی ۔حالات اس طرح پائے گئے جو ذیل ہیں۔
             </p>
           </div>
 
           {/* Complainant Narrative */}
-          <div className="space-y-1.5 pt-2">
-            <h4 className="font-extrabold text-right border-r-4 border-emerald-800 pr-2" style={{ fontSize: '18px', lineHeight: '2' }}>موقف درخواست گزار :</h4>
-            <p className="text-justify pr-3 font-medium leading-relaxed" style={{ fontSize: '15px', lineHeight: '2.2' }}>
+          <div className="space-y-1 text-sm sm:text-base leading-relaxed">
+            <p className="font-extrabold text-slate-900 underline underline-offset-2">موقف درخواست گزار :</p>
+            <p className="text-justify font-medium text-slate-800 whitespace-pre-wrap">
               {getFormattedComplainantStatement()}
             </p>
           </div>
 
           {/* Complainant & Witness Statements */}
-          <div className="space-y-2 pt-2">
-            <h4 className="font-extrabold text-right border-r-4 border-emerald-800 pr-2" style={{ fontSize: '18px', lineHeight: '2' }}>بیان ازان :</h4>
-            <div className="space-y-3 pr-3">
-              {complainantStatements.length > 0 ? (
-                complainantStatements.map((st) => (
-                  <div key={st.id} className="text-justify leading-relaxed" style={{ fontSize: '15px', lineHeight: '2.2' }}>
-                    <span className="font-bold block text-slate-900 mb-0.5">بیان ازاں مسمی / مسمات {st.personName} (مکمل نام، ولدیت و سکونت/پتہ) :</span>
-                    <span className="font-medium pr-8 block">بیان کیا ہے کہ {st.text}</span>
-                  </div>
-                ))
-              ) : (
-                <p className="italic text-slate-400" style={{ fontSize: '15px' }}>کوئی بیان شامل نہیں ہے۔</p>
-              )}
-            </div>
+          <div className="space-y-3 text-sm sm:text-base leading-relaxed">
+            <p className="font-extrabold text-slate-900 underline underline-offset-2">بیان ازان :</p>
+            {complainantStatements.length === 0 ? (
+              <p className="text-slate-400 italic text-xs">کوئی بیان درج نہیں کیا گیا ۔</p>
+            ) : (
+              complainantStatements.map((st) => (
+                <div key={st.id} className="space-y-1 pr-2 border-r-2 border-slate-300">
+                  <p className="font-bold text-slate-900">
+                    بیان ازاں مسمی / مسمات <span className="font-extrabold underline">{st.personName || "_________________"}</span> (مکمل نام، ولدیت و سکونت/پتہ) :
+                  </p>
+                  <p className="text-justify font-medium text-slate-800 pl-4 whitespace-pre-wrap">
+                    بیان کیا ہے کہ {st.text}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Respondent Statements */}
-          <div className="space-y-2 pt-2">
-            <h4 className="font-extrabold text-right border-r-4 border-emerald-800 pr-2" style={{ fontSize: '18px', lineHeight: '2' }}>الزام علیہ درخواست کا بیان :</h4>
-            <div className="space-y-3 pr-3">
-              {respondentStatements.length > 0 ? (
-                respondentStatements.map((st) => (
-                  <div key={st.id} className="text-justify leading-relaxed" style={{ fontSize: '15px', lineHeight: '2.2' }}>
-                    <span className="font-bold block text-slate-900 mb-0.5">بیان ازاں مسمی / مسمات {st.personName} (مکمل نام، ولدیت و سکونت/پتہ) :</span>
-                    <span className="font-medium pr-8 block">بیان کیا ہے کہ {st.text}</span>
-                  </div>
-                ))
-              ) : (
-                <p className="italic text-slate-400" style={{ fontSize: '15px' }}>کوئی بیان شامل نہیں ہے۔</p>
-              )}
-            </div>
+          <div className="space-y-3 text-sm sm:text-base leading-relaxed">
+            <p className="font-extrabold text-slate-900 underline underline-offset-2">الزام علیہ درخواست کا بیان :</p>
+            {respondentStatements.length === 0 ? (
+              <p className="text-slate-400 italic text-xs">کوئی بیان درج نہیں کیا گیا ۔</p>
+            ) : (
+              respondentStatements.map((st) => (
+                <div key={st.id} className="space-y-1 pr-2 border-r-2 border-slate-300">
+                  <p className="font-bold text-slate-900">
+                    بیان ازاں مسمی / مسمات <span className="font-extrabold underline">{st.personName || "_________________"}</span> (مکمل نام، ولدیت و سکونت/پتہ) :
+                  </p>
+                  <p className="text-justify font-medium text-slate-800 pl-4 whitespace-pre-wrap">
+                    بیان کیا ہے کہ {st.text}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
 
-          {/* Facts & Findings */}
+          {/* Facts & Findings (if any) */}
           {factsAndFindings && factsAndFindings.length > 0 && (
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <h4 className="font-extrabold text-right border-r-4 border-emerald-800 pr-2" style={{ fontSize: '18px', lineHeight: '2' }}>
-                دورانِ انکوائری سامنے آنے والے اہم حقائق و امور :
-              </h4>
-              <div className="space-y-2 pr-3">
-                {factsAndFindings.map((point, idx) => (
-                  <p key={idx} className="text-justify font-medium leading-relaxed" style={{ fontSize: '15px', lineHeight: '2.2' }}>
-                    {point}
-                  </p>
+            <div className="space-y-2 text-sm sm:text-base leading-relaxed">
+              <p className="font-extrabold text-slate-900 underline underline-offset-2">دورانِ انکوائری سامنے آنے والے اہم حقائق و امور :</p>
+              <ul className="list-disc list-inside space-y-1 text-slate-800 pr-2">
+                {factsAndFindings.map((finding, idx) => (
+                  <li key={idx} className="text-justify">{finding}</li>
                 ))}
-              </div>
+              </ul>
             </div>
           )}
 
-          {/* Progress Report */}
+          {/* Progress Report (if checked) */}
           {showProgressReport && (
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <h4 className="font-extrabold text-right border-r-4 border-emerald-800 pr-2" style={{ fontSize: '18px', lineHeight: '2' }}>
+            <div className="space-y-2 text-sm sm:text-base leading-relaxed">
+              <p className="font-extrabold text-slate-900 underline underline-offset-2">
                 {progressHeading || "پراگرس رپورٹ:"}
-              </h4>
-              <p className="text-justify font-medium leading-relaxed pr-3" style={{ fontSize: '15px', lineHeight: '2.2' }}>
-                {progressText || "پراگرس رپورٹ کی تفصیل موجود نہیں ہے۔"}
               </p>
-              
+              <p className="text-justify font-medium text-slate-800 whitespace-pre-wrap">
+                {progressText || "تفتیش مقدمہ جاری ہے۔"}
+              </p>
+
+              {/* Display Progress Images in Print Sheet */}
               {progressImages && progressImages.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 pt-2 pr-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                   {progressImages.map((img, idx) => (
-                    <div key={idx} className="border border-slate-200 p-1 rounded bg-white flex flex-col items-center">
-                      <img src={img} alt={`منسلک تصویر ${idx + 1}`} className="max-h-36 max-w-full object-contain" referrerPolicy="no-referrer" />
-                      <p className="text-[9px] font-bold text-slate-500 mt-1">منسلک ثبوت / تصویر ${idx + 1}</p>
+                    <div key={idx} className="border border-slate-300 rounded-lg overflow-hidden p-1 bg-white">
+                      <img src={img} alt={`Progress ${idx + 1}`} className="w-full h-28 object-contain" referrerPolicy="no-referrer" />
                     </div>
                   ))}
                 </div>
@@ -560,13 +539,13 @@ ${getFormattedConclusion()}
             </div>
           )}
 
-          {/* Inquiry Conclusion */}
-          <div className="space-y-2 pt-2 border-t border-slate-100">
-            <h4 className="font-extrabold text-right border-r-4 border-emerald-800 pr-2" style={{ fontSize: '18px', lineHeight: '2' }}>نتیجہ انکوائری :</h4>
-            <div className="text-justify font-semibold bg-emerald-50/40 p-3 rounded-lg border border-emerald-100 pr-3 border-r-4 border-r-emerald-800 leading-relaxed" style={{ fontSize: '15px', lineHeight: '2.2' }}>
+          {/* Final Conclusion */}
+          <div className="space-y-2 pt-2 text-sm sm:text-base leading-relaxed border-t border-slate-200">
+            <p className="font-extrabold text-slate-900 underline underline-offset-2">نتیجہ انکوائری :</p>
+            <p className="text-justify font-medium text-slate-800 whitespace-pre-wrap">
               {getFormattedConclusion()}
-            </div>
-            <p className="font-bold text-slate-900 mt-2" style={{ fontSize: '15px', lineHeight: '2' }}>
+            </p>
+            <p className="font-bold text-slate-900 pt-2">
               رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے ۔
             </p>
           </div>

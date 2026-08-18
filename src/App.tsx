@@ -74,35 +74,33 @@ const PasswordScreen = React.memo(function PasswordScreen({ onLogin }: PasswordS
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50/40 to-slate-200 flex items-center justify-center p-4 font-sans" dir="rtl">
-      <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-8 shadow-2xl relative overflow-hidden text-slate-800">
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans" dir="rtl">
+      <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-8 shadow-xs relative text-slate-800">
         
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className="bg-gradient-to-tr from-emerald-600 to-emerald-800 p-1 rounded-full shadow-lg mb-4 ring-4 ring-emerald-100">
+        <div className="flex flex-col items-center text-center mb-6">
+          <div className="bg-slate-900 p-1 rounded-full shadow-xs mb-3 border-2 border-amber-400">
             <img 
               src={policeLogo} 
               alt="پنجاب پولیس" 
-              className="w-20 h-20 rounded-full object-cover border-2 border-white shadow-md" 
+              className="w-18 h-18 rounded-full object-cover shadow-xs" 
               referrerPolicy="no-referrer"
               onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
             />
           </div>
-          <span className="bg-emerald-50 text-emerald-800 text-[11px] px-4 py-1.5 rounded-full font-black border border-emerald-200 font-naskh shadow-sm">
+          <span className="bg-slate-100 text-slate-800 text-[11px] px-3.5 py-1 rounded-full font-bold border border-slate-200 font-naskh">
             ریجنل انویسٹی گیشن برانچ گوجرانوالہ
           </span>
-          <h2 className="text-2xl font-black text-slate-900 mt-3.5 font-naskh leading-snug tracking-tight">
+          <h2 className="text-xl font-black text-slate-900 mt-3 font-naskh leading-snug tracking-tight">
             انکوائری و تفتیش رپورٹ اسسٹنٹ
           </h2>
-          <p className="text-xs text-slate-500 font-bold mt-1 font-naskh">
+          <p className="text-xs text-slate-500 font-medium mt-0.5 font-naskh">
             مقامی ڈیوائس پرائیوسی و رپورٹس سیکیورٹی
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-black text-slate-700 mb-2 text-center font-naskh">
+            <label className="block text-xs font-bold text-slate-700 mb-2 text-center font-naskh">
               لوکل پاسورڈ / سیکیورٹی پن درج کریں
             </label>
             <div className="relative">
@@ -114,7 +112,7 @@ const PasswordScreen = React.memo(function PasswordScreen({ onLogin }: PasswordS
                   setPasswordInput(e.target.value);
                   if (passwordError) setPasswordError("");
                 }}
-                className="w-full bg-slate-50 border border-slate-300 focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 rounded-xl pl-12 pr-12 py-3 text-sm text-slate-900 font-black placeholder-slate-400 transition-all text-center"
+                className="w-full bg-slate-50 border border-slate-300 focus:bg-white focus:border-slate-800 focus:ring-1 focus:ring-slate-800 rounded-xl pl-12 pr-12 py-3 text-sm text-slate-900 font-bold placeholder-slate-400 transition-all text-center"
                 autoFocus
               />
               <button
@@ -127,23 +125,23 @@ const PasswordScreen = React.memo(function PasswordScreen({ onLogin }: PasswordS
               </button>
             </div>
             {passwordError && (
-              <p className="text-rose-600 text-xs font-black mt-2 text-center font-naskh">⚠️ {passwordError}</p>
+              <p className="text-rose-600 text-xs font-bold mt-2 text-center font-naskh">⚠️ {passwordError}</p>
             )}
           </div>
 
           <button 
             type="submit"
-            className="w-full bg-gradient-to-r from-emerald-700 via-emerald-800 to-emerald-900 hover:from-emerald-800 hover:to-emerald-950 text-white font-black text-sm py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-900/20 transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2 cursor-pointer font-naskh"
+            className="w-full bg-[#0f172a] hover:bg-[#1e293b] text-white font-black text-sm py-3 px-4 rounded-xl shadow-xs transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer font-naskh border border-slate-800"
           >
             <span>پورٹل میں داخل ہوں</span>
           </button>
         </form>
 
-        <div className="mt-8 pt-4 border-t border-slate-100 text-center space-y-1.5">
-          <p className="text-xs text-slate-500 font-bold leading-relaxed font-naskh">
+        <div className="mt-6 pt-4 border-t border-slate-100 text-center space-y-1">
+          <p className="text-xs text-slate-500 font-medium leading-relaxed font-naskh">
             محفوظ نظام بمطابق قواعد پنجاب پولیس
           </p>
-          <p className="text-[11px] font-bold text-emerald-800 tracking-wide pt-1 border-t border-slate-100 font-nastaliq">
+          <p className="text-[11px] font-bold text-slate-700 tracking-wide pt-1 border-t border-slate-100 font-nastaliq">
             عابد عباس علی گورائیہ
           </p>
         </div>
@@ -1565,44 +1563,44 @@ export default function App() {
         /* =========================================================================
             DESKTOP WIDESCREEN VIEW: 3-Column layout
             ========================================================================= */
-        <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-6 no-print">
+        <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-5 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-5 no-print">
           
           {/* Column 1 (Left): Previous Reports & Backups */}
           <div className="lg:col-span-3 flex flex-col gap-4 font-sans">
             
             {/* Record Files list card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col min-h-[350px] shadow-sm text-slate-900">
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col min-h-[350px] shadow-xs text-slate-900">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3 flex-wrap gap-2">
-                <h3 className="font-black text-slate-900 flex items-center gap-1.5 text-xs">
-                  <History className="w-4 h-4 text-emerald-700" />
+                <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-xs">
+                  <History className="w-3.5 h-3.5 text-slate-700" />
                   <span>محفوظ انکوائری رپورٹ ({inquiries.length})</span>
                 </h3>
 
                 <div className="flex items-center gap-1 flex-wrap">
                   <button 
                     onClick={handleSaveCurrentInquiry}
-                    className="bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1 rounded-lg text-[10px] font-black border border-emerald-600 flex items-center gap-0.5 cursor-pointer active:scale-95 transition-all shadow-sm"
+                    className="bg-[#0f172a] hover:bg-[#1e293b] text-white px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-0.5 cursor-pointer active:scale-95 transition-all shadow-xs"
                     title="موجودہ فائل ڈرافٹ محفوظ کریں"
                   >
                     <Save className="w-3 h-3 text-amber-300" />
-                    <span>سیو کریں 💾</span>
+                    <span>سیو</span>
                   </button>
 
                   <button 
                     onClick={handleNewInquiry}
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg text-[10px] font-bold border border-slate-200 flex items-center gap-0.5 cursor-pointer active:scale-95 transition-all"
+                    className="bg-white hover:bg-slate-50 text-slate-700 px-2 py-1 rounded-lg text-[10px] font-bold border border-slate-300 flex items-center gap-0.5 cursor-pointer active:scale-95 transition-all shadow-xs"
                     title="نیا خالی ٹیمپلیٹ کھولیں"
                   >
-                    <Plus className="w-3 h-3 text-emerald-700" />
+                    <Plus className="w-3 h-3" />
                     <span>نیا</span>
                   </button>
 
                   <button 
                     onClick={() => setShowSearchModal(true)}
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded-lg text-[10px] font-bold border border-slate-200 flex items-center gap-0.5 cursor-pointer active:scale-95 transition-all"
+                    className="bg-white hover:bg-slate-50 text-slate-700 px-2 py-1 rounded-lg text-[10px] font-bold border border-slate-300 flex items-center gap-0.5 cursor-pointer active:scale-95 transition-all shadow-xs"
                     title="محفوظ انکوائریز پورٹل سرچ"
                   >
-                    <span>سرچ 🔍</span>
+                    <span>سرچ</span>
                   </button>
 
                   {inquiries.length > 0 && (
@@ -1612,7 +1610,7 @@ export default function App() {
                       title="تمام محفوظ انکوائریز حذف کریں"
                     >
                       <Trash2 className="w-3 h-3 text-rose-600" />
-                      <span>تمام حذف</span>
+                      <span>حذف</span>
                     </button>
                   )}
                 </div>
@@ -1634,12 +1632,12 @@ export default function App() {
                         onClick={() => handleSelectInquiry(item.id)}
                         className={`p-3 rounded-xl border text-right cursor-pointer transition-all ${
                           isSelected 
-                            ? "bg-emerald-50 border-emerald-600 text-emerald-950 shadow-sm font-bold" 
+                            ? "bg-slate-100 border-slate-800 text-slate-950 shadow-xs font-bold" 
                             : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-800"
                         }`}
                       >
                         <div className="flex justify-between items-start gap-2">
-                          <h4 className="font-black text-xs truncate max-w-[150px]">
+                          <h4 className="font-bold text-xs truncate max-w-[150px]">
                             {item.complainantName ? `درخواست گزار: ${item.complainantName}` : "خالی رپورٹ"}
                           </h4>
                           <button 
@@ -1652,7 +1650,7 @@ export default function App() {
                         </div>
                         <div className="flex justify-between items-center text-[9px] text-slate-500 mt-2 pt-1.5 border-t border-slate-200/60">
                           <span>{item.createdAt}</span>
-                          <span className="text-emerald-800 font-extrabold">{item.stationName ? item.stationName.split('،')[0] : "تھانہ"}</span>
+                          <span className="text-slate-700 font-bold">{item.stationName ? item.stationName.split('،')[0] : "تھانہ"}</span>
                         </div>
                       </div>
                     );
@@ -1662,182 +1660,119 @@ export default function App() {
 
               {/* Backup Import/Export */}
               <div className="border-t border-slate-100 pt-3 mt-3 grid grid-cols-2 gap-2">
-                <label className="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 py-1.5 px-2 rounded-xl text-[10px] font-bold text-center cursor-pointer transition-all flex items-center justify-center gap-1">
-                  <Upload className="w-3 h-3 text-emerald-700" />
+                <label className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 py-1.5 px-2 rounded-xl text-[10px] font-bold text-center cursor-pointer transition-all flex items-center justify-center gap-1 shadow-xs">
+                  <Upload className="w-3 h-3 text-slate-700" />
                   <span>بیک اپ لوڈ</span>
                   <input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
                 </label>
 
                 <button 
                   onClick={handleExportBackup}
-                  className="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center gap-1"
+                  className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 py-1.5 px-2 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center gap-1 shadow-xs"
                 >
-                  <Download className="w-3 h-3 text-amber-600" />
+                  <Download className="w-3 h-3 text-slate-700" />
                   <span>بیک اپ سیو</span>
                 </button>
               </div>
 
             </div>
 
-            {/* Google Play Store Styled App Badge & Download Center - Only shown if app is not installed */}
-            {!isAppInstalled && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-right space-y-3 relative overflow-hidden text-slate-900">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
-                
-                <div className="flex items-start gap-3">
-                  {/* Simulated App Icon */}
-                  <div className="w-12 h-12 bg-emerald-950 rounded-2xl p-0.5 shadow border border-emerald-800 flex items-center justify-center shrink-0 relative overflow-hidden select-none">
-                    <img 
-                      src={policeLogo} 
-                      alt="Punjab Police Logo" 
-                      className="w-11 h-11 object-cover rounded-xl"
-                      referrerPolicy="no-referrer"
-                    />
-                    {/* Small Google Play colorful triangle overlay on corner */}
-                    <div className="absolute -bottom-1 -left-1 w-5 h-5 bg-[#01875f] rounded-full border border-white flex items-center justify-center">
-                      <span className="text-[7px] text-white font-extrabold">▶</span>
-                    </div>
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1">
-                      <span className="text-[9px] text-emerald-800 font-black flex items-center gap-0.5 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 shrink-0">
-                        <span>تصدیق شدہ</span>
-                        <Shield className="w-2.5 h-2.5 text-emerald-700" />
-                      </span>
-                    </div>
-                    <h4 className="font-black text-slate-900 text-[11px] truncate mt-1">پنجاب پولیس انکوائری رپورٹ</h4>
-                    <p className="text-[9px] text-slate-500 font-bold">پنجاب پولیس گوجرانوالہ ریجن</p>
-                  </div>
-                </div>
-
-                {/* Stats like Play Store */}
-                <div className="grid grid-cols-3 gap-1 border-y border-slate-100 py-2 text-center text-slate-800 font-bold">
-                  <div>
-                    <p className="text-[11px] font-black text-amber-600">4.9 ★</p>
-                    <p className="text-[8px] text-slate-500">رائے دہندگان</p>
-                  </div>
-                  <div className="border-x border-slate-100">
-                    <p className="text-[11px] font-black">2.1 MB</p>
-                    <p className="text-[8px] text-slate-500">سائز فائل</p>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-black">100%</p>
-                    <p className="text-[8px] text-slate-500">آف لائن کام</p>
-                  </div>
-                </div>
-
-                {/* Direct Download/Install button styled exactly like Google Play green */}
-                <button
-                  onClick={handleInstallClick}
-                  className="w-full bg-[#01875f] hover:bg-[#00704e] text-white py-2 px-3 rounded-xl font-extrabold text-[11px] flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5 text-white" />
-                  <span>اینڈرائڈ،آئی فون اور کمپیوٹر پر انسٹال کریں</span>
-                </button>
-
-                <p className="text-[8px] text-slate-500 text-center leading-normal font-medium">
-                  گوگل پلے اسٹور کی طرح اصلی لوگو اور لائیو شارٹ کٹ کے ساتھ ہوم اسکرین پر ڈاؤن لوڈ کریں۔
-                </p>
-              </div>
-            )}
-
           </div>
 
           {/* Column 2 (Middle): Dynamic Input Form Area */}
-          <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 space-y-6 shadow-sm flex flex-col text-slate-900">
+          <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 p-5 space-y-5 shadow-xs flex flex-col text-slate-900">
             
             {/* Header control banner */}
             <div className="border-b border-slate-100 pb-3 flex justify-between items-center">
               <div>
                 <h2 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
-                  <Shield className="w-4 h-4 text-emerald-700" />
+                  <Shield className="w-4 h-4 text-slate-800" />
                   <span>انکوائری فارم (Easy Pattern Maker)</span>
                 </h2>
-                <p className="text-[10px] text-slate-500 font-semibold mt-0.5">درج ذیل مندرجات پُر کریں، دائیں طرف لائیو رپورٹ مرتب ہوگی۔</p>
+                <p className="text-[10px] text-slate-500 font-medium mt-0.5">درج ذیل مندرجات پُر کریں، دائیں طرف لائیو رپورٹ مرتب ہوگی۔</p>
               </div>
               {speechSupported && (
-                <span className="text-[9px] bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-extrabold">
+                <span className="text-[9px] bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-200 font-bold">
                   اردو وائس ٹائپنگ فعال ہے
                 </span>
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto max-h-[700px] space-y-6 pr-1">
+            <div className="flex-1 overflow-y-auto max-h-[700px] space-y-5 pr-1">
               
               {/* 1. Header Details (منجانب، بجانب، توجہ) */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3.5">
-                <h3 className="text-xs font-black text-emerald-800 border-r-4 border-emerald-600 pr-2">
+              <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 space-y-3">
+                <h3 className="text-xs font-black text-slate-900 border-r-4 border-[#0f172a] pr-2">
                   مراسلہ ہیڈر تفصیلات (منجانب و بجانب):
                 </h3>
                 
                 <div className="grid grid-cols-1 gap-3 text-slate-800">
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-700 mb-1">منجانب (Sender Designation):</label>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">منجانب (Sender Designation):</label>
                     <input
                       type="text"
                       value={currentInquiry.senderDesignation || ""}
                       onChange={(e) => handleFieldChange("senderDesignation", e.target.value)}
                       placeholder="سینیئر سپرنٹنڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ، گوجرانوالہ"
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 text-slate-900 font-bold text-right shadow-sm"
+                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-slate-800 focus:border-slate-800 text-slate-900 font-bold text-right shadow-2xs"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-700 mb-1">بجانب (Recipient Designation):</label>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">بجانب (Recipient Designation):</label>
                     <input
                       type="text"
                       value={currentInquiry.recipientDesignation || ""}
                       onChange={(e) => handleFieldChange("recipientDesignation", e.target.value)}
                       placeholder="جناب ریجنل پولیس آفیسر صاحب، گوجرانوالہ"
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 text-slate-900 font-bold text-right shadow-sm"
+                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-slate-800 focus:border-slate-800 text-slate-900 font-bold text-right shadow-2xs"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-extrabold text-slate-700 mb-1">توجہ (Attention line):</label>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">توجہ (Attention line):</label>
                     <input
                       type="text"
                       value={currentInquiry.attention || ""}
                       onChange={(e) => handleFieldChange("attention", e.target.value)}
                       placeholder="توجہ: انچارج شکایت سیل"
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 text-slate-900 text-right font-medium shadow-sm"
+                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-slate-800 focus:border-slate-800 text-slate-900 text-right font-medium shadow-2xs"
                     />
                   </div>
                 </div>
 
-                <div className="bg-emerald-50 border border-emerald-200 p-2.5 rounded-lg text-center text-[10px] text-emerald-900 font-extrabold leading-relaxed">
+                <div className="bg-slate-100 border border-slate-200 p-2 rounded-lg text-center text-[10px] text-slate-600 font-bold">
                   بمطابق ضابطہ سرکاری، مراسلہ نمبر اور تاریخ لائن خالی چھوڑ دی گئی ہے۔
                 </div>
               </div>
 
               {/* 2. Title & Complainant (عنوان اور موقف درخواست) */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-                <h3 className="text-xs font-black text-emerald-800 border-r-4 border-emerald-600 pr-2">
+              <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 space-y-3.5">
+                <h3 className="text-xs font-black text-slate-900 border-r-4 border-[#0f172a] pr-2">
                   سائل کا نام اور موقف درخواست گزار (موقف درخواست ازاں):
                 </h3>
 
                 <div>
-                  <label className="block text-[11px] font-extrabold text-slate-700 mb-1">درخواست گزار / سائل کا نام:</label>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">درخواست گزار / سائل کا نام:</label>
                   <input
                     type="text"
                     value={currentInquiry.complainantName || ""}
                     onChange={(e) => handleFieldChange("complainantName", e.target.value)}
                     placeholder="مثلاً: مسمات رخسانہ بی بی زوجہ محمد طفیل"
-                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 text-slate-900 font-black text-right shadow-sm"
+                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-slate-800 focus:border-slate-800 text-slate-900 font-bold text-right shadow-2xs"
                   />
                 </div>
 
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <label className="block text-[11px] font-extrabold text-slate-700">موقف درخواست ازان :</label>
+                    <label className="block text-[11px] font-bold text-slate-700">موقف درخواست ازان :</label>
                     {speechSupported && (
                       <button
                         onClick={() => toggleSpeech("complainantStatement")}
                         className={`text-[9px] px-2 py-1 rounded-lg font-bold flex items-center gap-1 transition-all ${
                           listeningField === "complainantStatement"
                             ? "bg-rose-600 text-white"
-                            : "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                            : "bg-slate-100 text-slate-700 border border-slate-300"
                         }`}
                       >
                         <Mic className="w-3 h-3" />
@@ -1851,7 +1786,7 @@ export default function App() {
                     value={currentInquiry.complainantStatement || ""}
                     onChange={(e) => handleFieldChange("complainantStatement", e.target.value)}
                     placeholder="سائل کا موقف یا درخواست کا تحریری خلاصہ یہاں ٹائپ کریں۔ آواز ٹائپنگ بھی کر سکتے ہیں۔"
-                    className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 text-slate-900 leading-relaxed text-right font-medium shadow-sm"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs focus:ring-1 focus:ring-slate-800 focus:border-slate-800 text-slate-900 leading-relaxed text-right font-medium shadow-2xs"
                   />
                 </div>
 
@@ -1864,24 +1799,24 @@ export default function App() {
               </div>
 
               {/* 3. Additional Witness statements (بیان ازاں) */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+              <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 space-y-3.5">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-black text-emerald-800 border-r-4 border-emerald-600 pr-2">
+                  <h3 className="text-xs font-black text-slate-900 border-r-4 border-[#0f172a] pr-2">
                     بیان ازان (سائل اور تائیدی گواہان کے بیانات):
                   </h3>
                   
                   <div className="flex gap-2">
                     <button
                       onClick={addComplainantStatement}
-                      className="bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] px-2.5 py-1.5 rounded-lg font-black transition-all active:scale-95 shadow-sm"
+                      className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-[10px] px-2.5 py-1.5 rounded-lg font-bold transition-all active:scale-95 shadow-xs"
                     >
-                      ➕ بیان درخواست گزار
+                      ➕ بیان سائل
                     </button>
                     <button
                       onClick={addSupportingStatement}
-                      className="bg-slate-200 hover:bg-slate-300 text-slate-800 text-[10px] px-2.5 py-1.5 rounded-lg font-black transition-all active:scale-95 border border-slate-300"
+                      className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-[10px] px-2.5 py-1.5 rounded-lg font-bold transition-all active:scale-95 shadow-xs"
                     >
-                      ➕ تائیدی بیان سائل
+                      ➕ تائیدی بیان
                     </button>
                   </div>
                 </div>
@@ -1891,9 +1826,9 @@ export default function App() {
                 ) : (
                   <div className="space-y-3">
                     {complainantGroup.map((st) => (
-                      <div key={st.id} className="bg-white p-3 rounded-xl border border-slate-200 space-y-2 relative shadow-sm">
+                      <div key={st.id} className="bg-white p-3 rounded-xl border border-slate-200 space-y-2 relative shadow-xs">
                         <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-black text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+                          <span className="text-[10px] font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                             {st.role === "Complainant" ? "درخواست گزار کا بیان" : "تائیدی بیان سائل"}
                           </span>
                           
@@ -1928,7 +1863,7 @@ export default function App() {
                               type="text"
                               value={st.personName}
                               onChange={(e) => handleUpdateStatementName(st.id, e.target.value)}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-900 font-bold focus:bg-white focus:border-emerald-600"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-900 font-bold focus:bg-white focus:border-slate-800"
                               placeholder="نام فریق"
                             />
                           </div>
@@ -1938,7 +1873,7 @@ export default function App() {
                               rows={2}
                               value={st.text}
                               onChange={(e) => handleUpdateStatementText(st.id, e.target.value)}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-emerald-600"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-slate-800"
                               placeholder="بیان کا متن لکھیں..."
                             />
                           </div>
@@ -1958,15 +1893,15 @@ export default function App() {
               </div>
 
               {/* 4. Optional Respondent statements (بیان الزام علیہ) */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
+              <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 space-y-3.5">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-black text-emerald-800 border-r-4 border-emerald-600 pr-2">
+                  <h3 className="text-xs font-black text-slate-900 border-r-4 border-[#0f172a] pr-2">
                     الزام علیہ کا بیان (Respondent Statements):
                   </h3>
                   
                   <button
                     onClick={addRespondentStatement}
-                    className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-[10px] px-2.5 py-1.5 rounded-lg font-black transition-all active:scale-95 flex items-center gap-1 shadow-sm"
+                    className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-[10px] px-2.5 py-1.5 rounded-lg font-bold transition-all active:scale-95 flex items-center gap-1 shadow-xs"
                   >
                     <span>➕ بیان الزام علیہ شامل کریں</span>
                   </button>
@@ -1977,9 +1912,9 @@ export default function App() {
                 ) : (
                   <div className="space-y-3">
                     {respondentGroup.map((st) => (
-                      <div key={st.id} className="bg-white p-3 rounded-xl border border-slate-200 space-y-2 relative shadow-sm">
+                      <div key={st.id} className="bg-white p-3 rounded-xl border border-slate-200 space-y-2 relative shadow-xs">
                         <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-black text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded border border-amber-200">
+                          <span className="text-[10px] font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                             بیان الزام علیہ
                           </span>
                           
@@ -2014,24 +1949,24 @@ export default function App() {
                               type="text"
                               value={st.personName}
                               onChange={(e) => handleUpdateStatementName(st.id, e.target.value)}
-                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-900 font-bold focus:bg-white focus:border-emerald-600"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-900 font-bold focus:bg-white focus:border-slate-800"
                               placeholder="نام الزام علیہ"
                             />
                           </div>
                           <div className="sm:col-span-2">
-                            <label className="block text-[9px] font-bold text-slate-400 mb-0.5">بیان متن:</label>
+                            <label className="block text-[9px] font-bold text-slate-600 mb-0.5">بیان متن:</label>
                             <textarea
                               rows={2}
                               value={st.text}
                               onChange={(e) => handleUpdateStatementText(st.id, e.target.value)}
-                              className="w-full bg-slate-900 border border-slate-800 rounded-lg p-1.5 text-xs text-white font-medium"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs text-slate-900 font-medium focus:bg-white focus:border-slate-800"
                               placeholder="الزام علیہ کا دفاعی بیان..."
                             />
                           </div>
                         </div>
 
                         {/* Camera and Upload Scanner for Desktop Respondent Statements */}
-                        <div className="pt-2 border-t border-slate-800/60 mt-2">
+                        <div className="pt-2 border-t border-slate-100 mt-2">
                           <StatementImageScanner 
                             label="دستاویزی اسکینر (الزام علیہ کا بیان یہاں سے اسکین کریں):"
                             onTextScanned={(scannedText) => handleScannedStatementText(st.id, scannedText)}
@@ -2044,45 +1979,45 @@ export default function App() {
               </div>
 
               {/* Progress Report (پراگرس رپورٹ) */}
-              <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 space-y-3.5">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
                   <div className="flex items-center gap-2">
                     <input 
                       type="checkbox"
                       id="showProgressReport"
                       checked={currentInquiry.showProgressReport || false}
                       onChange={(e) => handleFieldChange("showProgressReport", e.target.checked)}
-                      className="w-4 h-4 text-amber-500 rounded border-slate-750 bg-slate-950 focus:ring-amber-500 focus:ring-offset-slate-900 cursor-pointer"
+                      className="w-4 h-4 text-slate-900 rounded border-slate-300 focus:ring-slate-800 cursor-pointer"
                     />
-                    <label htmlFor="showProgressReport" className="text-xs font-extrabold text-amber-400 cursor-pointer select-none">
+                    <label htmlFor="showProgressReport" className="text-xs font-bold text-slate-800 cursor-pointer select-none">
                       پراگرس رپورٹ شامل کریں (Include Progress Report)
                     </label>
                   </div>
                 </div>
 
                 {currentInquiry.showProgressReport && (
-                  <div className="space-y-4 pt-2">
+                  <div className="space-y-3.5 pt-1">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-400 mb-1">پراگرس رپورٹ ہیڈنگ:</label>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">پراگرس رپورٹ ہیڈنگ:</label>
                       <input
                         type="text"
                         value={currentInquiry.progressHeading || ""}
                         onChange={(e) => handleFieldChange("progressHeading", e.target.value)}
                         placeholder="پراگرس رپورٹ کی ہیڈنگ درج کریں..."
-                        className="w-full bg-slate-950 border border-slate-750 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none text-white font-bold text-right"
+                        className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-slate-800 text-slate-900 font-bold text-right shadow-2xs"
                       />
                     </div>
 
                     <div>
                       <div className="flex justify-between items-center mb-1">
-                        <label className="block text-[11px] font-bold text-slate-400">پراگرس رپورٹ متن (تفصیل):</label>
+                        <label className="block text-[11px] font-bold text-slate-700">پراگرس رپورٹ متن (تفصیل):</label>
                         {speechSupported && (
                           <button
                             onClick={() => toggleSpeech("progressText")}
                             className={`text-[9px] px-2 py-1 rounded-lg font-bold flex items-center gap-1 transition-all ${
                               listeningField === "progressText"
                                 ? "bg-rose-600 text-white"
-                                : "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                                : "bg-slate-100 text-slate-700 border border-slate-300"
                             }`}
                           >
                             <Mic className="w-3 h-3" />
@@ -2095,17 +2030,17 @@ export default function App() {
                         value={currentInquiry.progressText || ""}
                         onChange={(e) => handleFieldChange("progressText", e.target.value)}
                         placeholder="تفتیش مقدمہ کی تفصیل درج کریں..."
-                        className="w-full bg-slate-950 border border-slate-750 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none text-white leading-relaxed text-right"
+                        className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-slate-800 text-slate-900 leading-relaxed text-right font-medium shadow-2xs"
                       />
                     </div>
 
                     {/* Progress Report Images Upload */}
                     <div className="space-y-2">
-                      <label className="block text-[11px] font-bold text-slate-400">تصویر / دستاویزی ثبوت (پراگرس رپورٹ):</label>
+                      <label className="block text-[11px] font-bold text-slate-700">تصویر / دستاویزی ثبوت (پراگرس رپورٹ):</label>
                       
                       <div className="flex flex-wrap gap-2 items-center">
-                        <label className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-emerald-950 text-[10px] px-3 py-2 rounded-xl font-extrabold cursor-pointer transition-all select-none shadow-md">
-                          <Upload className="w-3.5 h-3.5" />
+                        <label className="flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-[10px] px-3 py-2 rounded-xl font-bold cursor-pointer transition-all select-none shadow-xs">
+                          <Upload className="w-3.5 h-3.5 text-slate-700" />
                           <span>تصویر / PDF اپلوڈ کریں</span>
                           <input 
                             type="file" 
@@ -2130,7 +2065,7 @@ export default function App() {
                       {currentInquiry.progressImages && currentInquiry.progressImages.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
                           {currentInquiry.progressImages.map((img, idx) => (
-                            <div key={idx} className="relative group border border-slate-800 rounded-lg overflow-hidden h-20 bg-slate-950 flex items-center justify-center">
+                            <div key={idx} className="relative group border border-slate-200 rounded-lg overflow-hidden h-20 bg-white flex items-center justify-center shadow-xs">
                               <img src={img} alt={`Progress Attachment ${idx + 1}`} className="max-h-full max-w-full object-contain" referrerPolicy="no-referrer" />
                               <button
                                 onClick={() => {
@@ -2138,7 +2073,7 @@ export default function App() {
                                   updatedImages.splice(idx, 1);
                                   handleFieldChange("progressImages", updatedImages);
                                 }}
-                                className="absolute top-1 right-1 bg-rose-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-700"
+                                className="absolute top-1 right-1 bg-rose-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-700 cursor-pointer"
                                 title="حذف کریں"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -2153,29 +2088,29 @@ export default function App() {
               </div>
 
               {/* 5. Conclusion (نتیجہ انکوائری) */}
-              <div className="bg-slate-900/60 p-4 rounded-xl border border-slate-800 space-y-3">
+              <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 space-y-3">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-extrabold text-amber-400 border-r-4 border-amber-500 pr-2">
+                  <h3 className="text-xs font-black text-slate-900 border-r-4 border-[#0f172a] pr-2">
                     حتمی نتیجہ انکوائری (Inquiry Conclusion):
                   </h3>
                   
                   <button
                     onClick={handleGenerateReport}
                     disabled={isGenerating}
-                    className={`px-3 py-1.5 rounded-xl text-[10px] font-extrabold shadow-md transition-all flex items-center gap-1.5 ${
+                    className={`px-3 py-1.5 rounded-xl text-[10px] font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer ${
                       isGenerating 
-                        ? "bg-slate-700 text-slate-400 cursor-not-allowed" 
-                        : "bg-gradient-to-r from-amber-500 to-amber-600 text-emerald-950 hover:brightness-110 active:scale-95"
+                        ? "bg-slate-200 text-slate-400 cursor-not-allowed" 
+                        : "bg-[#0f172a] hover:bg-[#1e293b] text-white active:scale-95"
                     }`}
                   >
                     {isGenerating ? (
                       <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-300" />
                         <span>مرتب ہو رہی ہے...</span>
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-3.5 h-3.5 text-emerald-950 fill-emerald-950" />
+                        <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                         <span>AI سے نتیجہ انکوائری لکھیں</span>
                       </>
                     )}
@@ -2188,16 +2123,16 @@ export default function App() {
                     value={currentInquiry.inquiryConclusion || ""}
                     onChange={(e) => handleFieldChange("inquiryConclusion", e.target.value)}
                     placeholder="حتمی نتیجہ انکوائری یہاں لکھیں۔ اے آئی سے آٹومیٹک بھی مرتب کروا سکتے ہیں۔"
-                    className="w-full bg-slate-950 border border-slate-750 rounded-xl p-3 text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none text-white leading-relaxed text-right font-semibold text-slate-100"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-3 text-xs focus:ring-1 focus:ring-slate-800 text-slate-900 leading-relaxed text-right font-medium shadow-2xs"
                   />
                   
                   {speechSupported && (
                     <button
                       onClick={() => toggleSpeech("inquiryConclusion")}
-                      className={`absolute bottom-3 left-3 p-2 rounded-full shadow-md transition-all ${
+                      className={`absolute bottom-3 left-3 p-2 rounded-full shadow-xs transition-all cursor-pointer ${
                         listeningField === "inquiryConclusion"
                           ? "bg-rose-600 text-white"
-                          : "bg-slate-800 text-slate-300 hover:bg-emerald-950 hover:text-emerald-400"
+                          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                       }`}
                       title="آواز ٹائپنگ"
                     >
@@ -2206,18 +2141,18 @@ export default function App() {
                   )}
                 </div>
 
-                <div className="text-[10px] font-bold text-amber-400 py-1.5 border-t border-slate-800 mt-1 flex justify-between items-center">
+                <div className="text-[10px] font-bold text-slate-600 py-1.5 border-t border-slate-200 mt-1 flex justify-between items-center">
                   <span>رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے ۔</span>
-                  <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded font-bold">بمطابق قواعدِ پنجاب پولیس</span>
+                  <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-bold border border-slate-200">بمطابق قواعدِ پنجاب پولیس</span>
                 </div>
 
                 {/* PROMINENT SUBMIT / SAVE BUTTON AT END OF FORM */}
-                <div className="pt-3 border-t border-slate-800">
+                <div className="pt-3 border-t border-slate-200">
                   <button
                     onClick={handleSaveCurrentInquiry}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-98 text-white font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 border border-emerald-400 cursor-pointer"
+                    className="w-full bg-[#0f172a] hover:bg-[#1e293b] active:scale-98 text-white font-black text-sm py-3 px-4 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 border border-slate-800 cursor-pointer"
                   >
-                    <Save className="w-5 h-5 text-amber-300" />
+                    <Save className="w-4 h-4 text-amber-300" />
                     <span>محفوظ کریں (Save Inquiry) 💾</span>
                   </button>
                 </div>
@@ -2865,14 +2800,14 @@ export default function App() {
 
               </div>
 
-              {/* 4. PLAY STORE STYLE NATIVE BOTTOM NAVIGATION BAR */}
-              <div className="absolute bottom-0 inset-x-0 h-14 bg-emerald-950 border-t border-emerald-900 flex justify-around items-center px-2 shadow-2xl z-10 select-none shrink-0">
+              {/* 4. EXECUTIVE NATIVE BOTTOM NAVIGATION BAR */}
+              <div className="absolute bottom-0 inset-x-0 h-14 bg-[#0f172a] border-t border-slate-800 flex justify-around items-center px-2 shadow-2xl z-10 select-none shrink-0">
                 
                 {/* Tab 1: Records */}
                 <button
                   onClick={() => setMobileTab("records")}
-                  className={`flex flex-col items-center justify-center gap-1 w-14 transition-all ${
-                    mobileTab === "records" ? "text-amber-400 scale-105" : "text-slate-400 hover:text-white"
+                  className={`flex flex-col items-center justify-center gap-1 w-14 transition-all cursor-pointer ${
+                    mobileTab === "records" ? "text-amber-300 scale-105 font-bold" : "text-slate-400 hover:text-white"
                   }`}
                 >
                   <History className="w-4 h-4" />
@@ -2882,8 +2817,8 @@ export default function App() {
                 {/* Tab 2: Details */}
                 <button
                   onClick={() => setMobileTab("details")}
-                  className={`flex flex-col items-center justify-center gap-1 w-14 transition-all ${
-                    mobileTab === "details" ? "text-amber-400 scale-105" : "text-slate-400 hover:text-white"
+                  className={`flex flex-col items-center justify-center gap-1 w-14 transition-all cursor-pointer ${
+                    mobileTab === "details" ? "text-amber-300 scale-105 font-bold" : "text-slate-400 hover:text-white"
                   }`}
                 >
                   <FileText className="w-4 h-4" />
@@ -2893,8 +2828,8 @@ export default function App() {
                 {/* Tab 3: Statements */}
                 <button
                   onClick={() => setMobileTab("statements")}
-                  className={`flex flex-col items-center justify-center gap-1 w-14 transition-all relative ${
-                    mobileTab === "statements" ? "text-amber-400 scale-105" : "text-slate-400 hover:text-white"
+                  className={`flex flex-col items-center justify-center gap-1 w-14 transition-all cursor-pointer relative ${
+                    mobileTab === "statements" ? "text-amber-300 scale-105 font-bold" : "text-slate-400 hover:text-white"
                   }`}
                 >
                   <User className="w-4 h-4" />
@@ -2908,8 +2843,8 @@ export default function App() {
                 {/* Tab 4: Preview */}
                 <button
                   onClick={() => setMobileTab("preview")}
-                  className={`flex flex-col items-center justify-center gap-1 w-14 transition-all ${
-                    mobileTab === "preview" ? "text-amber-400 scale-105" : "text-slate-400 hover:text-white"
+                  className={`flex flex-col items-center justify-center gap-1 w-14 transition-all cursor-pointer ${
+                    mobileTab === "preview" ? "text-amber-300 scale-105 font-bold" : "text-slate-400 hover:text-white"
                   }`}
                 >
                   <Sparkles className="w-4 h-4" />
@@ -2928,9 +2863,9 @@ export default function App() {
       {/* =========================================================================
           SYSTEM FOOTER (No-print)
           ========================================================================= */}
-      <footer className="bg-emerald-950 border-t border-emerald-900 py-3 mt-auto no-print text-center text-[10px] text-emerald-400/75 font-medium">
+      <footer className="bg-[#0f172a] border-t border-slate-800 py-3 mt-auto no-print text-center text-[10px] text-slate-400 font-medium">
         <div className="max-w-7xl mx-auto px-4">
-          <p>© {new Date().getFullYear()} پولیس انکوائری رپورٹ میکر - گوجرانوالہ ریجن لے آؤٹ پیٹرن</p>
+          <p>© {new Date().getFullYear()} پولیس انکوائری رپورٹ میکر - ریجنل انویسٹی گیشن برانچ گوجرانوالہ</p>
         </div>
       </footer>
 
@@ -3100,11 +3035,11 @@ export default function App() {
       </div>
 
       {/* =========================================================================
-          GOOGLE CHROME PWA INSTALL POPUP (گوگل کروم ایپ انسٹالیشن پاپ اپ)
+          GOOGLE CHROME PWA INSTALL POPUP
           ========================================================================= */}
       {showInstallModal && (
         <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto no-print" dir="rtl">
-          <div className="bg-white text-slate-900 border border-slate-200 rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl relative p-6 font-sans text-center animate-scaleUp">
+          <div className="bg-white text-slate-900 border border-slate-200 rounded-2xl max-w-sm w-full overflow-hidden shadow-xl relative p-6 font-sans text-center animate-scaleUp">
             
             {/* Close Button */}
             <button 
@@ -3115,13 +3050,10 @@ export default function App() {
               <Plus className="w-4 h-4 rotate-45" />
             </button>
 
-            {/* Google Chrome Brand Header */}
+            {/* Header */}
             <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-500 mb-4 font-mono">
-              <svg className="w-4 h-4 text-emerald-800" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="12" r="10" fill="#064e3b" />
-                <circle cx="12" cy="12" r="4" fill="#ffffff" />
-              </svg>
-              <span>Google Chrome App Install</span>
+              <Shield className="w-4 h-4 text-slate-700" />
+              <span>پنجاب پولیس آفیشل ایپ</span>
             </div>
 
             {/* Official App Crest Icon */}
@@ -3129,17 +3061,17 @@ export default function App() {
               <img 
                 src={policeLogo} 
                 alt="Inquiry Report" 
-                className="w-20 h-20 rounded-2xl object-cover border-2 border-emerald-600 shadow-lg bg-emerald-950 p-1"
+                className="w-20 h-20 rounded-2xl object-cover border-2 border-slate-700 shadow-md bg-slate-900 p-1"
                 referrerPolicy="no-referrer"
                 onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
               />
             </div>
 
-            {/* Official App Name - strictly in English "Inquiry Report" */}
+            {/* Official App Name */}
             <h3 className="text-xl font-black text-slate-900 tracking-tight font-sans">
               Inquiry Report
             </h3>
-            <p className="text-xs font-bold text-emerald-800 mt-1 font-naskh">
+            <p className="text-xs font-bold text-slate-700 mt-1 font-naskh">
               ریجنل انویسٹی گیشن برانچ گوجرانوالہ
             </p>
             <p className="text-[11px] text-slate-400 font-mono mt-1 dir-ltr">
@@ -3166,15 +3098,15 @@ export default function App() {
                   }
                   setShowInstallModal(false);
                 }}
-                className="flex-1 bg-[#00a86b] hover:bg-[#008f5a] active:scale-95 text-white font-extrabold py-3 px-4 rounded-xl text-sm transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 font-naskh"
+                className="flex-1 bg-[#0f172a] hover:bg-[#1e293b] active:scale-95 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2 font-naskh border border-slate-800"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 text-amber-300" />
                 <span>انسٹال کریں (Install)</span>
               </button>
 
               <button
                 onClick={() => setShowInstallModal(false)}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 py-3 rounded-xl text-sm transition-all cursor-pointer border border-slate-200"
+                className="bg-white hover:bg-slate-50 text-slate-700 font-bold px-5 py-3 rounded-xl text-sm transition-all cursor-pointer border border-slate-300 shadow-xs"
               >
                 منسوخ
               </button>
@@ -3187,60 +3119,57 @@ export default function App() {
       {/* APP SHARE MODAL WITH QR CODE */}
       {showShareModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 font-sans" dir="rtl">
-          <div className="bg-white border-2 border-emerald-600 max-w-lg w-full rounded-3xl overflow-hidden shadow-2xl relative text-slate-900">
+          <div className="bg-white border border-slate-300 max-w-lg w-full rounded-2xl overflow-hidden shadow-xl relative text-slate-900">
             
             {/* Header */}
-            <div className="bg-emerald-900 p-6 border-b border-emerald-800 text-center relative text-white">
+            <div className="bg-[#0f172a] p-5 border-b border-slate-700 text-center relative text-white">
               <button 
                 onClick={() => setShowShareModal(false)}
-                className="absolute top-4 left-4 bg-emerald-950/60 hover:bg-emerald-950 text-white p-2 rounded-full transition-all cursor-pointer"
+                className="absolute top-4 left-4 bg-slate-800 hover:bg-slate-700 text-white p-2 rounded-full transition-all cursor-pointer"
                 title="بند کریں"
               >
                 ✕
               </button>
               
-              <div className="inline-flex p-3 bg-white/10 border border-white/20 rounded-2xl mb-3">
-                <QrIcon className="w-8 h-8 text-amber-300" />
+              <div className="inline-flex p-2.5 bg-white/10 border border-white/20 rounded-2xl mb-2">
+                <QrIcon className="w-7 h-7 text-amber-300" />
               </div>
               
-              <h3 className="text-xl font-black text-white">
+              <h3 className="text-lg font-black text-white">
                 پورٹل شیئر کریں اور کیو آر کوڈ
               </h3>
-              <p className="text-xs text-emerald-100 mt-1 font-medium">
-                پنجاب پولیس انکوائری رپورٹ پورٹل کو پبلش اور شیئر کرنے کے لیے لنک یا QR Code کا استعمال کریں
+              <p className="text-xs text-slate-300 mt-1 font-medium">
+                پنجاب پولیس انکوائری رپورٹ پورٹل کو شیئر کرنے کے لیے لنک یا QR Code کا استعمال کریں
               </p>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 space-y-6 bg-slate-50">
+            <div className="p-5 space-y-5 bg-slate-50">
               
               {/* QR CODE DISPLAY */}
-              <div className="flex flex-col items-center justify-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="bg-white p-3 rounded-2xl shadow-md border-4 border-emerald-600 relative group">
+              <div className="flex flex-col items-center justify-center bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+                <div className="bg-white p-3 rounded-xl shadow-xs border-2 border-slate-800 relative group">
                   {qrDataUrl ? (
                     <img 
                       src={qrDataUrl} 
                       alt="پورٹل کیو آر کوڈ"
-                      className="w-44 h-44 object-contain"
+                      className="w-40 h-40 object-contain"
                       onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
                     />
                   ) : (
-                    <div className="w-44 h-44 flex items-center justify-center bg-slate-100 rounded-xl">
-                      <RefreshCw className="w-6 h-6 text-emerald-600 animate-spin" />
+                    <div className="w-40 h-40 flex items-center justify-center bg-slate-100 rounded-xl">
+                      <RefreshCw className="w-6 h-6 text-slate-700 animate-spin" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-slate-900/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
-                    <span className="bg-emerald-700 text-white text-[10px] font-black px-2 py-1 rounded shadow">Scan to Open</span>
-                  </div>
                 </div>
-                <p className="text-xs text-emerald-800 font-extrabold mt-3 text-center">
+                <p className="text-xs text-slate-800 font-bold mt-2.5 text-center">
                   📱 اپنے موبائل کے کیمرے سے اس کوڈ کو اسکین کر کے فوراً پورٹل کھولیں
                 </p>
               </div>
 
               {/* URL LINK COPY BOX */}
               <div>
-                <label className="block text-xs font-extrabold text-slate-700 mb-1.5 text-right">
+                <label className="block text-xs font-bold text-slate-700 mb-1 text-right">
                   پورٹل کا آفیشل ویب لنک (App URL):
                 </label>
                 <div className="flex items-center gap-2">
@@ -3248,7 +3177,7 @@ export default function App() {
                     type="text" 
                     readOnly 
                     value={window.location.href}
-                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 font-mono text-left dir-ltr shadow-sm"
+                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 font-mono text-left dir-ltr shadow-2xs"
                   />
                   <button
                     onClick={() => {
@@ -3256,28 +3185,28 @@ export default function App() {
                       setCopiedLink(true);
                       setTimeout(() => setCopiedLink(false), 2500);
                     }}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border ${
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border shadow-xs ${
                       copiedLink
-                        ? "bg-emerald-700 text-white border-emerald-600 shadow-md"
-                        : "bg-amber-500 hover:bg-amber-600 text-slate-950 border-amber-400"
+                        ? "bg-slate-900 text-white border-slate-800"
+                        : "bg-[#0f172a] hover:bg-[#1e293b] text-white border-slate-800"
                     }`}
                   >
-                    {copiedLink ? <CheckCheck className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    {copiedLink ? <CheckCheck className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-amber-300" />}
                     <span>{copiedLink ? "کاپی ہو گیا!" : "کاپی لنک"}</span>
                   </button>
                 </div>
               </div>
 
               {/* SHARE ACTION BUTTONS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                 {/* WhatsApp Share */}
                 <a
                   href={`https://api.whatsapp.com/send?text=${encodeURIComponent('پنجاب پولیس انکوائری رپورٹ پورٹل:\n' + window.location.href)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 font-black text-xs py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                  className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                 >
-                  <Share2 className="w-4 h-4" />
+                  <Share2 className="w-3.5 h-3.5 text-emerald-700" />
                   <span>واٹس ایپ پر شیئر کریں</span>
                 </a>
 
@@ -3291,20 +3220,20 @@ export default function App() {
                         url: window.location.href,
                       }).catch(() => {});
                     }}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                    className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    <span>موبائل ڈیوائس پر شیئر کریں</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-700" />
+                    <span>موبائل پر شیئر کریں</span>
                   </button>
                 ) : (
                   <a
                     href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(window.location.href)}&format=png`}
                     target="_blank"
                     download="Police_Portal_QRCode.png"
-                    className="bg-slate-200 hover:bg-slate-300 border border-slate-300 text-slate-800 font-bold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                    className="bg-white hover:bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                   >
-                    <Download className="w-4 h-4 text-emerald-800" />
-                    <span>کیو آر کوڈ ڈاؤن لوڈ کریں</span>
+                    <Download className="w-3.5 h-3.5 text-slate-700" />
+                    <span>کیو آر کوڈ ڈاؤن لوڈ</span>
                   </a>
                 )}
               </div>
@@ -3312,13 +3241,13 @@ export default function App() {
             </div>
 
             {/* Modal Footer */}
-            <div className="bg-white px-6 py-4 flex justify-between items-center border-t border-slate-200">
-              <span className="text-[11px] text-slate-500 font-extrabold">
+            <div className="bg-white px-5 py-3 flex justify-between items-center border-t border-slate-200">
+              <span className="text-[11px] text-slate-500 font-bold">
                 ریجنل انویسٹی گیشن برانچ گوجرانوالہ
               </span>
               <button
                 onClick={() => setShowShareModal(false)}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200"
+                className="bg-white hover:bg-slate-50 text-slate-700 px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-300 shadow-xs"
               >
                 بند کریں
               </button>
@@ -3331,22 +3260,22 @@ export default function App() {
       {/* SEARCH SAVED INQUIRIES QUICK MODAL */}
       {showSearchModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 font-sans" dir="rtl">
-          <div className="bg-white border-2 border-emerald-600 max-w-2xl w-full rounded-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[85vh] text-slate-900">
+          <div className="bg-white border border-slate-300 max-w-2xl w-full rounded-2xl overflow-hidden shadow-xl relative flex flex-col max-h-[85vh] text-slate-900">
             
             {/* Header */}
-            <div className="bg-emerald-900 p-5 border-b border-emerald-800 flex justify-between items-center shrink-0 text-white">
+            <div className="bg-[#0f172a] p-4 border-b border-slate-700 flex justify-between items-center shrink-0 text-white">
               <div className="flex items-center gap-2.5">
                 <div className="bg-white/10 p-2 rounded-xl border border-white/20">
-                  <History className="w-5 h-5 text-amber-300" />
+                  <History className="w-4 h-4 text-amber-300" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-white flex items-center gap-2">
+                  <h3 className="text-base font-black text-white flex items-center gap-2">
                     محفوظ انکوائری سرچ پورٹل
-                    <span className="text-[10px] bg-emerald-950 text-amber-300 px-2 py-0.5 rounded-full border border-emerald-700 font-bold">
+                    <span className="text-[10px] bg-slate-800 text-amber-300 px-2 py-0.5 rounded-full border border-slate-700 font-bold">
                       {inquiries.length} فائلز
                     </span>
                   </h3>
-                  <p className="text-xs text-emerald-100">
+                  <p className="text-xs text-slate-300">
                     سائل کے نام، تھانہ، تاریخ یا رپورٹ نمبر کے ذریعے تلاش کریں
                   </p>
                 </div>
@@ -3354,7 +3283,7 @@ export default function App() {
 
               <button 
                 onClick={() => setShowSearchModal(false)}
-                className="bg-emerald-950/60 hover:bg-emerald-950 text-white p-2 rounded-full transition-all cursor-pointer"
+                className="bg-slate-800 hover:bg-slate-700 text-white p-2 rounded-full transition-all cursor-pointer"
                 title="بند کریں"
               >
                 ✕
@@ -3362,49 +3291,38 @@ export default function App() {
             </div>
 
             {/* Quick Actions Bar inside Modal */}
-            <div className="bg-slate-50 px-5 py-3 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 shrink-0">
+            <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex flex-wrap justify-between items-center gap-2 shrink-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => {
                     handleNewInquiry();
                     setShowSearchModal(false);
                   }}
-                  className="bg-emerald-700 hover:bg-emerald-800 text-white border border-emerald-600 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 cursor-pointer transition-all shadow-sm active:scale-95"
+                  className="bg-[#0f172a] hover:bg-[#1e293b] text-white border border-slate-800 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 cursor-pointer transition-all shadow-xs active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5 text-amber-300" />
                   <span>نیا ٹیمپلیٹ کھولیں</span>
                 </button>
 
-                <button
-                  onClick={() => {
-                    setShowSearchModal(false);
-                    handleInstallClick();
-                  }}
-                  className="bg-[#01875f] hover:bg-[#00704e] text-white px-3 py-1.5 rounded-xl font-extrabold text-xs flex items-center gap-1 cursor-pointer transition-all shadow-sm active:scale-95"
-                >
-                  <Smartphone className="w-3.5 h-3.5" />
-                  <span>ایپ ڈاؤن لوڈ کریں</span>
-                </button>
-
                 {inquiries.length > 0 && (
                   <button
                     onClick={handleClearAllInquiries}
-                    className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 cursor-pointer transition-all shadow-sm active:scale-95"
+                    className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1 cursor-pointer transition-all shadow-xs active:scale-95"
                     title="تمام محفوظ انکوائریز حذف کریں"
                   >
                     <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                    <span>تمام ({inquiries.length}) حذف کریں</span>
+                    <span>تمام حذف</span>
                   </button>
                 )}
               </div>
 
-              <span className="text-[11px] text-emerald-800 font-extrabold">
+              <span className="text-[11px] text-slate-700 font-bold">
                 نتائج: {modalFilteredInquiries.length} انکوائریاں
               </span>
             </div>
 
             {/* Live Search Input Box */}
-            <div className="p-4 bg-white border-b border-slate-200 shrink-0">
+            <div className="p-3.5 bg-white border-b border-slate-200 shrink-0">
               <div className="relative">
                 <input 
                   type="text"
@@ -3412,19 +3330,19 @@ export default function App() {
                   placeholder="سائل کا نام، درخواست کا عنوان یا تھانہ تلاش کریں..."
                   value={modalSearchQuery}
                   onChange={(e) => setModalSearchQuery(e.target.value)}
-                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-600 focus:bg-white rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all text-right font-bold text-slate-900 placeholder-slate-400 pr-10 shadow-sm"
+                  className="w-full bg-slate-50 border border-slate-300 focus:border-slate-800 focus:bg-white rounded-xl px-4 py-2.5 text-xs focus:outline-none transition-all text-right font-bold text-slate-900 placeholder-slate-400 pr-9 shadow-2xs"
                 />
-                <History className="w-5 h-5 text-emerald-700 absolute right-3.5 top-3.5 pointer-events-none" />
+                <History className="w-4 h-4 text-slate-500 absolute right-3 top-3 pointer-events-none" />
               </div>
             </div>
 
             {/* Scrollable Search Results List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-2.5 bg-slate-50">
               {modalFilteredInquiries.length === 0 ? (
-                <div className="text-center py-12 text-slate-400 space-y-2">
-                  <FileText className="w-12 h-12 mx-auto text-slate-300" />
-                  <p className="text-sm font-bold text-slate-600">کوئی محفوظ شدہ انکوائری رپورٹ نہیں ملی</p>
-                  <p className="text-xs text-slate-400">براہ کرم سائل کا درست نام یا تاریخ درج کریں۔</p>
+                <div className="text-center py-12 text-slate-400 space-y-1.5">
+                  <FileText className="w-10 h-10 mx-auto text-slate-300" />
+                  <p className="text-xs font-bold text-slate-600">کوئی محفوظ شدہ انکوائری رپورٹ نہیں ملی</p>
+                  <p className="text-[11px] text-slate-400">براہ کرم سائل کا درست نام یا تاریخ درج کریں۔</p>
                 </div>
               ) : (
                 modalFilteredInquiries.map((item) => {
@@ -3432,19 +3350,19 @@ export default function App() {
                   return (
                     <div
                       key={item.id}
-                      className={`p-4 rounded-2xl border transition-all text-right space-y-2 relative ${
+                      className={`p-3.5 rounded-xl border transition-all text-right space-y-1.5 relative ${
                         isSelected 
-                          ? "bg-emerald-50 border-emerald-600 text-emerald-950 shadow-sm font-bold" 
-                          : "bg-white hover:bg-slate-100 border-slate-200 text-slate-800 shadow-xs"
+                          ? "bg-slate-100 border-slate-800 text-slate-950 shadow-xs font-bold" 
+                          : "bg-white hover:bg-slate-100 border-slate-200 text-slate-800 shadow-2xs"
                       }`}
                     >
                       <div className="flex justify-between items-start gap-2">
                         <div>
-                          <span className="bg-emerald-100 text-emerald-900 text-[10px] px-2.5 py-0.5 rounded-md font-extrabold border border-emerald-200">
+                          <span className="bg-slate-100 text-slate-800 text-[10px] px-2 py-0.5 rounded-md font-bold border border-slate-200">
                             {item.stationName || "تھانہ صدر گوجرانوالہ"}
                           </span>
-                          <h4 className="font-black text-sm text-slate-900 mt-1">
-                            {item.complainantName ? `درخواست گزار: ${item.complainantName}` : "خالی یا نئی انکوائری رپورٹ"}
+                          <h4 className="font-bold text-xs text-slate-900 mt-1">
+                            {item.complainantName ? `درخواست گزار: ${item.complainantName}` : "خالی رپورٹ"}
                           </h4>
                         </div>
 
@@ -3454,31 +3372,31 @@ export default function App() {
                               handleSelectInquiry(item.id);
                               setShowSearchModal(false);
                             }}
-                            className="bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-sm transition-all cursor-pointer flex items-center gap-1"
+                            className="bg-[#0f172a] hover:bg-[#1e293b] text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow-xs transition-all cursor-pointer flex items-center gap-1"
                           >
-                            <Eye className="w-3.5 h-3.5 text-amber-300" />
-                            <span>فائل کھولیں</span>
+                            <Eye className="w-3 h-3 text-amber-300" />
+                            <span>کھولیں</span>
                           </button>
 
                           <button 
                             onClick={(e) => handleDeleteInquiry(item.id, e)}
-                            className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                            className="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
                             title="حذف کریں"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
 
                       {item.subjectTitle && (
-                        <p className="text-xs text-slate-700 line-clamp-1 bg-slate-100/80 p-2 rounded-xl border border-slate-200 font-medium">
+                        <p className="text-[11px] text-slate-700 line-clamp-1 bg-slate-100/80 p-1.5 rounded-lg border border-slate-200 font-medium">
                           <span className="text-slate-500 font-bold">عنوان:</span> {item.subjectTitle}
                         </p>
                       )}
 
-                      <div className="flex justify-between items-center text-[10px] text-slate-500 pt-2 border-t border-slate-200">
+                      <div className="flex justify-between items-center text-[9px] text-slate-500 pt-1.5 border-t border-slate-200">
                         <span>تاریخ ریکارڈ: {item.createdAt}</span>
-                        <span className="text-emerald-800 font-extrabold">{item.districtName || "گوجرانوالہ"}</span>
+                        <span className="text-slate-700 font-bold">{item.districtName || "گوجرانوالہ"}</span>
                       </div>
                     </div>
                   );
@@ -3487,13 +3405,13 @@ export default function App() {
             </div>
 
             {/* Modal Footer */}
-            <div className="bg-white px-5 py-3.5 border-t border-slate-200 flex justify-between items-center shrink-0">
-              <span className="text-xs text-slate-500 font-extrabold">
+            <div className="bg-white px-4 py-2.5 border-t border-slate-200 flex justify-between items-center shrink-0">
+              <span className="text-[11px] text-slate-500 font-bold">
                 ریجنل انویسٹی گیشن برانچ گوجرانوالہ
               </span>
               <button
                 onClick={() => setShowSearchModal(false)}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border border-slate-200"
+                className="bg-white hover:bg-slate-50 text-slate-700 px-4 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer border border-slate-300 shadow-xs"
               >
                 بند کریں
               </button>
@@ -3504,19 +3422,16 @@ export default function App() {
       )}
 
       {/* =========================================================================
-          REPORT GENERATION SUCCESS CELEBRATION MODAL POPUP (عابد گورائیہ صاحب رپورٹ پاپ اپ)
+          REPORT GENERATION SUCCESS MODAL POPUP
           ========================================================================= */}
       {showSuccessModal && (
-        <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fadeIn no-print" dir="rtl">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border-2 border-amber-400 text-center relative overflow-hidden space-y-5 animate-scaleUp">
-            {/* Ambient Background Glows */}
-            <div className="absolute -top-12 -right-12 w-36 h-36 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Official Police Emblem & Check Badge */}
+        <div className="fixed inset-0 z-[99999] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fadeIn no-print" dir="rtl">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-300 text-center relative space-y-4 animate-scaleUp">
+            
+            {/* Official Police Emblem */}
             <div className="flex flex-col items-center">
               <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-emerald-950 p-1 border-2 border-amber-400 shadow-xl flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-slate-900 p-0.5 border-2 border-amber-400 shadow-md flex items-center justify-center">
                   <img 
                     src={policeLogo} 
                     alt="پنجاب پولیس نشان" 
@@ -3524,22 +3439,18 @@ export default function App() {
                     onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
                   />
                 </div>
-                <div className="absolute -bottom-1 -right-1 bg-emerald-600 text-white p-1.5 rounded-full border-2 border-white shadow-md">
-                  <Check className="w-4 h-4 stroke-[3]" />
-                </div>
               </div>
 
-              {/* Exact Urdu message requested by the user */}
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-4 leading-snug font-naskh">
-                آپ کی رپورٹ میسر ریکارڈ کے مطابق <span className="text-emerald-800 font-nastaliq">عابد گورائیہ صاحب</span> تیار کر دی گئی ہے!
+              <h2 className="text-lg sm:text-xl font-black text-slate-900 mt-3 leading-snug font-naskh">
+                آپ کی رپورٹ میسر ریکارڈ کے مطابق <span className="text-slate-900 font-nastaliq">عابد گورائیہ صاحب</span> تیار کر دی گئی ہے!
               </h2>
-              <p className="text-xs text-slate-600 font-bold mt-2 leading-relaxed font-naskh">
+              <p className="text-xs text-slate-600 font-medium mt-1 leading-relaxed font-naskh">
                 تمام قلمبند بیانات، پنسل و قلمی تحریری درخواستیں اور شواہد باضابطہ سرکاری انکوائری رپورٹ میں کامیابی سے مدون کر دیے گئے ہیں۔
               </p>
             </div>
 
             {/* Action Buttons Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
               {/* 1. Read Report */}
               <button
                 onClick={() => {
@@ -3548,7 +3459,7 @@ export default function App() {
                   const element = document.getElementById("report-preview-area");
                   if (element) element.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="bg-emerald-800 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-emerald-600"
+                className="bg-[#0f172a] hover:bg-[#1e293b] active:scale-95 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-800"
               >
                 <BookOpen className="w-4 h-4 text-amber-300" />
                 <span>رپورٹ مکمل پڑھیں</span>
@@ -3563,10 +3474,10 @@ export default function App() {
                     window.print();
                   }, 300);
                 }}
-                className="bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-black text-xs py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-700"
+                className="bg-white hover:bg-slate-50 active:scale-95 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-300"
               >
-                <Printer className="w-4 h-4 text-amber-400" />
-                <span>پرنٹ / PDF محفوظ کریں</span>
+                <Printer className="w-4 h-4 text-slate-700" />
+                <span>پرنٹ / PDF</span>
               </button>
 
               {/* 3. Download MS Word (.doc) */}
@@ -3574,7 +3485,6 @@ export default function App() {
                 onClick={() => {
                   setShowSuccessModal(false);
                   setMobileTab("preview");
-                  // Format and download Word document
                   const title = `رپورٹ درخواست ازاں ${currentInquiry.complainantName || "سائل"}`;
                   const docHtml = `
                     <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
@@ -3610,10 +3520,10 @@ export default function App() {
                   document.body.removeChild(a);
                   URL.revokeObjectURL(url);
                 }}
-                className="bg-indigo-900 hover:bg-indigo-800 active:scale-95 text-white font-black text-xs py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-indigo-700"
+                className="bg-white hover:bg-slate-50 active:scale-95 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-300"
               >
-                <Download className="w-4 h-4 text-indigo-300" />
-                <span>ورڈ فائل ڈاؤن لوڈ (.doc)</span>
+                <Download className="w-4 h-4 text-slate-700" />
+                <span>ورڈ فائل (.doc)</span>
               </button>
 
               {/* 4. Copy Report */}
@@ -3625,10 +3535,10 @@ export default function App() {
                   setShowSuccessModal(false);
                   setMobileTab("preview");
                 }}
-                className="bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-black text-xs py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-amber-400"
+                className="bg-[#0f172a] hover:bg-[#1e293b] active:scale-95 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-800"
               >
-                <Copy className="w-4 h-4" />
-                <span>مکمل رپورٹ کاپی کریں</span>
+                <Copy className="w-4 h-4 text-amber-300" />
+                <span>رپورٹ کاپی کریں</span>
               </button>
             </div>
 
@@ -3636,9 +3546,9 @@ export default function App() {
             <div className="pt-1">
               <button
                 onClick={() => setShowSuccessModal(false)}
-                className="text-xs text-slate-500 hover:text-slate-800 font-bold underline cursor-pointer"
+                className="text-xs text-slate-500 hover:text-slate-800 font-medium underline cursor-pointer"
               >
-                پاپ اپ بند کریں اور واپس فارم پر جائیں
+                بند کریں اور فارم پر جائیں
               </button>
             </div>
 

@@ -625,12 +625,12 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
                 onClick={() => setFilterMode("magic")}
                 className={`py-1.5 px-1 rounded-md flex items-center justify-center gap-1 transition-all border cursor-pointer ${
                   filterMode === "magic"
-                    ? "bg-emerald-800 text-white border-emerald-700 shadow-xs"
-                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    ? "bg-[#0f172a] text-white border-slate-800 shadow-xs"
+                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
                 }`}
               >
                 <Wand2 className="w-3 h-3 text-amber-300" />
-                <span>میجک اینہانس</span>
+                <span>میجک موڈ</span>
               </button>
 
               <button
@@ -638,11 +638,11 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
                 onClick={() => setFilterMode("pencil")}
                 className={`py-1.5 px-1 rounded-md flex items-center justify-center gap-1 transition-all border cursor-pointer ${
                   filterMode === "pencil"
-                    ? "bg-amber-500 text-slate-950 border-amber-400 shadow-xs"
-                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    ? "bg-[#0f172a] text-white border-slate-800 shadow-xs"
+                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
                 }`}
               >
-                <Sparkles className="w-3 h-3" />
+                <Sparkles className="w-3 h-3 text-amber-300" />
                 <span>پنسل تحریر</span>
               </button>
 
@@ -651,12 +651,12 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
                 onClick={() => setFilterMode("bw")}
                 className={`py-1.5 px-1 rounded-md flex items-center justify-center gap-1 transition-all border cursor-pointer ${
                   filterMode === "bw"
-                    ? "bg-slate-800 text-white border-slate-700 shadow-xs"
-                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    ? "bg-[#0f172a] text-white border-slate-800 shadow-xs"
+                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
                 }`}
               >
-                <FileText className="w-3 h-3 text-sky-300" />
-                <span>بلیک اینڈ وائٹ</span>
+                <FileText className="w-3 h-3" />
+                <span>بلیک و وائٹ</span>
               </button>
 
               <button
@@ -664,8 +664,8 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
                 onClick={() => setFilterMode("original")}
                 className={`py-1.5 px-1 rounded-md flex items-center justify-center gap-1 transition-all border cursor-pointer ${
                   filterMode === "original"
-                    ? "bg-indigo-700 text-white border-indigo-600 shadow-xs"
-                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    ? "bg-[#0f172a] text-white border-slate-800 shadow-xs"
+                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
                 }`}
               >
                 <Eye className="w-3 h-3" />
@@ -678,9 +678,9 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
             <button
               type="button"
               onClick={() => setRotation(p => (p + 90) % 360)}
-              className="bg-slate-50 hover:bg-slate-100 text-slate-800 px-2.5 py-1 rounded border border-slate-200 flex items-center gap-1 transition-all cursor-pointer"
+              className="bg-white hover:bg-slate-50 text-slate-800 px-2.5 py-1 rounded border border-slate-300 flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
             >
-              <RotateCw className="w-3 h-3 text-emerald-700" />
+              <RotateCw className="w-3 h-3 text-slate-700" />
               <span>گھمائیں (90°)</span>
             </button>
 
@@ -689,8 +689,8 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
               onClick={() => setShowFineTune(!showFineTune)}
               className={`px-2.5 py-1 rounded border flex items-center gap-1 transition-all cursor-pointer ${
                 showFineTune 
-                  ? "bg-emerald-800 text-white border-emerald-700" 
-                  : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                  ? "bg-[#0f172a] text-white border-slate-800 shadow-2xs" 
+                  : "bg-white hover:bg-slate-50 text-slate-700 border-slate-300 shadow-2xs"
               }`}
             >
               <Sliders className="w-3 h-3" />
@@ -710,19 +710,19 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
                     type="range" min="-50" max="50" 
                     value={brightness} 
                     onChange={(e) => setBrightness(Number(e.target.value))}
-                    className="w-full accent-emerald-700" 
+                    className="w-full accent-slate-800" 
                   />
                 </div>
                 <div>
                   <label className="flex items-center gap-1 mb-1 text-[10px] font-bold">
-                    <Contrast className="w-3 h-3 text-indigo-600" />
+                    <Contrast className="w-3 h-3 text-slate-700" />
                     <span>کنٹراسٹ: {contrast}</span>
                   </label>
                   <input 
                     type="range" min="-50" max="50" 
                     value={contrast} 
                     onChange={(e) => setContrast(Number(e.target.value))}
-                    className="w-full accent-emerald-700" 
+                    className="w-full accent-slate-800" 
                   />
                 </div>
               </div>
@@ -742,9 +742,9 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
           </div>
 
           {scannedSuccess && (
-            <div className="bg-emerald-50 border border-emerald-300 rounded-lg p-2 text-center text-[11px] font-extrabold text-emerald-900 flex items-center justify-center gap-1.5 shadow-xs">
+            <div className="bg-slate-100 border border-slate-300 rounded-lg p-2 text-center text-[11px] font-bold text-slate-900 flex items-center justify-center gap-1.5 shadow-xs">
               <FileCheck className="w-4 h-4 text-emerald-700 shrink-0" />
-              <span>تصویر کی سافٹ کاپی کامیابی سے ٹیکسٹ باکس میں درج کر دی گئی ہے!</span>
+              <span>تصویر کی سافٹ کاپی کامیابی سے درج کر دی گئی ہے!</span>
             </div>
           )}
 
@@ -752,10 +752,10 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
             type="button"
             onClick={() => handleTranscribe()}
             disabled={isProcessing}
-            className={`w-full py-2.5 rounded-lg font-black text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
+            className={`w-full py-2.5 rounded-lg font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
               isProcessing
                 ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
-                : "bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-600 active:scale-95"
+                : "bg-[#0f172a] hover:bg-[#1e293b] text-white border border-slate-800 active:scale-95"
             }`}
           >
             {isProcessing ? (
@@ -772,9 +772,9 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
           </button>
         </div>
       ) : isConvertingPdf ? (
-        <div className="flex flex-col items-center justify-center p-4 bg-white border border-amber-300 rounded-xl text-center space-y-1.5 shadow-xs">
-          <RefreshCw className="w-6 h-6 text-amber-500 animate-spin" />
-          <p className="text-xs font-black text-amber-800">
+        <div className="flex flex-col items-center justify-center p-4 bg-white border border-slate-300 rounded-xl text-center space-y-1.5 shadow-xs">
+          <RefreshCw className="w-6 h-6 text-slate-800 animate-spin" />
+          <p className="text-xs font-bold text-slate-900">
             پی ڈی ایف فائل کے صفحات اسکین ہو رہے ہیں...
           </p>
         </div>
@@ -789,12 +789,12 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
                 cameraInputRef.current.click();
               }
             }}
-            className="bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-700 rounded-xl p-2.5 flex items-center justify-center gap-2 font-black text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
+            className="bg-[#0f172a] hover:bg-[#1e293b] text-white border border-slate-800 rounded-xl p-2.5 flex items-center justify-center gap-2 font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
           >
             <Camera className="w-4 h-4 text-amber-300 shrink-0" />
             <div className="text-right">
-              <div className="text-[11px] font-black leading-tight">کیمرہ اسکین</div>
-              <div className="text-[9px] text-emerald-100 font-normal">فوٹو بنائیں</div>
+              <div className="text-[11px] font-bold leading-tight">کیمرہ اسکین</div>
+              <div className="text-[9px] text-slate-300 font-normal">فوٹو بنائیں</div>
             </div>
           </button>
 
@@ -805,12 +805,12 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
                 fileInputRef.current.click();
               }
             }}
-            className="bg-indigo-900 hover:bg-indigo-800 text-white border border-indigo-700 rounded-xl p-2.5 flex items-center justify-center gap-2 font-black text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
+            className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-xl p-2.5 flex items-center justify-center gap-2 font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
           >
-            <Upload className="w-4 h-4 text-indigo-300 shrink-0" />
+            <Upload className="w-4 h-4 text-slate-700 shrink-0" />
             <div className="text-right">
-              <div className="text-[11px] font-black leading-tight">فائل / تصویر اپلوڈ</div>
-              <div className="text-[9px] text-indigo-100 font-normal">PDF، JPG، PNG</div>
+              <div className="text-[11px] font-bold leading-tight">فائل / تصویر اپلوڈ</div>
+              <div className="text-[9px] text-slate-500 font-normal">PDF، JPG، PNG</div>
             </div>
           </button>
         </div>
