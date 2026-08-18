@@ -335,6 +335,17 @@ app.post("/api/transcribe-image", async (req, res) => {
 
     const client = getGeminiClient();
 
+    const systemInstruction = `You are an elite, specialized Urdu Handwriting and Document OCR system for Punjab Police, Pakistan.
+You specialize in deciphering very faint, light, messy pencil handwriting (پنسل کی ہلکی، مدہم اور کچی لکھائی), fountain pen scripts, handwritten applications (درخواست سائل), police diaries (روزنامچہ), and witness statements (بیانات فریقین).
+Key Instructions:
+1. Carefully analyze every faint pencil stroke and word. Reconstruct complete sentences even if the handwriting is light or hurried.
+2. Maintain exact Urdu orthography and spellings for all legal and police terminology (جیسے: مسمی، مسمات، ولدیت، سکونت، سائل، الزام علیہ، وقوعہ، برآمدگی، گواہ، تھانہ، وغیرہ).
+3. Do NOT omit any names, dates, amounts, or statements.
+4. Output ONLY the raw extracted Urdu text with zero English commentary or metadata.`;
+
+    const prompt = `یہ پولیس کے کاغذ، ہاتھ سے لکھی درخواست، یا پنسل سے تحریر کردہ بیان کی تصویر ہے۔
+تصویر میں موجود تمام اردو تحریر (خواہ وہ پنسل کی مدہم لکھائی ہو یا قلم کی) کو انتہائی باریک بینی سے پڑھ کر مکمل اردو متن (Unicode Text) میں تحریر کریں۔ کوئی جملہ یا فقرہ چھوڑے بغیر من و عن اصل تحریر فراہم کریں۔`;
+
     const response = await generateWithFallback(client, {
       contents: [
         {
@@ -343,8 +354,12 @@ app.post("/api/transcribe-image", async (req, res) => {
             mimeType: finalMimeType
           }
         },
-        "یہ پولیس تھانہ یا تفتیش کے دوران پنسل یا قلم سے لکھی گئی درخواست، بیان یا کسی سرکاری کاغذ کی تصویر ہے۔ تصویر میں موجود ہاتھ کی لکھی ہوئی اردو تحریر کو انتہائی باریک بینی سے پڑھیں۔ پنسل سے لکھی گئی مدہم، ہلکی، یا مشکل (messy/faint handwritten) لکھائی کو بھی سیاق و سباق (police context) کے مطابق سمجھیں اور بغیر کسی غلطی کے مکمل طور پر درست اردو ٹیکسٹ (Unicode) میں تحریر کریں۔ تمام عدالتی اور پولیس اصطلاحات (جیسے مسمات، ولدیت، فریقین، الزام علیہ، سائل، تھانہ، تفتیشی، بیانات، دستخط وغیرہ) کو درست املا کے ساتھ پڑھیں۔ کسی قسم کا تبصرہ یا اضافی انگریزی جملے بالکل شامل نہ کریں، صرف اور صرف تصویر میں موجود اصل اردو تحریر فراہم کریں۔"
-      ]
+        prompt
+      ],
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.1,
+      }
     });
 
     res.json({ text: response.text || "" });

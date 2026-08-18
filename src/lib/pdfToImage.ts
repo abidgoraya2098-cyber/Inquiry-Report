@@ -10,15 +10,67 @@ if (typeof window !== "undefined" && pdfjsLib.GlobalWorkerOptions) {
 }
 
 /**
- * Automatically compresses and resizes any image data URL
- * so that its max dimension is <= maxDimension (default 1600px)
- * and JPEG quality is around 0.82.
- * Keeps base64 payloads under 1MB to prevent Vercel 413 Payload Too Large / server errors.
+ * Specifically boosts faint pencil strokes, handwritten Urdu notes, and light graphite lines.
+ * Stretches contrast so paper background turns clean white (#FFFFFF) while pencil marks darken.
+ */
+export function enhancePencilHandwritingCanvas(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  pencilIntensity = 1.4
+) {
+  try {
+    const imgData = ctx.getImageData(0, 0, width, height);
+    const d = imgData.data;
+
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i];
+      const g = d[i + 1];
+      const b = d[i + 2];
+
+      // Perceived luminance
+      const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+
+      // If background paper (very bright > 220), push to pure white
+      if (gray > 220) {
+        d[i] = 255;
+        d[i + 1] = 255;
+        d[i + 2] = 255;
+      } 
+      // If faint pencil stroke (between 50 and 220), darken it aggressively
+      else if (gray > 40) {
+        const normalized = (gray - 40) / 180; // 0 to 1
+        // Apply gamma power curve to make pencil dark
+        const darkened = Math.pow(normalized, pencilIntensity * 1.5) * 220;
+        d[i] = Math.max(0, Math.min(255, darkened));
+        d[i + 1] = Math.max(0, Math.min(255, darkened));
+        d[i + 2] = Math.max(0, Math.min(255, darkened));
+      } 
+      // Already dark ink
+      else {
+        d[i] = Math.max(0, r * 0.5);
+        d[i + 1] = Math.max(0, g * 0.5);
+        d[i + 2] = Math.max(0, b * 0.5);
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+  } catch (e) {
+    console.warn("Pencil enhancement canvas error:", e);
+  }
+}
+
+/**
+ * Automatically compresses, sharpens, and resizes any image data URL
+ * so that its max dimension is <= maxDimension (default 1920px Full HD)
+ * and JPEG quality is around 0.82-0.85.
+ * Keeps base64 payloads under 1MB to prevent Vercel 413 errors while preserving razor-sharp text.
  */
 export async function optimizeImageForOcr(
   dataUrl: string,
-  maxDimension = 1600,
-  quality = 0.82
+  maxDimension = 1920,
+  quality = 0.84,
+  applyPencilBoost = false
 ): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image();
@@ -28,7 +80,7 @@ export async function optimizeImageForOcr(
       let width = img.naturalWidth || img.width;
       let height = img.naturalHeight || img.height;
 
-      // Calculate new dimensions if image exceeds maxDimension
+      // Calculate new dimensions if image exceeds maxDimension (e.g. 4K camera photos)
       if (width > maxDimension || height > maxDimension) {
         if (width > height) {
           height = Math.round((height * maxDimension) / width);
@@ -48,9 +100,17 @@ export async function optimizeImageForOcr(
         return;
       }
 
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
+      // Fill white background for transparent images
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, width, height);
       ctx.drawImage(img, 0, 0, width, height);
+
+      if (applyPencilBoost) {
+        enhancePencilHandwritingCanvas(ctx, width, height, 1.3);
+      }
 
       const optimized = canvas.toDataURL("image/jpeg", quality);
       resolve(optimized);
@@ -64,11 +124,11 @@ export async function optimizeImageForOcr(
 /**
  * Converts a PDF File into an array of JPEG image data URLs (one per page).
  * @param file PDF File object
- * @param scale Quality scale factor (default 1.5 for crisp OCR text)
+ * @param scale Quality scale factor (default 1.6 for crisp OCR text)
  */
 export async function convertPdfToPageImages(
   file: File,
-  scale = 1.5
+  scale = 1.6
 ): Promise<string[]> {
   try {
     const arrayBuffer = await file.arrayBuffer();
@@ -101,8 +161,8 @@ export async function convertPdfToPageImages(
       };
 
       await page.render(renderContext).promise;
-      const rawDataUrl = canvas.toDataURL("image/jpeg", 0.85);
-      const optimized = await optimizeImageForOcr(rawDataUrl, 1600, 0.82);
+      const rawDataUrl = canvas.toDataURL("image/jpeg", 0.88);
+      const optimized = await optimizeImageForOcr(rawDataUrl, 1920, 0.85);
       pageImages.push(optimized);
     }
 
@@ -119,7 +179,7 @@ export async function convertPdfToPageImages(
  */
 export async function convertPdfToSingleStackedImage(
   file: File,
-  scale = 1.5
+  scale = 1.6
 ): Promise<string> {
   const pageImages = await convertPdfToPageImages(file, scale);
   if (pageImages.length === 0) {
@@ -150,7 +210,6 @@ export async function convertPdfToSingleStackedImage(
             canvas.width = maxWidth;
             canvas.height = totalHeight;
             const ctx = canvas.getContext("2d");
-
             if (!ctx) {
               resolve(pageImages[0]);
               return;
@@ -160,32 +219,22 @@ export async function convertPdfToSingleStackedImage(
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             let currentY = 0;
-            loadedImages.forEach((img) => {
-              ctx.drawImage(img, 0, currentY);
-              currentY += img.height;
-
-              // Draw subtle page divider line
-              ctx.strokeStyle = "#cbd5e1";
-              ctx.lineWidth = 2;
-              ctx.beginPath();
-              ctx.moveTo(0, currentY + 7);
-              ctx.lineTo(maxWidth, currentY + 7);
-              ctx.stroke();
-
-              currentY += 15;
+            loadedImages.forEach((image) => {
+              const offsetX = Math.round((maxWidth - image.width) / 2);
+              ctx.drawImage(image, offsetX, currentY);
+              currentY += image.height + 15;
             });
 
-            const stackedRaw = canvas.toDataURL("image/jpeg", 0.82);
-            optimizeImageForOcr(stackedRaw, 1800, 0.80).then(resolve).catch(() => resolve(stackedRaw));
-          } catch (e) {
-            reject(e);
+            const stackedData = canvas.toDataURL("image/jpeg", 0.85);
+            resolve(stackedData);
+          } catch (err) {
+            reject(err);
           }
         }
       };
       img.onerror = () => {
-        reject(new Error("پی ڈی ایف صفحہ لوڈ کرنے میں ناکامی۔"));
+        resolve(pageImages[0]);
       };
     });
   });
 }
-

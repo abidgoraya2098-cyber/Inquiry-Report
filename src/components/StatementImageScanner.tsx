@@ -192,33 +192,35 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
       const gray = 0.299 * r + 0.587 * g + 0.114 * b;
 
       if (mode === "magic") {
-        if (gray > 140) {
-          const boost = (gray - 140) * 2.0;
+        if (gray > 150) {
+          const boost = (gray - 150) * 1.8;
           d[i] = Math.min(255, r + boost);
           d[i + 1] = Math.min(255, g + boost);
           d[i + 2] = Math.min(255, b + boost);
         } else {
-          d[i] = Math.max(0, r * 0.55);
-          d[i + 1] = Math.max(0, g * 0.55);
-          d[i + 2] = Math.max(0, b * 0.55);
+          d[i] = Math.max(0, r * 0.5);
+          d[i + 1] = Math.max(0, g * 0.5);
+          d[i + 2] = Math.max(0, b * 0.5);
         }
       } else if (mode === "pencil") {
-        if (gray > 175) {
+        // Specifically designed for faint/light pencil handwriting
+        if (gray > 225) {
           d[i] = 255;
           d[i + 1] = 255;
           d[i + 2] = 255;
-        } else if (gray < 90) {
+        } else if (gray > 40) {
+          const normalized = (gray - 40) / 185;
+          const darkened = Math.pow(normalized, 2.2) * 210;
+          d[i] = Math.max(0, Math.min(255, darkened));
+          d[i + 1] = Math.max(0, Math.min(255, darkened));
+          d[i + 2] = Math.max(0, Math.min(255, darkened));
+        } else {
           d[i] = 0;
           d[i + 1] = 0;
           d[i + 2] = 0;
-        } else {
-          const mapped = Math.max(0, (gray - 90) * 1.5);
-          d[i] = mapped;
-          d[i + 1] = mapped;
-          d[i + 2] = mapped;
         }
       } else if (mode === "bw") {
-        const val = gray > 135 ? 255 : 0;
+        const val = gray > 145 ? 255 : 0;
         d[i] = val;
         d[i + 1] = val;
         d[i + 2] = val;
@@ -230,7 +232,7 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
     }
 
     ctx.putImageData(imgData, 0, 0);
-    return canvas.toDataURL("image/jpeg", 0.85);
+    return canvas.toDataURL("image/jpeg", 0.88);
   };
 
   useEffect(() => {
@@ -264,8 +266,8 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
     setIsProcessing(true);
     setErrorMessage(null);
     try {
-      // Compress and optimize image to max 1280px to stay well within Vercel serverless limits
-      imageToProcess = await optimizeImageForOcr(imageToProcess, 1280, 0.80);
+      // Compress and optimize image to crisp 1920px Full HD preserving razor-sharp pencil lines
+      imageToProcess = await optimizeImageForOcr(imageToProcess, 1920, 0.84, filterMode === "pencil");
 
       const response = await fetch("/api/transcribe-image", {
         method: "POST",

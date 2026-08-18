@@ -1100,56 +1100,57 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 flex flex-col font-sans selection:bg-emerald-600 selection:text-white" dir="rtl">
-      <header className="bg-white text-slate-900 border-b-2 border-slate-200/90 shadow-xs no-print z-10">
-        <div className="max-w-7xl mx-auto px-4 py-2.5 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-3">
+      {/* Sticky Header with Special Executive Office Background Color */}
+      <header className="sticky top-0 z-50 bg-gradient-to-r from-[#0c2238] via-[#113254] to-[#0c2238] text-white border-b-2 border-amber-400/90 shadow-md backdrop-blur-md no-print">
+        <div className="max-w-7xl mx-auto px-4 py-2 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-2.5">
           
           {/* Logo & Identity */}
           <div className="flex items-center gap-3">
             <img 
               src={policeLogo} 
               alt="پنجاب پولیس گوجرانوالہ" 
-              className="w-11 h-11 rounded-full border-2 border-amber-500 object-cover shadow-xs shrink-0" 
+              className="w-10 h-10 rounded-full border-2 border-amber-400 object-cover shadow-sm shrink-0 bg-slate-900" 
               referrerPolicy="no-referrer"
               onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
             />
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="bg-emerald-100 text-emerald-900 text-[9px] px-2 py-0.5 rounded-md font-extrabold border border-emerald-200">آفیشل انکوائری آفیسر</span>
-                <span className="text-emerald-800 text-xs font-bold">پنجاب پولیس گوجرانوالہ</span>
+                <span className="bg-emerald-950/90 text-amber-300 text-[9px] px-2 py-0.5 rounded-md font-black border border-emerald-600/60 shadow-2xs">آفیشل انکوائری آفیسر</span>
+                <span className="text-amber-400 text-xs font-black">پنجاب پولیس گوجرانوالہ</span>
               </div>
-              <h1 className="text-base sm:text-lg font-black text-slate-900 mt-0.5 flex items-center gap-1.5 font-naskh">
+              <h1 className="text-base sm:text-lg font-black text-white mt-0.5 flex items-center gap-1.5 font-naskh">
                 انکوائری رپورٹ اسسٹنٹ
-                <span className="text-emerald-800 text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">ریجنل انویسٹی گیشن برانچ</span>
+                <span className="text-amber-300 text-[10px] font-bold bg-[#071626] px-2 py-0.5 rounded-md border border-[#1b3d63]">ریجنل انویسٹی گیشن برانچ</span>
               </h1>
             </div>
           </div>
 
-          {/* Visual Mode Selector and Quick Actions */}
+          {/* Visual Mode Selector and Quick Actions (All aligned neatly) */}
           <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
             
-            {/* VIEW MODE TOGGLE (Play store vs Desktop view) */}
-            <div className="bg-slate-100 border border-slate-200 rounded-lg p-0.5 flex items-center shadow-xs text-[10px] font-bold">
+            {/* VIEW MODE TOGGLE (Desktop vs Mobile view) */}
+            <div className="bg-[#071626] border border-[#1b3d63] rounded-lg p-0.5 flex items-center shadow-inner text-[10px] font-bold">
               <button
                 onClick={() => setViewMode("desktop")}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                   viewMode === "desktop"
-                    ? "bg-white text-emerald-950 shadow-xs font-extrabold"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-amber-400 text-slate-950 shadow-xs font-black"
+                    : "text-slate-300 hover:text-white"
                 }`}
               >
-                <Monitor className="w-3 h-3 text-emerald-800" />
-                <span>ڈیسک ٹاپ ڈیش بورڈ</span>
+                <Monitor className="w-3 h-3" />
+                <span>ڈیسک ٹاپ</span>
               </button>
               
               <button
                 onClick={() => setViewMode("mobile")}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all cursor-pointer ${
                   viewMode === "mobile"
-                    ? "bg-white text-emerald-950 shadow-xs font-extrabold"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-amber-400 text-slate-950 shadow-xs font-black"
+                    : "text-slate-300 hover:text-white"
                 }`}
               >
-                <Smartphone className="w-3 h-3 text-indigo-700" />
+                <Smartphone className="w-3 h-3" />
                 <span>📱 موبائل ایپ</span>
               </button>
             </div>
@@ -1157,17 +1158,17 @@ export default function App() {
             {/* Compact SEARCH SAVED INQUIRIES BUTTON */}
             <button 
               onClick={() => setShowSearchModal(true)}
-              className="bg-slate-50 hover:bg-slate-100 text-slate-800 hover:text-emerald-900 border border-slate-300 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs active:scale-95 shrink-0"
+              className="bg-[#091b2e] hover:bg-[#122e4d] text-amber-300 border border-amber-500/50 hover:border-amber-400 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs active:scale-95 shrink-0"
               title="محفوظ انکوائری رپورٹس تلاش کریں"
             >
-              <History className="w-3.5 h-3.5 text-emerald-700" />
+              <History className="w-3.5 h-3.5 text-amber-400" />
               <span>محفوظ فائلز ({inquiries.length})</span>
             </button>
 
             {/* Quick new template button */}
             <button 
               onClick={handleNewInquiry}
-              className="bg-emerald-800 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg border border-emerald-700 font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-xs shrink-0"
+              className="bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1 rounded-lg border border-emerald-500 font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-xs shrink-0"
               title="نیا خالی انکوائری ٹیمپلیٹ مرتب کریں"
             >
               <Plus className="w-3.5 h-3.5 text-amber-300" />
@@ -1177,7 +1178,7 @@ export default function App() {
             {/* SHARE PORTAL BUTTON */}
             <button 
               onClick={() => setShowShareModal(true)}
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-1 rounded-lg border border-amber-400 font-extrabold text-[11px] transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95 shrink-0"
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-1 rounded-lg border border-amber-400 font-black text-[11px] transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95 shrink-0"
               title="پورٹل کا لنک اور کیو آر کوڈ شیئر کریں"
             >
               <Share2 className="w-3.5 h-3.5" />
@@ -1207,8 +1208,8 @@ export default function App() {
                 }}
                 className={`px-2.5 py-1 rounded-lg border font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
                   showAdminPanel 
-                    ? "bg-amber-500 text-slate-950 border-amber-600" 
-                    : "bg-indigo-900 text-white border-indigo-800"
+                    ? "bg-amber-400 text-slate-950 border-amber-500" 
+                    : "bg-[#182a4d] text-indigo-200 border-indigo-700 hover:bg-[#203663]"
                 }`}
                 title="ایڈمنسٹریٹر پینل"
               >
@@ -1220,10 +1221,10 @@ export default function App() {
             {/* Log Out button */}
             <button 
               onClick={handleLogout}
-              className="bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs shrink-0"
+              className="bg-rose-950/90 hover:bg-rose-900 border border-rose-700/80 text-rose-200 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs shrink-0 active:scale-95"
               title="سسٹم سے لاگ آؤٹ کریں"
             >
-              <LogOut className="w-3 h-3 text-rose-600" />
+              <LogOut className="w-3 h-3 text-rose-400" />
               <span>لاگ آؤٹ</span>
             </button>
           </div>
