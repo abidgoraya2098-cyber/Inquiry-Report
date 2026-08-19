@@ -1163,13 +1163,15 @@ export default function App() {
           
           {/* Logo & Identity */}
           <div className="flex items-center gap-3">
-            <img 
-              src={policeLogo} 
-              alt="پنجاب پولیس گوجرانوالہ" 
-              className="w-10 h-10 rounded-full border-2 border-amber-400 object-cover shadow-sm shrink-0 bg-slate-900" 
-              referrerPolicy="no-referrer"
-              onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
-            />
+            <div className="w-11 h-11 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-amber-300 to-amber-500 shadow-md shrink-0 flex items-center justify-center border border-amber-400">
+              <img
+                src={policeLogo}
+                alt="پنجاب پولیس گوجرانوالہ"
+                className="w-full h-full rounded-full object-contain bg-slate-900 p-0.5"
+                referrerPolicy="no-referrer"
+                onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
+              />
+            </div>
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="bg-emerald-950/90 text-amber-300 text-[9px] px-2 py-0.5 rounded-md font-black border border-emerald-600/60 shadow-2xs">آفیشل انکوائری آفیسر</span>
@@ -1265,17 +1267,15 @@ export default function App() {
               <span>AI Key</span>
             </button>
 
-            {/* Install Button (Only when not installed) */}
-            {!isAppInstalled && (
-              <button
-                onClick={handleInstallClick}
-                className="bg-[#01875f] hover:bg-[#00704e] text-white px-2.5 py-1 rounded-lg font-extrabold text-[11px] flex items-center gap-1 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0"
-                title="ایپ انسٹال کریں"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>انسٹال کریں</span>
-              </button>
-            )}
+            {/* Always Visible Install Button */}
+            <button
+              onClick={handleInstallClick}
+              className="bg-[#01875f] hover:bg-[#00704e] text-white px-2.5 py-1 rounded-lg font-extrabold text-[11px] flex items-center gap-1 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 border border-emerald-400"
+              title="ایپ انسٹال کریں (PWA App Install)"
+            >
+              <Download className="w-3.5 h-3.5 text-amber-300" />
+              <span>انسٹال کریں</span>
+            </button>
 
             {/* Admin Controls Dashboard Button (only shown if isAdmin is true) */}
             {isAdmin && (
@@ -2304,7 +2304,7 @@ export default function App() {
                   <img 
                     src={policeLogo} 
                     alt="لوگو" 
-                    className="w-8 h-8 rounded-full border border-amber-500 object-cover shrink-0"
+                    className="w-8 h-8 rounded-full border border-amber-500 object-contain p-0.5 bg-slate-900 shrink-0"
                     referrerPolicy="no-referrer"
                   />
                   <div>
@@ -2315,7 +2315,6 @@ export default function App() {
 
                 {/* Add dynamic record & download buttons */}
                 <div className="flex items-center gap-1.5">
-                  {!isAppInstalled && (
                     <button
                       onClick={handleInstallClick}
                       className="bg-emerald-900 border border-emerald-800 text-amber-400 p-1.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center"
@@ -2323,7 +2322,6 @@ export default function App() {
                     >
                       <Download className="w-3.5 h-3.5" />
                     </button>
-                  )}
                   <button
                     onClick={handleNewInquiry}
                     className="bg-amber-500 hover:bg-amber-600 text-emerald-950 p-1.5 rounded-full shadow-md transition-all active:scale-95 cursor-pointer flex items-center justify-center"
