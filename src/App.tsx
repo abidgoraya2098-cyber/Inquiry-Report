@@ -7,8 +7,8 @@ import {
   Smartphone, Monitor, ChevronRight, User, BookOpen, AlertCircle, AlertTriangle, Check, Play, Settings, LogOut, Eye, EyeOff,
   Share2, QrCode as QrIcon, Copy, CheckCheck, ExternalLink, Key, X
 } from "lucide-react";
-import { InquiryData, Statement } from "./types";
 import StatementImageScanner from "./components/StatementImageScanner";
+import TargetedOcrModal, { TargetSection } from "./components/TargetedOcrModal";
 import ReportPreview from "./components/ReportPreview";
 import { convertPdfToPageImages, optimizeImageForOcr } from "./lib/pdfToImage";
 import { POLICE_LOGO_BASE64 } from "./assets/logoBase64";
@@ -329,6 +329,55 @@ export default function App() {
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [customApiKeyInput, setCustomApiKeyInput] = useState(() => (typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : ""));
   const [keySaveMessage, setKeySaveMessage] = useState<string | null>(null);
+
+  // Targeted OCR Modal State
+  const [showTargetedOcrModal, setShowTargetedOcrModal] = useState(false);
+  const [targetedOcrInitialSection, setTargetedOcrInitialSection] = useState<TargetSection>("all");
+
+  const handleApplyTargetedOcrData = useCallback((target: TargetSection, extractedText: string) => {
+    if (!extractedText.trim()) return;
+
+    setCurrentInquiry(prev => {
+      if (target === "application") {
+        const currentVal = prev.complainantStatement || "";
+        const updatedVal = currentVal ? `${currentVal}\n\n${extractedText}` : extractedText;
+        return { ...prev, complainantStatement: updatedVal };
+      }
+
+      if (target === "fir") {
+        const currentRef = prev.referenceNumber || "";
+        const updatedRef = currentRef && currentRef !== "____________" ? `${currentRef} / ${extractedText.substring(0, 40)}` : extractedText.substring(0, 40);
+        const currentVal = prev.complainantStatement || "";
+        const updatedVal = currentVal ? `${currentVal}\n\n[کاپی FIR]:\n${extractedText}` : `[کاپی FIR]:\n${extractedText}`;
+        return { ...prev, referenceNumber: updatedRef, complainantStatement: updatedVal };
+      }
+
+      if (target === "police") {
+        const newStmt: Statement = {
+          id: `stmt_police_${Date.now()}`,
+          personName: "تفتیشی افسر / گواہ",
+          role: "witness",
+          text: extractedText,
+          recordedDate: new Date().toLocaleDateString("ur-PK")
+        };
+        return {
+          ...prev,
+          statements: [...(prev.statements || []), newStmt]
+        };
+      }
+
+      if (target === "dib") {
+        const currentObs = prev.observations || "";
+        const updatedObs = currentObs ? `${currentObs}\n\n${extractedText}` : extractedText;
+        return { ...prev, observations: updatedObs };
+      }
+
+      // Default: "all"
+      const currentVal = prev.complainantStatement || "";
+      const updatedVal = currentVal ? `${currentVal}\n\n${extractedText}` : extractedText;
+      return { ...prev, complainantStatement: updatedVal };
+    });
+  }, []);
 
   useEffect(() => {
     if (showShareModal) {
@@ -1183,6 +1232,19 @@ export default function App() {
             >
               <Plus className="w-3.5 h-3.5 text-amber-300" />
               <span>نیا ٹیمپلیٹ</span>
+            </button>
+
+            {/* TARGETED OCR SCANNER BUTTON */}
+            <button 
+              onClick={() => {
+                setTargetedOcrInitialSection("all");
+                setShowTargetedOcrModal(true);
+              }}
+              className="bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 text-amber-300 px-3 py-1 rounded-lg border border-emerald-400 font-black text-[11px] transition-all flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 shrink-0 animate-pulse"
+              title="خانہ وار الگ الگ AI سکینر (Targeted OCR Scanner)"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>خانہ وار AI سکینر</span>
             </button>
 
             {/* SHARE PORTAL BUTTON */}
@@ -3656,6 +3718,14 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* TARGETED OCR SCANNER MODAL */}
+      <TargetedOcrModal
+        isOpen={showTargetedOcrModal}
+        onClose={() => setShowTargetedOcrModal(false)}
+        initialTarget={targetedOcrInitialSection}
+        onApplyData={handleApplyTargetedOcrData}
+      />
 
     </div>
   );
