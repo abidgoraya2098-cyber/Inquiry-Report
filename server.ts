@@ -123,8 +123,8 @@ async function generateWithFallback(client: GoogleGenAI | null, config: any, cus
               parts.push({ text: item.text });
             } else if (item.inlineData) {
               parts.push({
-                inline_data: {
-                  mime_type: item.inlineData.mimeType || item.inlineData.mime_type || "image/jpeg",
+                inlineData: {
+                  mimeType: item.inlineData.mimeType || item.inlineData.mime_type || "image/jpeg",
                   data: item.inlineData.data
                 }
               });

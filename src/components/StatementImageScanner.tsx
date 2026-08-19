@@ -49,8 +49,8 @@ Key Instructions:
           {
             parts: [
               {
-                inline_data: {
-                  mime_type: finalMimeType,
+                inlineData: {
+                  mimeType: finalMimeType,
                   data: cleanBase64
                 }
               },
