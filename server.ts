@@ -78,6 +78,14 @@ function extractResponseText(response: any): string {
   return "";
 }
 
+const DEFAULT_SAFETY_SETTINGS = [
+  { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+  { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+  { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+  { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+  { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" }
+];
+
 async function generateWithFallback(client: GoogleGenAI | null, config: any, customApiKey?: string) {
   const apiKey = customApiKey || process.env.GEMINI_API_KEY;
   if (!apiKey && !client) {
@@ -122,10 +130,11 @@ async function generateWithFallback(client: GoogleGenAI | null, config: any, cus
             } else if (item.text) {
               parts.push({ text: item.text });
             } else if (item.inlineData) {
+              let cleanData = (item.inlineData.data || "").replace(/[\r\n\s]/g, "");
               parts.push({
                 inlineData: {
                   mimeType: item.inlineData.mimeType || item.inlineData.mime_type || "image/jpeg",
-                  data: item.inlineData.data
+                  data: cleanData
                 }
               });
             }
@@ -135,6 +144,7 @@ async function generateWithFallback(client: GoogleGenAI | null, config: any, cus
 
         const bodyPayload: any = {
           contents: contentsPayload,
+          safetySettings: DEFAULT_SAFETY_SETTINGS,
           generationConfig: {
             temperature: config.config?.temperature || 0.1
           }

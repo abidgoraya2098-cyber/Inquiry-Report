@@ -26,17 +26,9 @@ async function directClientGeminiOcr(imageBase64: string, apiKey: string): Promi
       finalMimeType = match[1];
     }
   }
+  cleanBase64 = cleanBase64.replace(/[\r\n\s]/g, "");
 
-  const prompt = `یہ پولیس کے کاغذ، ہاتھ سے لکھی درخواست، یا پنسل سے تحریر کردہ بیان کی تصویر ہے۔
-تصویر میں موجود تمام اردو تحریر (خواہ وہ پنسل کی مدہم لکھائی ہو، بال پوائنٹ ہو یا قلم کی) کو انتہائی باریک بینی سے پڑھ کر مکمل اردو متن (Unicode Text) میں تحریر کریں۔ کوئی جملہ، نام، ولدیت یا فقرہ چھوڑے بغیر من و عن اصل تحریر اردو میں فراہم کریں۔`;
-
-  const systemInstruction = `You are an elite, specialized Urdu Handwriting and Document OCR system for Punjab Police, Pakistan.
-You specialize in deciphering very faint, light, messy pencil handwriting (پنسل کی ہلکی، مدہم اور کچی لکھائی), fountain pen scripts, handwritten applications (درخواست سائل), police diaries (روزنامچہ), statements of parties (بیانات فریقین), stamp papers (سٹامپ پیپر), witness statements, and official police files.
-Key Instructions:
-1. Carefully analyze every faint pencil stroke, ink word, name, address, father's name, CNIC, and detail. Reconstruct complete coherent sentences in proper Urdu.
-2. Maintain exact Urdu orthography and spellings for all legal and police terminology (جیسے: مسمی، مسمات، ولدیت، سکونت، سائل، الزام علیہ، وقوعہ، برآمدگی، گواہ، تھانہ، وغیرہ).
-3. Do NOT omit any names, dates, amounts, or statements.
-4. Output ONLY the raw extracted Urdu text with zero English commentary, markdown backticks or extra metadata.`;
+  const prompt = `اس دستاویز یا تصویر میں موجود تمام تحریر (خواہ کمپیوٹر ٹائپ شدہ ہو، ہاتھ سے لکھی ہو، ڈائری نمبر ہو، افسران کی مارکنگ ہو یا مہریں) کو مکمل طور پر باریک بینی سے پڑھ کر صاف اردو متن (Unicode Text) میں لکھیں۔ کوئی حصہ یا فقرہ نہ چھوڑیں۔`;
 
   const models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite", "gemini-1.5-pro"];
   let lastError: any = null;
@@ -60,9 +52,13 @@ Key Instructions:
             ]
           }
         ],
-        systemInstruction: {
-          parts: [{ text: systemInstruction }]
-        },
+        safetySettings: [
+          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+          { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" }
+        ],
         generationConfig: {
           temperature: 0.1
         }
@@ -82,7 +78,7 @@ Key Instructions:
         }
       } else {
         const errText = await res.text();
-        console.warn(`Direct client OCR with ${model} failed (${res.status}):`, errText);
+        console.warn(`Direct client OCR with ${model} returned status ${res.status}:`, errText);
       }
     } catch (e: any) {
       console.warn(`Direct client OCR error with ${model}:`, e);
@@ -465,13 +461,13 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
         reader.onload = async () => {
           try {
             if (typeof reader.result === "string") {
-              const optimized = await optimizeImageForOcr(reader.result, 1280, 0.80);
-              setRawImage(optimized);
+              const rawData = reader.result;
+              setRawImage(rawData);
               setFilterMode("magic");
               setRotation(0);
               setBrightness(0);
               setContrast(0);
-              handleTranscribe(optimized);
+              handleTranscribe(rawData);
             }
           } catch (imgOptErr: any) {
             console.error("Image Error:", imgOptErr);
