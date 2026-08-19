@@ -1,4 +1,4 @@
-const CACHE_NAME = 'inquiry-report-pwa-v6';
+const CACHE_NAME = 'inquiry-report-pwa-v7';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
