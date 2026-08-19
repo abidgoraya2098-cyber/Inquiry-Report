@@ -593,12 +593,22 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
 
       {showInlineKeyInput && (
         <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 space-y-2 text-right shadow-xs">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
-            <Key className="w-4 h-4 text-amber-700 shrink-0" />
-            <span>Google Gemini API Key درج کریں (ایک بار):</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
+              <Key className="w-4 h-4 text-amber-700 shrink-0" />
+              <span>Google Gemini API Key درج کریں (ایک بار):</span>
+            </div>
+            <a 
+              href="https://aistudio.google.com/app/apikey" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-[10px] text-blue-700 hover:text-blue-900 font-bold underline flex items-center gap-0.5"
+            >
+              مفت Key حاصل کریں (1-Click) ↗
+            </a>
           </div>
           <p className="text-[10px] text-amber-800 leading-tight">
-            یہ Key آپ کے موبائل/براؤزر میں محفوظ رہے گی اور تمام دستاویزات فوری اسکین ہوں گی۔
+            گوگل اے آئی اسٹوڈیو سے 1 کلک پر مفت Key لیں اور یہاں پیسٹ کریں۔ یہ Key آپ کے براؤزر میں ہمیشہ محفوظ رہے گی۔
           </p>
           <div className="flex gap-1.5">
             <input
