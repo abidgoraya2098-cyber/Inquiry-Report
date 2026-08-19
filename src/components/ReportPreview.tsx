@@ -214,10 +214,19 @@ ${getFormattedConclusion()}
     setAiMessage(null);
     try {
       const textToCorrect = editMode ? editedText : getCompiledReportText();
+      const customKey = typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : "";
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (customKey) {
+        headers["x-gemini-api-key"] = customKey;
+      }
+
       const response = await fetch("/api/correct-spelling", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: textToCorrect })
+        headers,
+        body: JSON.stringify({ 
+          text: textToCorrect,
+          apiKey: customKey || undefined
+        })
       });
 
       if (!response.ok) {

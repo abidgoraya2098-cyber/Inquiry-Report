@@ -5,7 +5,7 @@ import {
   ClipboardCheck, Download, Upload, Trash2, Printer, 
   History, Plus, Edit3, RefreshCw, Shield, Trash, Save,
   Smartphone, Monitor, ChevronRight, User, BookOpen, AlertCircle, AlertTriangle, Check, Play, Settings, LogOut, Eye, EyeOff,
-  Share2, QrCode as QrIcon, Copy, CheckCheck, ExternalLink
+  Share2, QrCode as QrIcon, Copy, CheckCheck, ExternalLink, Key, X
 } from "lucide-react";
 import { InquiryData, Statement } from "./types";
 import StatementImageScanner from "./components/StatementImageScanner";
@@ -324,6 +324,11 @@ export default function App() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
+
+  // Gemini API Key Modal State
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [customApiKeyInput, setCustomApiKeyInput] = useState(() => (typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : ""));
+  const [keySaveMessage, setKeySaveMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (showShareModal) {
@@ -821,13 +826,20 @@ export default function App() {
         apiStatements.push(...currentInquiry.statements);
       }
 
+      const customKey = typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : "";
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (customKey) {
+        headers["x-gemini-api-key"] = customKey;
+      }
+
       const response = await fetch("/api/generate-inquiry", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           ...currentInquiry,
           statements: apiStatements,
-          subjectTitle: `رپورٹ درخواست ازان ${currentInquiry.complainantName || "سائل"}`
+          subjectTitle: `رپورٹ درخواست ازان ${currentInquiry.complainantName || "سائل"}`,
+          apiKey: customKey || undefined
         })
       });
 
@@ -1181,6 +1193,16 @@ export default function App() {
             >
               <Share2 className="w-3.5 h-3.5" />
               <span>شیئر QR</span>
+            </button>
+
+            {/* GEMINI AI KEY SETTINGS BUTTON */}
+            <button
+              onClick={() => setShowApiKeyModal(true)}
+              className="bg-[#091b2e] hover:bg-[#122e4d] text-amber-300 border border-slate-700 hover:border-amber-400 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs active:scale-95 shrink-0"
+              title="Google Gemini AI Key سیٹنگز"
+            >
+              <Key className="w-3.5 h-3.5 text-amber-400" />
+              <span>AI Key</span>
             </button>
 
             {/* Install Button (Only when not installed) */}
@@ -3552,6 +3574,85 @@ export default function App() {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* GEMINI API KEY MODAL */}
+      {showApiKeyModal && (
+        <div className="fixed inset-0 z-[99999] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fadeIn no-print" dir="rtl">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-300 space-y-4 text-right">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-slate-900 text-amber-400 rounded-lg">
+                  <Key className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900 font-naskh">Google Gemini API Key سیٹنگز</h3>
+                  <p className="text-[10px] text-slate-500">اے آئی اسکینر اور انکوائری رپورٹ جنریشن</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setShowApiKeyModal(false); setKeySaveMessage(null); }}
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                اگر آپ کے ورسل سرور میں API Key سیٹ نہیں ہے، تو آپ اپنی ذاتی <span className="font-bold text-slate-900">Google Gemini API Key</span> یہاں درج کر سکتے ہیں۔ یہ Key آپ کے براؤزر میں محفوظ رہے گی:
+              </p>
+              <input
+                type="password"
+                value={customApiKeyInput}
+                onChange={(e) => setCustomApiKeyInput(e.target.value)}
+                placeholder="AIzaSy..."
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-slate-800 text-slate-900 font-mono text-left"
+                dir="ltr"
+              />
+              {keySaveMessage && (
+                <div className="text-xs text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 p-2 rounded-lg text-center">
+                  {keySaveMessage}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-200">
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem("GEMINI_CUSTOM_API_KEY");
+                  setCustomApiKeyInput("");
+                  setKeySaveMessage("API Key حذف کر دی گئی ہے۔ اب سرور کی ڈیفالٹ Key استعمال ہو گی۔");
+                }}
+                className="text-xs text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-lg font-bold border border-rose-200 transition-all cursor-pointer"
+              >
+                ری سیٹ کریں
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const key = customApiKeyInput.trim();
+                  if (key) {
+                    localStorage.setItem("GEMINI_CUSTOM_API_KEY", key);
+                    setKeySaveMessage("API Key کامیابی سے محفوظ ہو گئی!");
+                  } else {
+                    localStorage.removeItem("GEMINI_CUSTOM_API_KEY");
+                    setKeySaveMessage("خالی ہونے کی وجہ سے Key صاف کر دی گئی ہے۔");
+                  }
+                  setTimeout(() => {
+                    setShowApiKeyModal(false);
+                    setKeySaveMessage(null);
+                  }, 1200);
+                }}
+                className="bg-[#0f172a] hover:bg-[#1e293b] text-white px-4 py-2 rounded-xl text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Check className="w-4 h-4 text-amber-300" />
+                <span>محفوظ کریں</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

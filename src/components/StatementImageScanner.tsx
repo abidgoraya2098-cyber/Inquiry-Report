@@ -266,14 +266,21 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
     setIsProcessing(true);
     setErrorMessage(null);
     try {
-      // Compress and optimize image to crisp 1920px Full HD preserving razor-sharp pencil lines
-      imageToProcess = await optimizeImageForOcr(imageToProcess, 1920, 0.84, filterMode === "pencil");
+      // Compress and optimize image to crisp Full HD preserving razor-sharp pencil lines
+      imageToProcess = await optimizeImageForOcr(imageToProcess, 1600, 0.82, filterMode === "pencil");
+
+      const customKey = typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : "";
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (customKey) {
+        headers["x-gemini-api-key"] = customKey;
+      }
 
       const response = await fetch("/api/transcribe-image", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
-          imageBase64: imageToProcess
+          imageBase64: imageToProcess,
+          apiKey: customKey || undefined
         })
       });
 

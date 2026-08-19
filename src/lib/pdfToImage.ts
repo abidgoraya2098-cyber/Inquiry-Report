@@ -1,9 +1,10 @@
 import * as pdfjsLib from "pdfjs-dist";
 
-// Initialize worker for browser environment
+// Initialize worker for browser environment with multiple fallbacks
 if (typeof window !== "undefined" && pdfjsLib.GlobalWorkerOptions) {
   try {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+    const version = pdfjsLib.version || "4.10.38";
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${version}/build/pdf.worker.min.mjs`;
   } catch (err) {
     console.warn("pdfjs-dist worker configuration fallback:", err);
   }
@@ -37,7 +38,7 @@ export function enhancePencilHandwritingCanvas(
         d[i + 1] = 255;
         d[i + 2] = 255;
       } 
-      // If faint pencil stroke (between 50 and 220), darken it aggressively
+      // If faint pencil stroke (between 40 and 220), darken it aggressively
       else if (gray > 40) {
         const normalized = (gray - 40) / 180; // 0 to 1
         // Apply gamma power curve to make pencil dark
@@ -62,14 +63,14 @@ export function enhancePencilHandwritingCanvas(
 
 /**
  * Automatically compresses, sharpens, and resizes any image data URL
- * so that its max dimension is <= maxDimension (default 1920px Full HD)
+ * so that its max dimension is <= maxDimension (default 1600px)
  * and JPEG quality is around 0.82-0.85.
  * Keeps base64 payloads under 1MB to prevent Vercel 413 errors while preserving razor-sharp text.
  */
 export async function optimizeImageForOcr(
   dataUrl: string,
-  maxDimension = 1920,
-  quality = 0.84,
+  maxDimension = 1600,
+  quality = 0.82,
   applyPencilBoost = false
 ): Promise<string> {
   return new Promise((resolve) => {
@@ -124,14 +125,21 @@ export async function optimizeImageForOcr(
 /**
  * Converts a PDF File into an array of JPEG image data URLs (one per page).
  * @param file PDF File object
- * @param scale Quality scale factor (default 1.6 for crisp OCR text)
+ * @param scale Quality scale factor (default 1.5 for crisp OCR text)
  */
 export async function convertPdfToPageImages(
   file: File,
-  scale = 1.6
+  scale = 1.5
 ): Promise<string[]> {
   try {
     const arrayBuffer = await file.arrayBuffer();
+    
+    // Ensure worker is set up
+    if (typeof window !== "undefined" && pdfjsLib.GlobalWorkerOptions && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+      const version = pdfjsLib.version || "4.10.38";
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${version}/build/pdf.worker.min.mjs`;
+    }
+
     const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
     const pdf = await loadingTask.promise;
     const pageImages: string[] = [];
@@ -161,15 +169,15 @@ export async function convertPdfToPageImages(
       };
 
       await page.render(renderContext).promise;
-      const rawDataUrl = canvas.toDataURL("image/jpeg", 0.88);
-      const optimized = await optimizeImageForOcr(rawDataUrl, 1920, 0.85);
+      const rawDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      const optimized = await optimizeImageForOcr(rawDataUrl, 1600, 0.82);
       pageImages.push(optimized);
     }
 
     return pageImages;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error converting PDF to images:", error);
-    throw new Error("پی ڈی ایف فائل کو تصویر میں تبدیل کرنے میں ناکامی ہوئی۔ براہ کرم درست پی ڈی ایف کا انتخاب کریں۔");
+    throw new Error(`پی ڈی ایف فائل پڑھنے میں خرابی: ${error?.message || "درست پی ڈی ایف فائل منتخب کریں۔"}`);
   }
 }
 
@@ -179,7 +187,7 @@ export async function convertPdfToPageImages(
  */
 export async function convertPdfToSingleStackedImage(
   file: File,
-  scale = 1.6
+  scale = 1.5
 ): Promise<string> {
   const pageImages = await convertPdfToPageImages(file, scale);
   if (pageImages.length === 0) {
@@ -225,7 +233,7 @@ export async function convertPdfToSingleStackedImage(
               currentY += image.height + 15;
             });
 
-            const stackedData = canvas.toDataURL("image/jpeg", 0.85);
+            const stackedData = canvas.toDataURL("image/jpeg", 0.82);
             resolve(stackedData);
           } catch (err) {
             reject(err);

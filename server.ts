@@ -28,15 +28,15 @@ app.use((req, res, next) => {
 const CANDIDATE_MODELS = [
   process.env.GEMINI_MODEL || "gemini-2.0-flash",
   "gemini-1.5-flash",
-  "gemini-2.5-flash",
-  "gemini-1.5-pro",
-  "gemini-flash-latest"
+  "gemini-2.0-flash-lite",
+  "gemini-1.5-flash-8b",
+  "gemini-1.5-pro"
 ];
 
-function getGeminiClient(): GoogleGenAI {
-  const apiKey = process.env.GEMINI_API_KEY;
+function getGeminiClient(customApiKey?: string): GoogleGenAI {
+  const apiKey = customApiKey || process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY missing: ورسل (Vercel) یا سرور کی Settings -> Environment Variables میں GEMINI_API_KEY شامل کریں۔");
+    throw new Error("GEMINI_API_KEY missing: ورسل (Vercel) یا سرور کی Settings -> Environment Variables میں GEMINI_API_KEY شامل کریں، یا ایپ میں اپنی Gemini API Key درج کریں۔");
   }
   return new GoogleGenAI({
     apiKey: apiKey,
@@ -48,6 +48,31 @@ function getGeminiClient(): GoogleGenAI {
   });
 }
 
+function extractResponseText(response: any): string {
+  if (!response) return "";
+  if (typeof response.text === "string" && response.text.trim()) {
+    return response.text.trim();
+  }
+  if (typeof response.text === "function") {
+    try {
+      const t = response.text();
+      if (typeof t === "string" && t.trim()) return t.trim();
+    } catch (e) {}
+  }
+  if (Array.isArray(response.candidates) && response.candidates.length > 0) {
+    const candidate = response.candidates[0];
+    if (candidate?.content?.parts && Array.isArray(candidate.content.parts)) {
+      const textParts = candidate.content.parts
+        .map((p: any) => (typeof p === "string" ? p : p?.text || ""))
+        .filter(Boolean);
+      if (textParts.length > 0) {
+        return textParts.join("\n").trim();
+      }
+    }
+  }
+  return "";
+}
+
 async function generateWithFallback(client: GoogleGenAI, config: any) {
   let lastError: any = null;
   for (const modelName of CANDIDATE_MODELS) {
@@ -56,25 +81,23 @@ async function generateWithFallback(client: GoogleGenAI, config: any) {
         ...config,
         model: modelName,
       });
-      if (response && response.text) {
-        return response;
+      const extracted = extractResponseText(response);
+      if (extracted) {
+        return { text: extracted, raw: response };
       }
     } catch (err: any) {
       console.warn(`Attempt with ${modelName} notice:`, err?.message || err);
       lastError = err;
     }
   }
-  throw lastError || new Error("Gemini API ماڈلز سے رابطہ ناکام رہا۔ براہ کرم API Key چیک کریں۔");
+  throw lastError || new Error("Gemini API ماڈلز سے رابطہ ناکام رہا۔ براہ کرم اپنی API Key اور انٹرنیٹ کنکشن چیک کریں۔");
 }
 
 // API Routes
 app.post("/api/generate-inquiry", async (req, res) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({
-        error: "GEMINI_API_KEY missing: ورسل (Vercel) کی Settings -> Environment Variables میں GEMINI_API_KEY لازمی شامل کریں۔"
-      });
-    }
+    const customApiKey = (req.headers["x-gemini-api-key"] as string) || req.body?.apiKey;
+    const client = getGeminiClient(customApiKey);
 
     const {
       senderDesignation,
@@ -101,8 +124,6 @@ app.post("/api/generate-inquiry", async (req, res) => {
       respondentStatement,
       evidenceDescription
     } = req.body;
-
-    const client = getGeminiClient();
 
     // Map old fields to new statement structure if statements array is empty
     let processedStatements = [...statements];
@@ -219,19 +240,14 @@ ${observations || "موقع ملاحظہ کی تفاصیل کلام ریکارڈ
 // Extract key facts and analyze statements for consistency
 app.post("/api/analyze-statement", async (req, res) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({
-        error: "GEMINI_API_KEY missing: ورسل (Vercel) کی Settings -> Environment Variables میں GEMINI_API_KEY لازمی شامل کریں۔"
-      });
-    }
+    const customApiKey = (req.headers["x-gemini-api-key"] as string) || req.body?.apiKey;
+    const client = getGeminiClient(customApiKey);
 
     const { statement, context } = req.body;
 
     if (!statement) {
       return res.status(400).json({ error: "بیان فراہم کرنا لازمی ہے (Statement is required)" });
     }
-
-    const client = getGeminiClient();
 
     const prompt = `درج ذیل پولیس بیان (police statement) یا درخواست کا باریک بینی سے جائزہ لیں اور اس میں سے اہم معلومات کا اخراج کریں۔
 
@@ -268,18 +284,14 @@ ${context || "کوئی پس منظر فراہم نہیں کیا گیا"}
 // AI Spelling and Grammar Correction endpoint
 app.post("/api/correct-spelling", async (req, res) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({
-        error: "GEMINI_API_KEY missing: ورسل (Vercel) کی Settings -> Environment Variables میں GEMINI_API_KEY لازمی شامل کریں۔"
-      });
-    }
+    const customApiKey = (req.headers["x-gemini-api-key"] as string) || req.body?.apiKey;
+    const client = getGeminiClient(customApiKey);
 
     const { text } = req.body;
     if (!text) {
       return res.status(400).json({ error: "متن فراہم کرنا لازمی ہے (Text is required)" });
     }
 
-    const client = getGeminiClient();
     const systemInstruction = `You are an expert Urdu proofreader, legal typist, and Punjab Police report formatter.
 Your task is to correct any spelling mistakes (املا کی غلطیاں), typo issues, and grammar problems in the provided Urdu report text.
 Keep all the layout fields, formal structure, margins, symbols, and names intact. Do not rewrite the facts or alter the legal meaning. 
@@ -308,43 +320,38 @@ ${text}
 // Image transcript / OCR endpoint
 app.post("/api/transcribe-image", async (req, res) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({
-        error: "GEMINI_API_KEY missing: ورسل (Vercel) کی Settings -> Environment Variables میں GEMINI_API_KEY لازمی شامل کریں۔"
-      });
-    }
+    const customApiKey = (req.headers["x-gemini-api-key"] as string) || req.body?.apiKey;
+    const client = getGeminiClient(customApiKey);
 
     const { imageBase64, mimeType } = req.body;
 
     if (!imageBase64) {
-      return res.status(400).json({ error: "تصویر کا ہونا لازمی ہے (Image data is required)" });
+      return res.status(400).json({ error: "تصویر کا ڈیٹا موصول نہیں ہوا (Image data is required)" });
     }
 
-    // Extract clean base64 data
+    // Extract clean base64 data and mimeType
     let cleanBase64 = imageBase64;
     let finalMimeType = mimeType || "image/jpeg";
 
     if (imageBase64.includes(";base64,")) {
       const parts = imageBase64.split(";base64,");
       cleanBase64 = parts[1];
-      const match = parts[0].match(/data:(.*)/);
-      if (match) {
+      const match = parts[0].match(/data:(.*?);/);
+      if (match && match[1]) {
         finalMimeType = match[1];
       }
     }
 
-    const client = getGeminiClient();
-
     const systemInstruction = `You are an elite, specialized Urdu Handwriting and Document OCR system for Punjab Police, Pakistan.
-You specialize in deciphering very faint, light, messy pencil handwriting (پنسل کی ہلکی، مدہم اور کچی لکھائی), fountain pen scripts, handwritten applications (درخواست سائل), police diaries (روزنامچہ), and witness statements (بیانات فریقین).
+You specialize in deciphering very faint, light, messy pencil handwriting (پنسل کی ہلکی، مدہم اور کچی لکھائی), fountain pen scripts, handwritten applications (درخواست سائل), police diaries (روزنامچہ), statements of parties (بیانات فریقین), stamp papers (سٹامپ پیپر), witness statements, and official police files.
 Key Instructions:
-1. Carefully analyze every faint pencil stroke and word. Reconstruct complete sentences even if the handwriting is light or hurried.
+1. Carefully analyze every faint pencil stroke, ink word, name, address, father's name, CNIC, and detail. Reconstruct complete coherent sentences in proper Urdu.
 2. Maintain exact Urdu orthography and spellings for all legal and police terminology (جیسے: مسمی، مسمات، ولدیت، سکونت، سائل، الزام علیہ، وقوعہ، برآمدگی، گواہ، تھانہ، وغیرہ).
 3. Do NOT omit any names, dates, amounts, or statements.
-4. Output ONLY the raw extracted Urdu text with zero English commentary or metadata.`;
+4. Output ONLY the raw extracted Urdu text with zero English commentary, markdown backticks or extra metadata.`;
 
     const prompt = `یہ پولیس کے کاغذ، ہاتھ سے لکھی درخواست، یا پنسل سے تحریر کردہ بیان کی تصویر ہے۔
-تصویر میں موجود تمام اردو تحریر (خواہ وہ پنسل کی مدہم لکھائی ہو یا قلم کی) کو انتہائی باریک بینی سے پڑھ کر مکمل اردو متن (Unicode Text) میں تحریر کریں۔ کوئی جملہ یا فقرہ چھوڑے بغیر من و عن اصل تحریر فراہم کریں۔`;
+تصویر میں موجود تمام اردو تحریر (خواہ وہ پنسل کی مدہم لکھائی ہو، بال پوائنٹ ہو یا قلم کی) کو انتہائی باریک بینی سے پڑھ کر مکمل اردو متن (Unicode Text) میں تحریر کریں۔ کوئی جملہ، نام، ولدیت یا فقرہ چھوڑے بغیر من و عن اصل تحریر اردو میں فراہم کریں۔`;
 
     const response = await generateWithFallback(client, {
       contents: [
@@ -354,7 +361,9 @@ Key Instructions:
             mimeType: finalMimeType
           }
         },
-        prompt
+        {
+          text: prompt
+        }
       ],
       config: {
         systemInstruction: systemInstruction,
