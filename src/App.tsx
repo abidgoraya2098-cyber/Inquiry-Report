@@ -336,41 +336,91 @@ export default function App() {
     if (!extractedText.trim()) return;
 
     setCurrentInquiry(prev => {
-      if (target === "application") {
+      // 1. موقف درخواست گزار (Complainant Stance)
+      if (target === "complainant_stance") {
         const currentVal = prev.complainantStatement || "";
         const updatedVal = currentVal ? `${currentVal}\n\n${extractedText}` : extractedText;
         return { ...prev, complainantStatement: updatedVal };
       }
 
-      if (target === "fir") {
-        const currentRef = prev.referenceNumber || "";
-        const updatedRef = currentRef && currentRef !== "____________" ? `${currentRef} / ${extractedText.substring(0, 40)}` : extractedText.substring(0, 40);
-        const currentVal = prev.complainantStatement || "";
-        const updatedVal = currentVal ? `${currentVal}\n\n[کاپی FIR]:\n${extractedText}` : `[کاپی FIR]:\n${extractedText}`;
-        return { ...prev, referenceNumber: updatedRef, complainantStatement: updatedVal };
+      // 2. بیان درخواست گزار (Statement of Complainant)
+      if (target === "complainant_statement") {
+        const existingStatements = prev.statements || [];
+        const complainantIdx = existingStatements.findIndex(s => s.role === "Complainant");
+        if (complainantIdx >= 0) {
+          const updated = [...existingStatements];
+          updated[complainantIdx] = {
+            ...updated[complainantIdx],
+            text: updated[complainantIdx].text ? `${updated[complainantIdx].text}\n\n${extractedText}` : extractedText
+          };
+          return { ...prev, statements: updated };
+        } else {
+          const newStmt: Statement = {
+            id: `stmt_comp_${Date.now()}`,
+            personName: prev.complainantName || "سائل / درخواست گزار",
+            role: "Complainant",
+            text: extractedText,
+            recordedDate: new Date().toLocaleDateString("ur-PK")
+          };
+          return { ...prev, statements: [...existingStatements, newStmt] };
+        }
       }
 
-      if (target === "police") {
+      // 3. تائیدی بیان درخواست گزار (Witness Statement of Complainant)
+      if (target === "complainant_witness") {
         const newStmt: Statement = {
-          id: `stmt_police_${Date.now()}`,
-          personName: "تفتیشی افسر / گواہ",
-          role: "witness",
+          id: `stmt_comp_wit_${Date.now()}`,
+          personName: "تائیدی گواہ (سائل)",
+          role: "Complainant_Witness",
           text: extractedText,
           recordedDate: new Date().toLocaleDateString("ur-PK")
         };
-        return {
-          ...prev,
-          statements: [...(prev.statements || []), newStmt]
-        };
+        return { ...prev, statements: [...(prev.statements || []), newStmt] };
       }
 
-      if (target === "dib") {
+      // 4. بیان الزام علیہ (Statement of Respondent)
+      if (target === "respondent_statement") {
+        const existingStatements = prev.statements || [];
+        const respondentIdx = existingStatements.findIndex(s => s.role === "Respondent");
+        if (respondentIdx >= 0) {
+          const updated = [...existingStatements];
+          updated[respondentIdx] = {
+            ...updated[respondentIdx],
+            text: updated[respondentIdx].text ? `${updated[respondentIdx].text}\n\n${extractedText}` : extractedText
+          };
+          return { ...prev, statements: updated };
+        } else {
+          const newStmt: Statement = {
+            id: `stmt_resp_${Date.now()}`,
+            personName: "الزام علیہ",
+            role: "Respondent",
+            text: extractedText,
+            recordedDate: new Date().toLocaleDateString("ur-PK")
+          };
+          return { ...prev, statements: [...existingStatements, newStmt] };
+        }
+      }
+
+      // 5. تائیدی بیان الزام علیہ (Witness Statement of Respondent)
+      if (target === "respondent_witness") {
+        const newStmt: Statement = {
+          id: `stmt_resp_wit_${Date.now()}`,
+          personName: "تائیدی گواہ (الزام علیہ)",
+          role: "Respondent_Witness",
+          text: extractedText,
+          recordedDate: new Date().toLocaleDateString("ur-PK")
+        };
+        return { ...prev, statements: [...(prev.statements || []), newStmt] };
+      }
+
+      // 6. پراگرس رپورٹ (آپشنل) (Progress / Police Investigation Report)
+      if (target === "progress_report") {
         const currentObs = prev.observations || "";
-        const updatedObs = currentObs ? `${currentObs}\n\n${extractedText}` : extractedText;
+        const updatedObs = currentObs ? `${currentObs}\n\n[پراگرس رپورٹ]:\n${extractedText}` : `[پراگرس رپورٹ]:\n${extractedText}`;
         return { ...prev, observations: updatedObs };
       }
 
-      // Default: "all"
+      // 7. تمام صفحات (All)
       const currentVal = prev.complainantStatement || "";
       const updatedVal = currentVal ? `${currentVal}\n\n${extractedText}` : extractedText;
       return { ...prev, complainantStatement: updatedVal };
@@ -3117,49 +3167,42 @@ export default function App() {
       {/* =========================================================================
           GOOGLE CHROME PWA INSTALL POPUP
           ========================================================================= */}
+      {/* PWA / MOBILE APP INSTALL GUIDE MODAL */}
       {showInstallModal && (
-        <div className="fixed inset-0 bg-slate-950/75 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto no-print" dir="rtl">
-          <div className="bg-white text-slate-900 border border-slate-200 rounded-2xl max-w-sm w-full overflow-hidden shadow-xl relative p-6 font-sans text-center animate-scaleUp">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 z-[99999] font-sans animate-fadeIn no-print" dir="rtl">
+          <div className="bg-white border border-slate-300 max-w-md w-full rounded-2xl overflow-hidden shadow-2xl relative text-slate-900 flex flex-col max-h-[90vh]">
             
-            {/* Close Button */}
-            <button 
-              onClick={() => setShowInstallModal(false)}
-              className="absolute top-4 left-4 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-all cursor-pointer"
-              title="بند کریں"
-            >
-              <Plus className="w-4 h-4 rotate-45" />
-            </button>
-
             {/* Header */}
-            <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-500 mb-4 font-mono">
-              <Shield className="w-4 h-4 text-slate-700" />
-              <span>پنجاب پولیس آفیشل ایپ</span>
+            <div className="bg-[#0b1b2b] p-4 text-white flex items-center justify-between border-b border-slate-800 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 via-amber-300 to-amber-500 shadow-md shrink-0 flex items-center justify-center border border-amber-400">
+                  <img 
+                    src={policeLogo} 
+                    alt="Inquiry Report" 
+                    className="w-full h-full rounded-full object-contain bg-slate-900 p-0.5" 
+                    referrerPolicy="no-referrer"
+                    onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
+                  />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-white font-naskh">
+                    ایپ انسٹالیشن گائیڈ (Install App)
+                  </h3>
+                  <p className="text-[10px] text-amber-300 font-medium">پنجاب پولیس انکوائری رپورٹ اسسٹنٹ</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowInstallModal(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            {/* Official App Crest Icon */}
-            <div className="flex justify-center mb-3">
-              <img 
-                src={policeLogo} 
-                alt="Inquiry Report" 
-                className="w-20 h-20 rounded-2xl object-cover border-2 border-slate-700 shadow-md bg-slate-900 p-1"
-                referrerPolicy="no-referrer"
-                onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
-              />
-            </div>
-
-            {/* Official App Name */}
-            <h3 className="text-xl font-black text-slate-900 tracking-tight font-sans">
-              Inquiry Report
-            </h3>
-            <p className="text-xs font-bold text-slate-700 mt-1 font-naskh">
-              ریجنل انویسٹی گیشن برانچ گوجرانوالہ
-            </p>
-            <p className="text-[11px] text-slate-400 font-mono mt-1 dir-ltr">
-              {typeof window !== "undefined" ? window.location.hostname : "inquiry-report.vercel.app"}
-            </p>
-
-            {/* Direct Action Buttons */}
-            <div className="flex items-center justify-center gap-3 pt-5 mt-4 border-t border-slate-100">
+            {/* Modal Body */}
+            <div className="p-4 space-y-3.5 overflow-y-auto text-right text-xs">
+              
+              {/* Primary Direct 1-Click Install Button */}
               <button
                 onClick={async () => {
                   const promptEvent = deferredPrompt || (window as any).deferredInstallPrompt;
@@ -3171,24 +3214,96 @@ export default function App() {
                         setDeferredPrompt(null);
                         (window as any).deferredInstallPrompt = null;
                         setShowInstallBanner(false);
+                        setShowInstallModal(false);
+                        return;
                       }
                     } catch (e) {
                       console.warn('Install prompt error:', e);
                     }
+                  } else {
+                    alert("اگر خودکار انسٹالیشن ڈائیلاگ اوپن نہیں ہوا، تو نیچے دیے گئے اپنے براؤزر کے طریقے پر عمل کریں۔");
                   }
-                  setShowInstallModal(false);
                 }}
-                className="flex-1 bg-[#0f172a] hover:bg-[#1e293b] active:scale-95 text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-xs cursor-pointer flex items-center justify-center gap-2 font-naskh border border-slate-800"
+                className="w-full bg-[#01875f] hover:bg-[#00704e] active:scale-95 text-white font-black py-3 px-4 rounded-xl text-sm transition-all shadow-md cursor-pointer flex items-center justify-center gap-2 font-naskh border border-emerald-400"
               >
-                <Download className="w-4 h-4 text-amber-300" />
-                <span>انسٹال کریں (Install)</span>
+                <Download className="w-5 h-5 text-amber-300" />
+                <span>براہِ راست انسٹال کریں (Install Directly)</span>
               </button>
 
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-slate-200"></div>
+                <span className="flex-shrink mx-2 text-[10px] font-bold text-slate-400">یا نیچے دیے گئے طریقے سے شامل کریں</span>
+                <div className="flex-grow border-t border-slate-200"></div>
+              </div>
+
+              {/* Instructions per device */}
+              <div className="space-y-2 font-medium">
+                {/* 1. Android */}
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                  <div className="flex items-center gap-1.5 font-extrabold text-slate-900 text-xs font-naskh">
+                    <Smartphone className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>1. اینڈرائیڈ فون (Android / Chrome):</span>
+                  </div>
+                  <p className="text-[11px] text-slate-700 leading-relaxed pr-5">
+                    کروم براؤزر کے اوپر دائیں کونے میں تین نقطوں <span className="font-bold text-slate-900 bg-slate-200 px-1 py-0.5 rounded">(⋮)</span> پر کلک کریں اور <span className="font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">"Install app"</span> یا <span className="font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">"Add to Home screen"</span> منتخب کریں۔
+                  </p>
+                </div>
+
+                {/* 2. iPhone */}
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                  <div className="flex items-center gap-1.5 font-extrabold text-slate-900 text-xs font-naskh">
+                    <Smartphone className="w-4 h-4 text-indigo-600 shrink-0" />
+                    <span>2. آئی فون (iPhone / Safari):</span>
+                  </div>
+                  <p className="text-[11px] text-slate-700 leading-relaxed pr-5">
+                    نیچے موجود شیئر بٹن <span className="font-bold text-slate-900 bg-slate-200 px-1 py-0.5 rounded">⎕↑</span> پر ٹیپ کریں اور نیچے اسکرول کر کے <span className="font-bold text-indigo-800 bg-indigo-100 px-1.5 py-0.5 rounded">"Add to Home Screen"</span> منتخب کریں۔
+                  </p>
+                </div>
+
+                {/* 3. Computer */}
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                  <div className="flex items-center gap-1.5 font-extrabold text-slate-900 text-xs font-naskh">
+                    <Monitor className="w-4 h-4 text-blue-600 shrink-0" />
+                    <span>3. کمپیوٹر و لیپ ٹاپ (Chrome / Edge):</span>
+                  </div>
+                  <p className="text-[11px] text-slate-700 leading-relaxed pr-5">
+                    ایڈریس بار میں دائیں جانب موجود انسٹال آئیکن <span className="font-bold text-slate-900 bg-slate-200 px-1 py-0.5 rounded">⊕</span> پر کلک کریں یا براؤزر مینو سے <span className="font-bold text-blue-800 bg-blue-100 px-1.5 py-0.5 rounded">"Install Inquiry Report"</span> پر کلک کریں۔
+                  </p>
+                </div>
+              </div>
+
+              {/* Offline Desktop Shortcut Download */}
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentUrl = typeof window !== "undefined" ? window.location.href : "https://inquiry-report.vercel.app/";
+                    const urlContent = `[InternetShortcut]\nURL=${currentUrl}\nIconIndex=0\n`;
+                    const blob = new Blob([urlContent], { type: "application/internet-shortcut" });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "Inquiry_Report_Shortcut.url";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-2 px-3 rounded-xl text-xs transition-all border border-slate-300 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-700" />
+                  <span>کمپیوٹر ڈیسک ٹاپ شارٹ کٹ فائل ڈاؤن لوڈ کریں (.url)</span>
+                </button>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="bg-slate-100 p-3 border-t border-slate-200 flex items-center justify-end shrink-0">
               <button
+                type="button"
                 onClick={() => setShowInstallModal(false)}
-                className="bg-white hover:bg-slate-50 text-slate-700 font-bold px-5 py-3 rounded-xl text-sm transition-all cursor-pointer border border-slate-300 shadow-xs"
+                className="bg-white hover:bg-slate-50 text-slate-700 font-bold px-4 py-1.5 rounded-xl text-xs transition-all cursor-pointer border border-slate-300 shadow-2xs"
               >
-                منسوخ
+                بند کریں
               </button>
             </div>
 

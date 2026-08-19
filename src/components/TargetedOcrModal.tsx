@@ -6,7 +6,14 @@ import {
 import { convertPdfToPageImages } from "../lib/pdfToImage";
 import { InquiryData } from "../types";
 
-export type TargetSection = "all" | "fir" | "application" | "police" | "dib";
+export type TargetSection = 
+  | "complainant_stance" 
+  | "complainant_statement" 
+  | "complainant_witness" 
+  | "respondent_statement" 
+  | "respondent_witness" 
+  | "progress_report" 
+  | "all";
 
 interface TargetedOcrModalProps {
   isOpen: boolean;
@@ -41,26 +48,37 @@ export default function TargetedOcrModal({
 
   if (!isOpen) return null;
 
-  const targetLabels: Record<TargetSection, { label: string; desc: string; icon: string }> = {
-    fir: {
-      label: "کاپی FIR",
-      desc: "منتخب ہدف: ایف آئی آر کی کاپی اسکین کر کے مقدمہ نمبر، دفعات، اور مدعی کا اندراج کیا جائے گا۔",
-      icon: "📄"
-    },
-    application: {
-      label: "درخواست",
-      desc: "منتخب ہدف: سائل کی درخواست اسکین کر کے موقف درخواست گزار اور سائل کے خانے میں درج کیا جائے گا۔",
+  const targetLabels: Record<TargetSection, { label: string; desc: string; icon: string; badge?: string }> = {
+    complainant_stance: {
+      label: "موقف درخواست گزار",
+      desc: "منتخب ہدف: درخواست کا متن اور سائل کا موقف فارم کے خانے \"موقف درخواست گزار\" میں درج کیا جائے گا۔",
       icon: "📝"
     },
-    police: {
-      label: "تفتیش مقامی پولیس",
-      desc: "منتخب ہدف: مقامی پولیس کی ضمنیات اور بیانات اسکین کر کے تفتیش و بیانات میں درج کیے جائیں گے۔",
-      icon: "👮"
+    complainant_statement: {
+      label: "بیان درخواست گزار",
+      desc: "منتخب ہدف: سائل / مدعی کا باضابطہ بیان اسکین کر کے \"بیان سائل\" کے خانے میں درج کیا جائے گا۔",
+      icon: "👤"
     },
-    dib: {
-      label: "تفتیش DIB",
-      desc: "منتخب ہدف: ڈی آئی بی و انکوائری رپورٹ اسکین کر کے نتیجہ انکوائری اور مشاہدات میں درج کیا جائے گا۔",
-      icon: "🔍"
+    complainant_witness: {
+      label: "تائیدی بیان درخواست گزار",
+      desc: "منتخب ہدف: سائل کے گواہان کے بیانات اسکین کر کے \"تائیدی گواہ (درخواست گزار)\" میں درج کیے جائیں گے۔",
+      icon: "👥"
+    },
+    respondent_statement: {
+      label: "بیان الزام علیہ",
+      desc: "منتخب ہدف: الزام علیہ / مخالف فریق کا بیان اسکین کر کے \"بیان الزام علیہ\" میں درج کیا جائے گا۔",
+      icon: "⚖️"
+    },
+    respondent_witness: {
+      label: "تائیدی بیان الزام علیہ",
+      desc: "منتخب ہدف: الزام علیہ کے گواہان کے بیانات اسکین کر کے \"تائیدی گواہ (الزام علیہ)\" میں درج کیے جائیں گے۔",
+      icon: "🤝"
+    },
+    progress_report: {
+      label: "پراگرس رپورٹ",
+      badge: "آپشنل",
+      desc: "منتخب ہدف (آپشنل): تفتیشی / پراگرس رپورٹ اسکین کر کے تفتیش و مشاہدات میں اختیاری طور پر شامل کی جائے گی۔",
+      icon: "📋"
     },
     all: {
       label: "تمام صفحات (All)",
@@ -309,19 +327,29 @@ export default function TargetedOcrModal({
   // Sample Presets
   const presets = [
     {
-      title: "درخواست برائے دھوکہ دہی و امانت میں خیانت (406 ت پ)",
-      target: "application" as TargetSection,
+      title: "موقف درخواست گزار: درخواست برائے دھوکہ دہی و امانت میں خیانت (406 ت پ)",
+      target: "complainant_stance" as TargetSection,
       content: `سائل نے بیان کیا کہ مسمی الزام علیہ نے مجھ سے بذریعہ ساز باز کاروبار میں شراکت داری کا جھانسہ دے کر مبلغ 25,00,000/- روپے وصول کیے۔ مقررہ مدت گزرنے کے بعد جب رقم کی واپسی کا تقاضا کیا گیا تو الزام علیہ ٹال مٹول سے کام لینے لگا اور بعد ازاں رقم واپس کرنے سے صاف انکاری ہو گیا اور سنگین نتائج کی دھمکیاں دیں۔ استدعا ہے کہ الزام علیہ کے خلاف قانونی کارروائی عمل میں لا کر سائل کو اس کی رقم واپس دلوائی جائے۔`
     },
     {
-      title: "درخواست برائے لین دین تنازعہ و من گھڑت الزام",
-      target: "all" as TargetSection,
-      content: `تحریر ہے کہ درخواست عنوان بالا موصول ہونے پر فریقین کو طلب کر کے دریافت عمل میں لائی گئی۔ سائل اور الزام علیہ کے مابین عرصہ دراز سے زرعی رقبہ کی بابت زبانی لین دین چلا آ رہا تھا۔ الزام علیہ نے موقف اختیار کیا کہ اس نے سائل کے تمام واجبات ادا کر دیے ہیں جبکہ سائل اس امر سے انکاری ہے۔ دریافت و ملاحظہ ریکارڈ سے وقوعہ فوجداری جرم کی بجائے خالصتاً دیوانی نوعیت کا پایا گیا۔`
+      title: "بیان درخواست گزار: باضابطہ بیان سائل بمعہ موقف تصدیق",
+      target: "complainant_statement" as TargetSection,
+      content: `میں مسمی / مسمات حلفاً بیان کرتا/کرتی ہوں کہ میں نے جو درخواست روبرو جناب پیش کی ہے اس کے تمام مندرجات سچ اور مبنی بر حقائق ہیں۔ الزام علیہ نے دانستہ طور پر بدنیتی کے ساتھ مجھ سے رقم ہڑپ کی ہے اور اب دینے سے انکاری ہے۔ میں اپنے بیان پر قائم ہوں اور الزام علیہ کے خلاف قانونی کارروائی کا متمنی ہوں۔`
     },
     {
-      title: "درخواست برائے قبضہ ناجائز و ہراسمنٹ",
-      target: "application" as TargetSection,
-      content: `موقف سائل ہے کہ اس کی ملکیتی اراضی واقع رقبہ پر سائل عرصہ سے قابض چلا آ رہا ہے۔ الزام علیہان زبردستی سائل کی ملکیتی اراضی پر ناجائز قبضہ کرنے کی نیت سے مسلح ہو کر آئے اور سائل کو سنگین نتائج و جان سے مارنے کی دھمکیاں دیتے ہوئے کام بند کروا دیا۔ انصاف فراہم کیا جائے اور سائل کو تحفظ دیا جائے۔`
+      title: "بیان الزام علیہ: تردید الزامات و موقف بے گناہی",
+      target: "respondent_statement" as TargetSection,
+      content: `مسمی الزام علیہ نے روبرو ہو کر بیان کیا کہ سائل کی جانب سے لگائے گئے تمام الزامات من گھڑت، بے بنیاد اور خلافِ واقعہ ہیں۔ ہمارا آپس میں حساب کتاب زبانی طور پر طے پا چکا تھا اور میں نے کوئی ناجائز رقم وصول نہیں کی۔ سائل مجھے بلیک میل کر کے ناحق دباؤ ڈالنا چاہتا ہے۔ میں بالکل بے گناہ ہوں۔`
+    },
+    {
+      title: "پراگرس رپورٹ (آپشنل): تفتیشی ضمنی و مشاہدہ موقع",
+      target: "progress_report" as TargetSection,
+      content: `تفتیشی رپورٹ و پراگرس: وقوعہ کی بابت فریقین اور گواہان کو طلب کر کے بیانات قلمبند کیے گئے۔ ریکارڈ کی جانچ پڑتال اور موقع کے شواہد سے معلوم ہوا کہ فریقین کے مابین دیوانی نوعیت کا لین دین کا تنازعہ ہے۔ فوجداری عنصر تاحال ثابت نہ ہو سکا ہے۔ تفتیش ضابطہ کے مطابق جاری ہے۔`
+    },
+    {
+      title: "تمام صفحات: مکمل انکوائری رپورٹ نمونہ",
+      target: "all" as TargetSection,
+      content: `تحریر ہے کہ درخواست عنوان بالا موصول ہونے پر فریقین کو طلب کر کے دریافت عمل میں لائی گئی۔ سائل اور الزام علیہ کے مابین لین دین کی بابت تنازعہ پایا گیا۔ دریافت و ملاحظہ ریکارڈ سے تمام حالات و واقعات کو باقاعدہ قلمبند کر کے رپورٹ ہذا مرتب کی گئی ہے۔`
     }
   ];
 
@@ -409,29 +437,43 @@ export default function TargetedOcrModal({
             </div>
 
             {/* Target Options Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
-              {(["all", "fir", "application", "police", "dib"] as TargetSection[]).map((key) => {
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {([
+                "complainant_stance",
+                "complainant_statement",
+                "complainant_witness",
+                "respondent_statement",
+                "respondent_witness",
+                "progress_report",
+                "all"
+              ] as TargetSection[]).map((key) => {
                 const isSelected = selectedTarget === key;
+                const info = targetLabels[key];
                 return (
                   <button
                     key={key}
                     type="button"
                     onClick={() => setSelectedTarget(key)}
-                    className={`p-2 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-1 ${
+                    className={`p-2.5 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 relative ${
                       isSelected
-                        ? "bg-[#0b1b2b] text-amber-300 border-slate-900 shadow-xs font-black ring-2 ring-emerald-500/50"
-                        : "bg-white text-slate-700 border-slate-200 hover:border-slate-300 font-bold"
+                        ? "bg-[#0b1b2b] text-amber-300 border-slate-900 shadow-md font-black ring-2 ring-emerald-500/50 scale-[1.02]"
+                        : "bg-white text-slate-700 border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/30 font-bold shadow-2xs"
                     }`}
                   >
-                    <span className="text-sm">{targetLabels[key].icon}</span>
-                    <span className="text-[11px] font-naskh">{targetLabels[key].label}</span>
+                    {info.badge && (
+                      <span className="absolute top-1 left-1 bg-amber-500 text-slate-950 text-[8px] font-black px-1.5 py-0.2 rounded-md shadow-2xs">
+                        {info.badge}
+                      </span>
+                    )}
+                    <span className="text-base">{info.icon}</span>
+                    <span className="text-[11px] font-naskh tracking-tight">{info.label}</span>
                   </button>
                 );
               })}
             </div>
 
             {/* Target Selection Feedback Alert */}
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2 flex items-center gap-2 text-[11px] text-emerald-900 font-bold">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex items-center gap-2 text-[11px] text-emerald-900 font-bold">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>{targetLabels[selectedTarget].desc}</span>
             </div>
