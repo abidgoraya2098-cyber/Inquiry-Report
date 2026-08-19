@@ -306,10 +306,8 @@ export default function App() {
   const [mobileTab, setMobileTab] = useState<"records" | "details" | "statements" | "preview">("details");
   const [showSplash, setShowSplash] = useState(false);
 
-  // Authentication State
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem("police_auth_passed") === "true";
-  });
+  // Authentication State (Password disabled upon user request)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
 
   // Admin state
   const [isBlocked, setIsBlocked] = useState(false);
