@@ -33,19 +33,24 @@ const CANDIDATE_MODELS = [
   "gemini-1.5-pro"
 ];
 
-function getGeminiClient(customApiKey?: string): GoogleGenAI {
+function getGeminiClient(customApiKey?: string): GoogleGenAI | null {
   const apiKey = customApiKey || process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY missing: ورسل (Vercel) یا سرور کی Settings -> Environment Variables میں GEMINI_API_KEY شامل کریں، یا ایپ میں اپنی Gemini API Key درج کریں۔");
+    return null;
   }
-  return new GoogleGenAI({
-    apiKey: apiKey,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
+  try {
+    return new GoogleGenAI({
+      apiKey: apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        },
       },
-    },
-  });
+    });
+  } catch (e) {
+    console.warn("GoogleGenAI client init notice:", e);
+    return null;
+  }
 }
 
 function extractResponseText(response: any): string {
@@ -73,23 +78,106 @@ function extractResponseText(response: any): string {
   return "";
 }
 
-async function generateWithFallback(client: GoogleGenAI, config: any) {
+async function generateWithFallback(client: GoogleGenAI | null, config: any, customApiKey?: string) {
+  const apiKey = customApiKey || process.env.GEMINI_API_KEY;
+  if (!apiKey && !client) {
+    throw new Error("GEMINI_API_KEY missing: ورسل (Vercel) یا سرور کی Settings -> Environment Variables میں GEMINI_API_KEY شامل کریں، یا ایپ میں اپنی Gemini API Key درج کریں۔");
+  }
+
   let lastError: any = null;
-  for (const modelName of CANDIDATE_MODELS) {
-    try {
-      const response = await client.models.generateContent({
-        ...config,
-        model: modelName,
-      });
-      const extracted = extractResponseText(response);
-      if (extracted) {
-        return { text: extracted, raw: response };
+
+  // 1. Try official SDK first
+  if (client) {
+    for (const modelName of CANDIDATE_MODELS) {
+      try {
+        const response = await client.models.generateContent({
+          ...config,
+          model: modelName,
+        });
+        const extracted = extractResponseText(response);
+        if (extracted) {
+          return { text: extracted, raw: response };
+        }
+      } catch (err: any) {
+        console.warn(`Attempt with ${modelName} notice:`, err?.message || err);
+        lastError = err;
       }
-    } catch (err: any) {
-      console.warn(`Attempt with ${modelName} notice:`, err?.message || err);
-      lastError = err;
     }
   }
+
+  // 2. Direct REST API Fallback
+  if (apiKey) {
+    for (const modelName of CANDIDATE_MODELS) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        
+        let contentsPayload: any = [];
+        if (typeof config.contents === "string") {
+          contentsPayload = [{ parts: [{ text: config.contents }] }];
+        } else if (Array.isArray(config.contents)) {
+          const parts: any[] = [];
+          for (const item of config.contents) {
+            if (typeof item === "string") {
+              parts.push({ text: item });
+            } else if (item.text) {
+              parts.push({ text: item.text });
+            } else if (item.inlineData) {
+              parts.push({
+                inline_data: {
+                  mime_type: item.inlineData.mimeType || item.inlineData.mime_type || "image/jpeg",
+                  data: item.inlineData.data
+                }
+              });
+            }
+          }
+          contentsPayload = [{ parts }];
+        }
+
+        const bodyPayload: any = {
+          contents: contentsPayload,
+          generationConfig: {
+            temperature: config.config?.temperature || 0.1
+          }
+        };
+
+        if (config.config?.systemInstruction) {
+          const instructionText = typeof config.config.systemInstruction === "string" 
+            ? config.config.systemInstruction 
+            : config.config.systemInstruction?.text || "";
+          if (instructionText) {
+            bodyPayload.systemInstruction = {
+              parts: [{ text: instructionText }]
+            };
+          }
+        }
+
+        if (config.config?.responseMimeType) {
+          bodyPayload.generationConfig.responseMimeType = config.config.responseMimeType;
+        }
+
+        const restRes = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bodyPayload)
+        });
+
+        if (restRes.ok) {
+          const data: any = await restRes.json();
+          const text = data.candidates?.[0]?.content?.parts?.map((p: any) => p.text || "").join("\n") || "";
+          if (text.trim()) {
+            return { text: text.trim(), raw: data };
+          }
+        } else {
+          const errText = await restRes.text();
+          console.warn(`REST attempt with ${modelName} returned status ${restRes.status}:`, errText);
+        }
+      } catch (restErr: any) {
+        console.warn(`REST error with ${modelName}:`, restErr?.message || restErr);
+        lastError = restErr;
+      }
+    }
+  }
+
   throw lastError || new Error("Gemini API ماڈلز سے رابطہ ناکام رہا۔ براہ کرم اپنی API Key اور انٹرنیٹ کنکشن چیک کریں۔");
 }
 
@@ -214,7 +302,7 @@ ${observations || "موقع ملاحظہ کی تفاصیل کلام ریکارڈ
           required: ["factsAndFindings", "inquiryConclusion"]
         }
       }
-    });
+    }, customApiKey);
 
     const resultText = response.text || "{}";
     let jsonResult;
@@ -272,7 +360,7 @@ ${context || "کوئی پس منظر فراہم نہیں کیا گیا"}
         systemInstruction: "You are an expert police investigator and legal analyst. Extract structured insights from raw Urdu statements to help an inquiry officer discover loopholes and plan next steps.",
         temperature: 0.2,
       }
-    });
+    }, customApiKey);
 
     res.json({ analysis: response.text });
   } catch (error: any) {
@@ -308,7 +396,7 @@ ${text}
         systemInstruction: systemInstruction,
         temperature: 0.1,
       }
-    });
+    }, customApiKey);
 
     res.json({ correctedText: response.text || "" });
   } catch (error: any) {
@@ -369,7 +457,7 @@ Key Instructions:
         systemInstruction: systemInstruction,
         temperature: 0.1,
       }
-    });
+    }, customApiKey);
 
     res.json({ text: response.text || "" });
   } catch (error: any) {
@@ -456,7 +544,6 @@ app.post("/api/session/register", async (req, res) => {
       return res.status(400).json({ error: "Session ID is required" });
     }
 
-    // Get client IP address
     let ip = (req.headers["x-forwarded-for"] as string || req.socket.remoteAddress || "127.0.0.1").split(",")[0].trim();
     if (ip === "::1" || ip === "::ffff:127.0.0.1") {
       ip = "127.0.0.1";
@@ -468,7 +555,6 @@ app.post("/api/session/register", async (req, res) => {
     const sessions = loadSessions();
     let session = sessions.find(s => s.id === sessionId);
 
-    // Also check if this IP is blocked (exclude local/container loopback IPs)
     const isLocalIp = !ip || ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1" || ip === "localhost";
     const ipBlocked = !isLocalIp && sessions.some(s => s.ip === ip && s.blocked);
 
@@ -483,7 +569,7 @@ app.post("/api/session/register", async (req, res) => {
         os,
         loginTime: nowStr,
         lastActiveTime: nowStr,
-        blocked: ipBlocked, // auto-block if this IP is already blocked
+        blocked: ipBlocked,
       };
       sessions.push(session);
     } else {
@@ -497,7 +583,6 @@ app.post("/api/session/register", async (req, res) => {
       }
     }
 
-    // Update current work if provided
     if (currentWork) {
       session.currentWork = {
         complainantName: currentWork.complainantName,
@@ -547,7 +632,6 @@ app.post("/api/admin/block", (req, res) => {
     if (session) {
       session.blocked = !!blocked;
       
-      // Also block/unblock other sessions with the same IP address for robustness
       const targetIp = session.ip;
       if (targetIp && targetIp !== "127.0.0.1") {
         sessions.forEach(s => {
@@ -567,19 +651,26 @@ app.post("/api/admin/block", (req, res) => {
   }
 });
 
-// Setup Vite Dev Server / Static files
+// Setup Vite Dev Server / Static files (Only for local dev / standalone servers, NOT Vercel serverless)
 async function startServer() {
+  if (process.env.VERCEL) {
+    return;
+  }
+
   if (process.env.NODE_ENV !== "production") {
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else if (!process.env.VERCEL) {
+    try {
+      const { createServer: createViteServer } = await import("vite");
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      app.use(vite.middlewares);
+    } catch (e) {
+      console.warn("Vite middleware not loaded:", e);
+    }
+  } else {
     const distPath = path.join(process.cwd(), 'dist');
     
-    // Serve index.html with NO CACHE headers to allow instant updates
     app.get("/", (req, res) => {
       res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
       res.setHeader("Pragma", "no-cache");
@@ -594,7 +685,6 @@ async function startServer() {
       res.sendFile(path.join(distPath, "index.html"));
     });
 
-    // Serve manifest.webmanifest with NO CACHE headers so PWA icons update instantly
     app.get(["/manifest.json", "/manifest.webmanifest"], (req, res) => {
       res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
       res.setHeader("Pragma", "no-cache");
@@ -610,7 +700,6 @@ async function startServer() {
       }
     });
 
-    // Default static server for rest of the files with hashing
     app.use(express.static(distPath, {
       maxAge: "30d",
       setHeaders: (res, filePath) => {
@@ -619,7 +708,6 @@ async function startServer() {
           res.setHeader("Pragma", "no-cache");
           res.setHeader("Expires", "0");
         } else {
-          // Cache-busted bundles can be cached
           res.setHeader("Cache-Control", "public, max-age=2592000");
         }
       }
@@ -633,11 +721,9 @@ async function startServer() {
     });
   }
 
-  if (!process.env.VERCEL) {
-    app.listen(PORT, "0.0.0.0", () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
-  }
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
 }
 
 startServer();

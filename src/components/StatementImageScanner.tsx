@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { 
   Camera, Upload, RefreshCw, FileText, X, Trash2, 
   RotateCw, Sparkles, Sliders, Wand2, Grid, Zap, ZapOff, 
-  FlipHorizontal, Sun, Contrast, Eye, FileCheck
+  FlipHorizontal, Sun, Contrast, Eye, FileCheck, Key
 } from "lucide-react";
 import { convertPdfToSingleStackedImage, optimizeImageForOcr } from "../lib/pdfToImage";
 
@@ -13,6 +13,85 @@ interface StatementImageScannerProps {
 }
 
 type FilterMode = "magic" | "pencil" | "bw" | "grayscale" | "original";
+
+async function directClientGeminiOcr(imageBase64: string, apiKey: string): Promise<string> {
+  let cleanBase64 = imageBase64;
+  let finalMimeType = "image/jpeg";
+
+  if (imageBase64.includes(";base64,")) {
+    const parts = imageBase64.split(";base64,");
+    cleanBase64 = parts[1];
+    const match = parts[0].match(/data:(.*?);/);
+    if (match && match[1]) {
+      finalMimeType = match[1];
+    }
+  }
+
+  const prompt = `یہ پولیس کے کاغذ، ہاتھ سے لکھی درخواست، یا پنسل سے تحریر کردہ بیان کی تصویر ہے۔
+تصویر میں موجود تمام اردو تحریر (خواہ وہ پنسل کی مدہم لکھائی ہو، بال پوائنٹ ہو یا قلم کی) کو انتہائی باریک بینی سے پڑھ کر مکمل اردو متن (Unicode Text) میں تحریر کریں۔ کوئی جملہ، نام، ولدیت یا فقرہ چھوڑے بغیر من و عن اصل تحریر اردو میں فراہم کریں۔`;
+
+  const systemInstruction = `You are an elite, specialized Urdu Handwriting and Document OCR system for Punjab Police, Pakistan.
+You specialize in deciphering very faint, light, messy pencil handwriting (پنسل کی ہلکی، مدہم اور کچی لکھائی), fountain pen scripts, handwritten applications (درخواست سائل), police diaries (روزنامچہ), statements of parties (بیانات فریقین), stamp papers (سٹامپ پیپر), witness statements, and official police files.
+Key Instructions:
+1. Carefully analyze every faint pencil stroke, ink word, name, address, father's name, CNIC, and detail. Reconstruct complete coherent sentences in proper Urdu.
+2. Maintain exact Urdu orthography and spellings for all legal and police terminology (جیسے: مسمی، مسمات، ولدیت، سکونت، سائل، الزام علیہ، وقوعہ، برآمدگی، گواہ، تھانہ، وغیرہ).
+3. Do NOT omit any names, dates, amounts, or statements.
+4. Output ONLY the raw extracted Urdu text with zero English commentary, markdown backticks or extra metadata.`;
+
+  const models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite", "gemini-1.5-pro"];
+  let lastError: any = null;
+
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [
+          {
+            parts: [
+              {
+                inline_data: {
+                  mime_type: finalMimeType,
+                  data: cleanBase64
+                }
+              },
+              {
+                text: prompt
+              }
+            ]
+          }
+        ],
+        systemInstruction: {
+          parts: [{ text: systemInstruction }]
+        },
+        generationConfig: {
+          temperature: 0.1
+        }
+      };
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.candidates?.[0]?.content?.parts?.map((p: any) => p.text || "").join("\n") || "";
+        if (text.trim()) {
+          return text.trim();
+        }
+      } else {
+        const errText = await res.text();
+        console.warn(`Direct client OCR with ${model} failed (${res.status}):`, errText);
+      }
+    } catch (e: any) {
+      console.warn(`Direct client OCR error with ${model}:`, e);
+      lastError = e;
+    }
+  }
+
+  throw lastError || new Error("براہ کرم اپنی انٹرنیٹ یا Gemini API Key چیک کریں۔");
+}
 
 const StatementImageScanner = React.memo(function StatementImageScanner({ 
   onTextScanned, 
@@ -25,6 +104,8 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
   const [cameraActive, setCameraActive] = useState(false);
   const [scannedSuccess, setScannedSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showInlineKeyInput, setShowInlineKeyInput] = useState(false);
+  const [inlineKeyValue, setInlineKeyValue] = useState(() => (typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : ""));
   
   // Camera Controls
   const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
@@ -265,51 +346,63 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
 
     setIsProcessing(true);
     setErrorMessage(null);
+    setShowInlineKeyInput(false);
+
     try {
       // Compress and optimize image to crisp Full HD preserving razor-sharp pencil lines
       imageToProcess = await optimizeImageForOcr(imageToProcess, 1600, 0.82, filterMode === "pencil");
 
       const customKey = typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : "";
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (customKey) {
-        headers["x-gemini-api-key"] = customKey;
-      }
+      let extractedUrduText = "";
 
-      const response = await fetch("/api/transcribe-image", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          imageBase64: imageToProcess,
-          apiKey: customKey || undefined
-        })
-      });
-
-      const contentType = response.headers.get("content-type");
-      const isJson = contentType && contentType.includes("application/json");
-
-      if (!response.ok) {
-        let errorMsg = "سرور سے رابطہ ناکام رہا۔";
-        if (response.status === 413) {
-          errorMsg = "تصویر کا سائز زیادہ ہے۔ براہ کرم کیمرے سے واضح تصویر کھینچیں۔";
-        } else if (isJson) {
-          const errData = await response.json();
-          if (errData.error) errorMsg = errData.error;
-        } else {
-          errorMsg = `سرور سے رابطہ میں خرابی (کوڈ ${response.status})۔ انٹرنیٹ کنکشن یا سرور چیک کریں۔`;
+      // LAYER 1: Attempt via Server Backend
+      try {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (customKey) {
+          headers["x-gemini-api-key"] = customKey;
         }
-        throw new Error(errorMsg);
+
+        const response = await fetch("/api/transcribe-image", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            imageBase64: imageToProcess,
+            apiKey: customKey || undefined
+          })
+        });
+
+        if (response.ok) {
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const data = await response.json();
+            if (data.text && data.text.trim()) {
+              extractedUrduText = data.text.trim();
+            }
+          }
+        } else {
+          console.warn(`Server OCR returned status ${response.status}, attempting direct client fallback...`);
+        }
+      } catch (serverErr) {
+        console.warn("Server transcribe attempt notice:", serverErr);
       }
 
-      if (!isJson) {
-        throw new Error("سرور سے درست فارمیٹ میں جواب موصول نہیں ہوا۔");
+      // LAYER 2: Direct Client-Side Gemini REST API Fallback
+      if (!extractedUrduText && customKey) {
+        try {
+          extractedUrduText = await directClientGeminiOcr(imageToProcess, customKey);
+        } catch (clientOcrErr: any) {
+          console.warn("Direct client OCR notice:", clientOcrErr);
+        }
       }
 
-      const data = await response.json();
-      if (data.text && data.text.trim()) {
-        onTextScanned(data.text.trim());
+      if (extractedUrduText) {
+        onTextScanned(extractedUrduText);
         setScannedSuccess(true);
+      } else if (!customKey) {
+        setShowInlineKeyInput(true);
+        setErrorMessage("تصویر اسکین کرنے کے لیے Gemini API Key درکار ہے۔ برائے مہربانی نیچے درج کریں۔");
       } else {
-        setErrorMessage("تصویر میں کوئی واضح تحریر نہیں مل سکی۔ براہ کرم صاف تصویر کھینچیں۔");
+        setErrorMessage("تصویر میں کوئی واضح تحریر نہیں مل سکی۔ براہ کرم صاف تصویر کھینچیں یا پنسل فلٹر استعمال کریں۔");
       }
     } catch (error: any) {
       console.error("OCR Error:", error);
@@ -484,8 +577,56 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
       </div>
 
       {errorMessage && (
-        <div className="bg-rose-50 border border-rose-300 text-rose-800 text-[11px] font-bold p-2.5 rounded-lg text-center flex items-center justify-center gap-1.5 shadow-xs">
+        <div className="bg-rose-50 border border-rose-300 text-rose-800 text-[11px] font-bold p-2.5 rounded-lg text-center flex flex-col items-center justify-center gap-1.5 shadow-xs">
           <span>⚠️ {errorMessage}</span>
+          {!showInlineKeyInput && !localStorage.getItem("GEMINI_CUSTOM_API_KEY") && (
+            <button
+              type="button"
+              onClick={() => setShowInlineKeyInput(true)}
+              className="text-[10px] text-indigo-700 underline font-bold hover:text-indigo-900 cursor-pointer"
+            >
+              یہاں کلک کر کے Gemini API Key درج کریں
+            </button>
+          )}
+        </div>
+      )}
+
+      {showInlineKeyInput && (
+        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 space-y-2 text-right shadow-xs">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900">
+            <Key className="w-4 h-4 text-amber-700 shrink-0" />
+            <span>Google Gemini API Key درج کریں (ایک بار):</span>
+          </div>
+          <p className="text-[10px] text-amber-800 leading-tight">
+            یہ Key آپ کے موبائل/براؤزر میں محفوظ رہے گی اور تمام دستاویزات فوری اسکین ہوں گی۔
+          </p>
+          <div className="flex gap-1.5">
+            <input
+              type="password"
+              value={inlineKeyValue}
+              onChange={(e) => setInlineKeyValue(e.target.value)}
+              placeholder="AIzaSy..."
+              className="flex-1 bg-white border border-amber-300 rounded-lg p-2 text-xs font-mono text-left focus:ring-1 focus:ring-amber-500"
+              dir="ltr"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const k = inlineKeyValue.trim();
+                if (k) {
+                  localStorage.setItem("GEMINI_CUSTOM_API_KEY", k);
+                  setShowInlineKeyInput(false);
+                  setErrorMessage(null);
+                  handleTranscribe();
+                } else {
+                  alert("براہ کرم درست API Key درج کریں۔");
+                }
+              }}
+              className="bg-[#0f172a] hover:bg-[#1e293b] text-white px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 cursor-pointer active:scale-95 shadow-xs"
+            >
+              محفوظ اور اسکین
+            </button>
+          </div>
         </div>
       )}
 
