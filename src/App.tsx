@@ -62,10 +62,10 @@ const PasswordScreen = React.memo(function PasswordScreen({ onLogin }: PasswordS
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = passwordInput.trim();
-    if (trimmed === "Abid5225" || trimmed === "abid5225") {
+    if (trimmed === "5225") {
       setPasswordError("");
       onLogin("user");
-    } else if (trimmed === "Admin5225" || trimmed === "admin5225") {
+    } else if (trimmed === "5225admin" || trimmed === "admin5225" || trimmed === "Admin5225") {
       setPasswordError("");
       onLogin("admin");
     } else {
