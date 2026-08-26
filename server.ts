@@ -3,6 +3,7 @@ import path from "path";
 import dotenv from "dotenv";
 import fs from "fs";
 import { GoogleGenAI, Type } from "@google/genai";
+
 // Load environment variables
 dotenv.config();
 
@@ -17,14 +18,14 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-gemini-api-key");
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
   next();
 });
 
-// Initialize Gemini API client safely with cascading model fallbacks
+// Candidate models in order of speed and capability
 const CANDIDATE_MODELS = [
   process.env.GEMINI_MODEL || "gemini-2.0-flash",
   "gemini-1.5-flash",
@@ -33,8 +34,18 @@ const CANDIDATE_MODELS = [
   "gemini-1.5-pro"
 ];
 
+function resolveApiKey(customApiKey?: string): string {
+  const key = customApiKey || 
+              process.env.GEMINI_API_KEY || 
+              process.env.VITE_GEMINI_API_KEY || 
+              process.env.GOOGLE_API_KEY || 
+              process.env.GEMINI_KEY || 
+              "";
+  return key.trim();
+}
+
 function getGeminiClient(customApiKey?: string): GoogleGenAI | null {
-  const apiKey = customApiKey || process.env.GEMINI_API_KEY;
+  const apiKey = resolveApiKey(customApiKey);
   if (!apiKey) {
     return null;
   }
@@ -43,7 +54,7 @@ function getGeminiClient(customApiKey?: string): GoogleGenAI | null {
       apiKey: apiKey,
       httpOptions: {
         headers: {
-          'User-Agent': 'aistudio-build',
+          'User-Agent': 'aistudio-inquiry-report',
         },
       },
     });
@@ -87,9 +98,9 @@ const DEFAULT_SAFETY_SETTINGS = [
 ];
 
 async function generateWithFallback(client: GoogleGenAI | null, config: any, customApiKey?: string) {
-  const apiKey = customApiKey || process.env.GEMINI_API_KEY;
+  const apiKey = resolveApiKey(customApiKey);
   if (!apiKey && !client) {
-    throw new Error("GEMINI_API_KEY missing: ورسل (Vercel) یا سرور کی Settings -> Environment Variables میں GEMINI_API_KEY شامل کریں، یا ایپ میں اپنی Gemini API Key درج کریں۔");
+    throw new Error("GEMINI_API_KEY درج کرنا لازمی ہے۔ برائے مہربانی ایپ کی 'AI Key' سیٹنگز میں اپنی Gemini API Key درج کریں۔");
   }
 
   let lastError: any = null;
@@ -146,7 +157,7 @@ async function generateWithFallback(client: GoogleGenAI | null, config: any, cus
           contents: contentsPayload,
           safetySettings: DEFAULT_SAFETY_SETTINGS,
           generationConfig: {
-            temperature: config.config?.temperature || 0.1
+            temperature: config.config?.temperature || 0.15
           }
         };
 
@@ -188,10 +199,130 @@ async function generateWithFallback(client: GoogleGenAI | null, config: any, cus
     }
   }
 
-  throw lastError || new Error("Gemini API ماڈلز سے رابطہ ناکام رہا۔ براہ کرم اپنی API Key اور انٹرنیٹ کنکشن چیک کریں۔");
+  throw lastError || new Error("Gemini AI ماڈل سے رابطہ نہ ہو سکا۔ براہ کرم انٹرنیٹ یا اپنی Gemini API Key چیک کریں۔");
 }
 
-// API Routes
+// =========================================================================
+// API ROUTE 1: 1-Click Auto-Scan & Compile Full Report (فوری مکمل سکین اور 1 منٹ میں تیار رپورٹ)
+// =========================================================================
+app.post("/api/auto-compile-report", async (req, res) => {
+  try {
+    const customApiKey = (req.headers["x-gemini-api-key"] as string) || req.body?.apiKey;
+    const client = getGeminiClient(customApiKey);
+
+    const { images = [], metadata = {} } = req.body;
+
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return res.status(400).json({ error: "کم از کم ایک تصویر یا پی ڈی ایف کا صفحہ فراہم کرنا لازمی ہے۔" });
+    }
+
+    const imageParts: any[] = [];
+    for (const img of images) {
+      let cleanBase64 = typeof img === "string" ? img : img.data || img.base64 || "";
+      let mimeType = typeof img === "object" ? img.mimeType || "image/jpeg" : "image/jpeg";
+
+      if (cleanBase64.includes(";base64,")) {
+        const parts = cleanBase64.split(";base64,");
+        cleanBase64 = parts[1];
+        const match = parts[0].match(/data:(.*?);/);
+        if (match && match[1]) mimeType = match[1];
+      }
+      cleanBase64 = cleanBase64.replace(/[\r\n\s]/g, "");
+
+      if (cleanBase64) {
+        imageParts.push({
+          inlineData: {
+            mimeType: mimeType,
+            data: cleanBase64
+          }
+        });
+      }
+    }
+
+    if (imageParts.length === 0) {
+      return res.status(400).json({ error: "تصویری مواد کا درست ڈیٹا موصول نہیں ہوا۔" });
+    }
+
+    const systemInstruction = `You are an elite, highly experienced Punjab Police Inquiry Officer and Legal Advisor (انکوائری افسر و قانونی تفتیشی مشیر), specialized in Regional Investigation Branch (ریجنل انویسٹی گیشن برانچ) inquiry documentation.
+Your task is to analyze all provided pages/images of a police file, handwritten application (درخواست سائل), recorded statements of parties (بیانات فریقین), witness testimonies (تائیدی گواہان), respondent defense (بیان الزام علیہ), Roznamcha daily diaries, stamp papers, or progress reports.
+Extract all key facts and immediately construct a complete, structured, professional, and authoritative Police Inquiry Report in Urdu.
+
+Return a valid JSON object matching this schema:
+{
+  "complainantName": "سائل یا درخواست گزار کا مکمل نام مع ولدیت و پتہ",
+  "complainantStatement": "سائل کا موقف یا درخواست کا مفصل متن",
+  "statements": [
+    {
+      "id": "unique_string",
+      "personName": "نام فریق مع ولدیت و سکونت",
+      "role": "Complainant | Complainant_Witness | Respondent | Respondent_Witness",
+      "text": "بیان کا مکمل تحریری متن"
+    }
+  ],
+  "stationName": "متعلقہ تھانہ کا نام",
+  "districtName": "ضلع کا نام",
+  "lawSections": "متعلقہ دفعات یا تنازعہ کا عنوان",
+  "subjectTitle": "رپورٹ کا باضابطہ عنوان",
+  "showProgressReport": boolean,
+  "progressHeading": "پراگرس رپورٹ کی ہیڈنگ (اگر ہو)",
+  "progressText": "پراگرس رپورٹ کا متن (اگر ہو)",
+  "factsAndFindings": [
+    "1۔ دورانِ انکوائری ذیل امور سامنے آئے ہیں...",
+    "2۔ فریقین کے مابین لین دین / تنازعہ کا پس منظر...",
+    "3۔ پیش کردہ دستاویزات و شواہد کی تفصیل..."
+  ],
+  "inquiryConclusion": "دریافت فریقین، ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ [جامع اور فیصلہ کن قانونی نتیجہ انکوائری اور واضح سفارش تحریر کریں]"
+}
+
+Key Requirements:
+1. Decipher both typed Urdu text and faint, light pencil or pen handwriting accurately.
+2. In 'factsAndFindings', create clear, sequential, numbered bullet points (1۔ , 2۔ , 3۔) summarizing all crucial facts, financial amounts, stamp papers, cheques, family background, and police history.
+3. In 'inquiryConclusion', summarize who is at fault, whether the application is genuine or false/compromised, and clearly conclude with final legal recommendation (e.g. refer to civil court, register FIR, file closure, compromise). It MUST start with: "دریافت فریقین، ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ ". Do NOT append "رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے" at the end of inquiryConclusion.
+4. Maintain formal, authoritative police vocabulary (جیسے: موقف اختیار کیا، بیان کیا ہے کہ، انکار کیا، بالمشافہ گفتگو، مسمی، مسمات، سکونت).`;
+
+    const prompt = `براہ کرم منسلک تمام صفحات و تصاویر کا مکمل، باریک بینی سے تفتیشی اور قانونی جائزہ لیں اور چند سیکنڈز میں مکمل تیار شدہ انکوائری رپورٹ کا اسٹرکچرڈ JSON ڈیٹا واپس کریں۔
+رپورٹ کا سیاق و سباق (اگر دستیاب ہو):
+- منجانب: ${metadata.senderDesignation || "سینیئر سپرنٹنڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ۔ گوجرانوالہ ریجن"}
+- بجانب: ${metadata.recipientDesignation || "جناب ریجنل پولیس آفیسر صاحب، گوجرانوالہ"}
+- تھانہ: ${metadata.stationName || "تھانہ صدر، گوجرانوالہ"}
+- ضلع: ${metadata.districtName || "ضلع گوجرانوالہ"}`;
+
+    const response = await generateWithFallback(client, {
+      contents: [
+        ...imageParts,
+        { text: prompt }
+      ],
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.15,
+        responseMimeType: "application/json"
+      }
+    }, customApiKey);
+
+    const resultText = response.text || "{}";
+    let jsonResult;
+    try {
+      jsonResult = JSON.parse(resultText);
+    } catch (parseErr) {
+      // Clean possible markdown backticks
+      const cleanJson = resultText.replace(/```json/g, "").replace(/```/g, "").trim();
+      jsonResult = JSON.parse(cleanJson);
+    }
+
+    return res.json({
+      success: true,
+      data: jsonResult
+    });
+
+  } catch (error: any) {
+    console.error("Error in auto-compile-report:", error);
+    return res.status(500).json({ error: error.message || "مکمل رپورٹ کی خودکار تیاری میں خرابی پیش آئی" });
+  }
+});
+
+// =========================================================================
+// API ROUTE 2: Generate Inquiry Conclusion & Facts (دوران انکوائری حقائق و نتیجہ)
+// =========================================================================
 app.post("/api/generate-inquiry", async (req, res) => {
   try {
     const customApiKey = (req.headers["x-gemini-api-key"] as string) || req.body?.apiKey;
@@ -215,7 +346,7 @@ app.post("/api/generate-inquiry", async (req, res) => {
       districtName,
       inquiryOfficer,
       
-      // Fallback old fields for backwards compatibility
+      // Fallback old fields
       complainantName,
       complainantStatement,
       respondentName,
@@ -223,7 +354,6 @@ app.post("/api/generate-inquiry", async (req, res) => {
       evidenceDescription
     } = req.body;
 
-    // Map old fields to new statement structure if statements array is empty
     let processedStatements = [...statements];
     if (processedStatements.length === 0) {
       if (complainantStatement) {
@@ -252,18 +382,14 @@ app.post("/api/generate-inquiry", async (req, res) => {
       }
     }
 
-    if (processedStatements.length === 0 && !observations) {
+    if (processedStatements.length === 0 && !observations && !complainantStatement) {
       return res.status(400).json({ error: "انکوائری کے لیے بیانات یا مشاہدات کا ہونا لازمی ہے" });
     }
 
     const systemInstruction = `You are an expert Pakistani Police Legal Advisor and Inquiry Specialist (انکوائری افسر / قانونی تفتیشی مشیر). 
 Your task is to analyze police inquiry statements and draft two critical sections of an official Police Inquiry Report (نتیجہ انکوائری) in professional Urdu:
-1. Facts and Findings (دورانِ انکوائری ذیل امور سامنے آئے ہیں): This must be a structured list of logical, factual bullet points detailing exactly what transpired. Extract names, financial transaction details (e.g., amount of Rs. 30,00,000, 10,00,000, stamp papers, bank cheques, bank details like MCB branch), family or social relations, property details, and previous police involvement.
-2. Inquiry Conclusion (نتیجہ انکوائری): A comprehensive formal administrative conclusion paragraph in formal police station (تھانہ) Urdu summarizing who is at fault, whether the complaint is genuine or false/baseless (من گھڑت / بے بنیاد), and direct legal recommendations (e.g. refer to relevant court, register FIR, file closure, compromise, etc.). It MUST start with: "دریافت فریقین، ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ ". Do NOT append "رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے" at the end of inquiryConclusion, as it is added automatically once at the report footer.
-
-Maintain the formal, authoritative Urdu police terminology:
-- Use terms like "موقف اختیار کیا", "بیان کیا ہے کہ", "انکار کیا", "بالمشافہ گفتگو کروائی گئی", "گزارش ہے کہ سائل", "ساز باز", "ضمانتیں کنفرم", "تحفظات".
-- Do not add any conversational English or modern commentary. Stick purely to the official template format.`;
+1. Facts and Findings (دورانِ انکوائری ذیل امور سامنے آئے ہیں): A structured array of logical, factual bullet points detailing exactly what transpired. Extract names, financial transaction details, family or social relations, property details, and previous police involvement.
+2. Inquiry Conclusion (نتیجہ انکوائری): A comprehensive formal administrative conclusion paragraph in formal police station (تھانہ) Urdu summarizing who is at fault, whether the complaint is genuine or false/baseless, and direct legal recommendations. It MUST start with: "دریافت فریقین، ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ ". Do NOT append "رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے" at the end.`;
 
     const formattedStatements = processedStatements
       .map((st, idx) => `${idx + 1}۔ نام و فریق: ${st.personName} (${st.role})\nبیان: ${st.text}`)
@@ -272,23 +398,19 @@ Maintain the formal, authoritative Urdu police terminology:
     const prompt = `براہ کرم درج ذیل بیانات اور انکوائری کے مشاہدات کا تفصیلی جائزہ لے کر ایک مربوط، منطقی اور مستند رپورٹ کے دو اہم حصے تیار کریں۔
 
 رپورٹ کا سیاق و سباق (Metadata):
-- منجانب (Sender): ${senderDesignation || "سینئر سپرنٹنڈنٹ آف پولیس"}
-- بجانب (Recipient): ${recipientDesignation || "جناب ریجنل پولیس آفیسر صاحب"}
-- عنوان (Subject/Title): ${subjectTitle || "درخواست عنوان بالا"}
-- حوالہ (Reference): نمبر ${referenceNumber || "شکایت نمبر"} مورخہ ${referenceDate || "تاریخ"}
-- تھانہ (Police Station): ${stationName || "تھانہ"}، ضلع (District): ${districtName || "ضلع"}
-- متعلقہ دفعات (Law Sections): ${lawSections || "تفصیل درج نہیں"}
-- انکوائری افسر (Inquiry Officer): ${inquiryOfficer || "تفتیشی افسر"}
+- منجانب: ${senderDesignation || "سینیئر سپرنٹنڈنٹ آف پولیس"}
+- بجانب: ${recipientDesignation || "جناب ریجنل پولیس آفیسر صاحب"}
+- عنوان: ${subjectTitle || "درخواست عنوان بالا"}
+- حوالہ: نمبر ${referenceNumber || "شکایت نمبر"} مورخہ ${referenceDate || "تاریخ"}
+- تھانہ: ${stationName || "تھانہ"}، ضلع: ${districtName || "ضلع"}
+- متعلقہ دفعات: ${lawSections || "تفصیل درج نہیں"}
+- انکوائری افسر: ${inquiryOfficer || "تفتیشی افسر"}
 
 قلمبند کردہ بیانات (Recorded Statements):
 ${formattedStatements || "کوئی بیانات قلمبند نہیں کیے گئے۔"}
 
-انکوائری افسر کے مشاہدات اور موقع ملاحظہ (Observations & Spot Visit):
-${observations || "موقع ملاحظہ کی تفاصیل کلام ریکارڈ کے مطابق ہیں۔"}
-
-اہم گائیڈلائنز:
-- factsAndFindings کے تمام نکات کو '1۔' ، '2۔' وغیرہ جیسے فقروں سے شروع کریں اور ہر نقطہ تفصیلی، بامعنی اور قانونی طور پر ٹھوس ہونا چاہیے۔
-- نتیجہ انکوائری (inquiryConclusion) کا اختتام ہمیشہ روایتی اور سرکاری فقرے جیسے 'رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے۔' پر ہونا چاہئیے۔`;
+انکوائری افسر کے مشاہدات اور موقع ملاحظہ:
+${observations || "موقع ملاحظہ کی تفاصیل کلام ریکارڈ کے مطابق ہیں۔"}`;
 
     const response = await generateWithFallback(client, {
       contents: prompt,
@@ -335,87 +457,9 @@ ${observations || "موقع ملاحظہ کی تفاصیل کلام ریکارڈ
   }
 });
 
-// Extract key facts and analyze statements for consistency
-app.post("/api/analyze-statement", async (req, res) => {
-  try {
-    const customApiKey = (req.headers["x-gemini-api-key"] as string) || req.body?.apiKey;
-    const client = getGeminiClient(customApiKey);
-
-    const { statement, context } = req.body;
-
-    if (!statement) {
-      return res.status(400).json({ error: "بیان فراہم کرنا لازمی ہے (Statement is required)" });
-    }
-
-    const prompt = `درج ذیل پولیس بیان (police statement) یا درخواست کا باریک بینی سے جائزہ لیں اور اس میں سے اہم معلومات کا اخراج کریں۔
-
-بیان (Statement):
-"""
-${statement}
-"""
-
-اضافی پس منظر (Context - optional):
-${context || "کوئی پس منظر فراہم نہیں کیا گیا"}
-
-براہ کرم درج ذیل معلومات کو واضح نکات (bullet points) کی صورت میں الگ کریں اور اردو میں فراہم کریں:
-1۔ اہم دعوے اور الزامات (Key Allegations / Claims): سائل یا گواہ نے کیا الزامات عائد کیے ہیں؟
-2۔ وقوعہ کی تاریخ، وقت اور جگہ (Date, Time, and Location of Incident): اگر بیان میں ذکر ہو۔
-3۔ نامزد کردار / گواہان (Key Persons & Witnesses mentioned): بیان میں کن کن لوگوں کا تذکرہ ہے؟
-4۔ تضادات اور مشکوک باتیں (Contradictions / Suspicious details): کیا بیان میں کوئی منطقی جھول، تضادات، یا مبالغہ آرائی محسوس ہوتی ہے؟
-5۔ اہم سوالات (Crucial Questions to Ask): تفتیش کو آگے بڑھانے کے لیے اس فریق سے مزید کیا سوالات پوچھے جانے چاہئیں؟`;
-
-    const response = await generateWithFallback(client, {
-      contents: prompt,
-      config: {
-        systemInstruction: "You are an expert police investigator and legal analyst. Extract structured insights from raw Urdu statements to help an inquiry officer discover loopholes and plan next steps.",
-        temperature: 0.2,
-      }
-    }, customApiKey);
-
-    res.json({ analysis: response.text });
-  } catch (error: any) {
-    console.error("Error analyzing statement:", error);
-    res.status(500).json({ error: error.message || "An error occurred during statement analysis" });
-  }
-});
-
-// AI Spelling and Grammar Correction endpoint
-app.post("/api/correct-spelling", async (req, res) => {
-  try {
-    const customApiKey = (req.headers["x-gemini-api-key"] as string) || req.body?.apiKey;
-    const client = getGeminiClient(customApiKey);
-
-    const { text } = req.body;
-    if (!text) {
-      return res.status(400).json({ error: "متن فراہم کرنا لازمی ہے (Text is required)" });
-    }
-
-    const systemInstruction = `You are an expert Urdu proofreader, legal typist, and Punjab Police report formatter.
-Your task is to correct any spelling mistakes (املا کی غلطیاں), typo issues, and grammar problems in the provided Urdu report text.
-Keep all the layout fields, formal structure, margins, symbols, and names intact. Do not rewrite the facts or alter the legal meaning. 
-Only correct spelling (e.g. ensure correct spelling of words like "بالمشافہ", "درخواست گزار", "الزام علیہ", "نتیجہ انکوائری").
-Ensure there are no spelling mistakes in the output. Keep the output as raw Urdu text with zero commentary or extra English.`;
-
-    const response = await generateWithFallback(client, {
-      contents: `براہ کرم درج ذیل رپورٹ کے متن کا جائزہ لیں اور اس میں موجود املا (Spelling) اور گرامر (Grammar) کی تمام غلطیوں کو درست کریں۔ رپورٹ کے باضابطہ پیٹرن، ناموں، اور دیگر قانونی الفاظ کو تبدیل نہ کریں۔ صرف املا اور گرامر کو سو فیصد درست کر کے فائنل متن واپس فراہم کریں:
-
-"""
-${text}
-"""`,
-      config: {
-        systemInstruction: systemInstruction,
-        temperature: 0.1,
-      }
-    }, customApiKey);
-
-    res.json({ correctedText: response.text || "" });
-  } catch (error: any) {
-    console.error("Error correcting spelling:", error);
-    res.status(500).json({ error: error.message || "املا کی تصحیح میں خرابی پیش آئی" });
-  }
-});
-
-// Image transcript / OCR endpoint
+// =========================================================================
+// API ROUTE 3: Transcribe / OCR Image
+// =========================================================================
 app.post("/api/transcribe-image", async (req, res) => {
   try {
     const customApiKey = (req.headers["x-gemini-api-key"] as string) || req.body?.apiKey;
@@ -427,7 +471,6 @@ app.post("/api/transcribe-image", async (req, res) => {
       return res.status(400).json({ error: "تصویر کا ڈیٹا موصول نہیں ہوا (Image data is required)" });
     }
 
-    // Extract clean base64 data and mimeType
     let cleanBase64 = imageBase64;
     let finalMimeType = mimeType || "image/jpeg";
 
@@ -439,6 +482,7 @@ app.post("/api/transcribe-image", async (req, res) => {
         finalMimeType = match[1];
       }
     }
+    cleanBase64 = cleanBase64.replace(/[\r\n\s]/g, "");
 
     const systemInstruction = `You are an elite, specialized Urdu Handwriting and Document OCR system for Punjab Police, Pakistan.
 You specialize in deciphering very faint, light, messy pencil handwriting (پنسل کی ہلکی، مدہم اور کچی لکھائی), fountain pen scripts, handwritten applications (درخواست سائل), police diaries (روزنامچہ), statements of parties (بیانات فریقین), stamp papers (سٹامپ پیپر), witness statements, and official police files.
@@ -473,6 +517,44 @@ Key Instructions:
   } catch (error: any) {
     console.error("Error transcribing image:", error);
     res.status(500).json({ error: error.message || "تصویر سے تحریر حاصل کرنے میں خرابی پیش آئی" });
+  }
+});
+
+// =========================================================================
+// API ROUTE 4: Correct Spelling & Grammar
+// =========================================================================
+app.post("/api/correct-spelling", async (req, res) => {
+  try {
+    const customApiKey = (req.headers["x-gemini-api-key"] as string) || req.body?.apiKey;
+    const client = getGeminiClient(customApiKey);
+
+    const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ error: "متن فراہم کرنا لازمی ہے (Text is required)" });
+    }
+
+    const systemInstruction = `You are an expert Urdu proofreader, legal typist, and Punjab Police report formatter.
+Your task is to correct any spelling mistakes (املا کی غلطیاں), typo issues, and grammar problems in the provided Urdu report text.
+Keep all the layout fields, formal structure, margins, symbols, and names intact. Do not rewrite the facts or alter the legal meaning. 
+Only correct spelling (e.g. ensure correct spelling of words like "بالمشافہ", "درخواست گزار", "الزام علیہ", "نتیجہ انکوائری").
+Ensure there are no spelling mistakes in the output. Keep the output as raw Urdu text with zero commentary or extra English.`;
+
+    const response = await generateWithFallback(client, {
+      contents: `براہ کرم درج ذیل رپورٹ کے متن کا جائزہ لیں اور اس میں موجود املا (Spelling) اور گرامر (Grammar) کی تمام غلطیوں کو درست کریں۔ رپورٹ کے باضابطہ پیٹرن، ناموں، اور دیگر قانونی الفاظ کو تبدیل نہ کریں۔ صرف املا اور گرامر کو سو فیصد درست کر کے فائنل متن واپس فراہم کریں:
+
+"""
+${text}
+"""`,
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.1,
+      }
+    }, customApiKey);
+
+    res.json({ correctedText: response.text || "" });
+  } catch (error: any) {
+    console.error("Error correcting spelling:", error);
+    res.status(500).json({ error: error.message || "املا کی تصحیح میں خرابی پیش آئی" });
   }
 });
 

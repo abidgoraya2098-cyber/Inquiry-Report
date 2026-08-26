@@ -5,13 +5,15 @@ import {
   ClipboardCheck, Download, Upload, Trash2, Printer, 
   History, Plus, Edit3, RefreshCw, Shield, Trash, Save,
   Smartphone, Monitor, ChevronRight, User, BookOpen, AlertCircle, AlertTriangle, Check, Play, Settings, LogOut, Eye, EyeOff,
-  Share2, QrCode as QrIcon, Copy, CheckCheck, ExternalLink, Key, X
+  Share2, QrCode as QrIcon, Copy, CheckCheck, ExternalLink, Key, X, Zap
 } from "lucide-react";
 import StatementImageScanner from "./components/StatementImageScanner";
 import TargetedOcrModal, { TargetSection } from "./components/TargetedOcrModal";
+import AutoScanReportModal from "./components/AutoScanReportModal";
 import ReportPreview from "./components/ReportPreview";
 import { convertPdfToPageImages, optimizeImageForOcr } from "./lib/pdfToImage";
 import { POLICE_LOGO_BASE64 } from "./assets/logoBase64";
+import { InquiryData, Statement } from "./types";
 const policeLogo = POLICE_LOGO_BASE64;
 
 // Background silent security: Obfuscate/encrypt data to protect it from being scraped or read by unauthorized extensions
@@ -327,10 +329,59 @@ export default function App() {
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [customApiKeyInput, setCustomApiKeyInput] = useState(() => (typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : ""));
   const [keySaveMessage, setKeySaveMessage] = useState<string | null>(null);
+  // Auto Scan & 1-Minute Full Report Modal State
+  const [showAutoScanModal, setShowAutoScanModal] = useState(false);
 
   // Targeted OCR Modal State
   const [showTargetedOcrModal, setShowTargetedOcrModal] = useState(false);
   const [targetedOcrInitialSection, setTargetedOcrInitialSection] = useState<TargetSection>("all");
+
+  const handleAutoCompiledReport = useCallback((data: Partial<InquiryData>) => {
+    setCurrentInquiry(prev => {
+      let updatedStatements = prev.statements || [];
+      if (data.statements && Array.isArray(data.statements) && data.statements.length > 0) {
+        updatedStatements = data.statements.map((st, i) => ({
+          id: st.id || `stmt_${Date.now()}_${i}`,
+          personName: st.personName || "",
+          role: st.role || "Complainant",
+          text: st.text || ""
+        }));
+      }
+
+      const updated: InquiryData = {
+        ...prev,
+        complainantName: data.complainantName || prev.complainantName,
+        complainantStatement: data.complainantStatement || prev.complainantStatement,
+        senderDesignation: data.senderDesignation || prev.senderDesignation,
+        recipientDesignation: data.recipientDesignation || prev.recipientDesignation,
+        stationName: data.stationName || prev.stationName,
+        districtName: data.districtName || prev.districtName,
+        lawSections: data.lawSections || prev.lawSections,
+        subjectTitle: data.subjectTitle || prev.subjectTitle || (data.complainantName ? `رپورٹ درخواست ازاں ${data.complainantName}` : prev.subjectTitle),
+        showProgressReport: data.showProgressReport !== undefined ? data.showProgressReport : prev.showProgressReport,
+        progressHeading: data.progressHeading || prev.progressHeading,
+        progressText: data.progressText || prev.progressText,
+        factsAndFindings: (data.factsAndFindings && data.factsAndFindings.length > 0) ? data.factsAndFindings : prev.factsAndFindings,
+        inquiryConclusion: data.inquiryConclusion || prev.inquiryConclusion,
+        statements: updatedStatements
+      };
+
+      setInquiries(prevList => {
+        const idx = prevList.findIndex(item => item.id === updated.id);
+        if (idx >= 0) {
+          const n = [...prevList];
+          n[idx] = updated;
+          return n;
+        }
+        return [updated, ...prevList];
+      });
+
+      return updated;
+    });
+
+    setMobileTab("preview");
+    setShowSuccessModal(true);
+  }, []);
 
   const handleApplyTargetedOcrData = useCallback((target: TargetSection, extractedText: string) => {
     if (!extractedText.trim()) return;
@@ -1284,6 +1335,16 @@ export default function App() {
               <span>نیا ٹیمپلیٹ</span>
             </button>
 
+            {/* 1-CLICK INSTANT AUTO-SCAN & 1-MIN REPORT BUTTON */}
+            <button 
+              onClick={() => setShowAutoScanModal(true)}
+              className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 hover:from-amber-300 hover:to-amber-200 text-slate-950 px-3.5 py-1 rounded-lg border border-amber-300 font-black text-[11px] transition-all flex items-center gap-1.5 shadow-md cursor-pointer active:scale-95 shrink-0"
+              title="فوری مکمل AI سکینر اور 1 منٹ میں تیار رپورٹ (Instant 1-Minute Full Report)"
+            >
+              <Zap className="w-3.5 h-3.5 text-slate-950 fill-slate-950" />
+              <span>⚡ 1 منٹ میں مکمل رپورٹ</span>
+            </button>
+
             {/* TARGETED OCR SCANNER BUTTON */}
             <button 
               onClick={() => {
@@ -1832,6 +1893,32 @@ export default function App() {
 
             <div className="flex-1 overflow-y-auto max-h-[700px] space-y-5 pr-1">
               
+              {/* ⚡ 1-CLICK INSTANT AUTO-SCAN & 1-MIN REPORT BANNER */}
+              <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-4 rounded-2xl border-2 border-amber-400 shadow-md text-white flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-3 text-right">
+                  <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black shadow-md shrink-0">
+                    <Zap className="w-5 h-5 fill-slate-950" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-xs sm:text-sm text-amber-300 font-naskh">
+                      ⚡ فوری مکمل AI سکینر اور 1 منٹ میں تیار رپورٹ
+                    </h4>
+                    <p className="text-[10px] text-slate-300 mt-0.5 leading-relaxed">
+                      ہاتھ سے لکھی درخواست، بیانات، پی ڈی ایف، سٹامپ پیپر یا سکرین شاٹ دیں، رپورٹ خودکار تیار ہو جائے گی۔
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAutoScanModal(true)}
+                  className="w-full sm:w-auto bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 hover:from-amber-300 hover:to-amber-200 text-slate-950 font-black text-xs px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shrink-0"
+                >
+                  <Zap className="w-4 h-4 fill-slate-950" />
+                  <span>صفحات اسکین کریں 🚀</span>
+                </button>
+              </div>
+
               {/* 1. Header Details (منجانب، بجانب، توجہ) */}
               <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-200 space-y-3">
                 <h3 className="text-xs font-black text-slate-900 border-r-4 border-[#0f172a] pr-2">
@@ -2586,6 +2673,29 @@ export default function App() {
                 {mobileTab === "statements" && (
                   <div className="space-y-4 text-right">
                     
+                    {/* ⚡ 1-CLICK INSTANT AUTO-SCAN FULL REPORT BANNER - MOBILE */}
+                    <div className="bg-gradient-to-r from-slate-950 to-slate-900 p-3.5 rounded-2xl border border-amber-400 shadow-md text-white space-y-2.5 text-right">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center shrink-0">
+                          <Zap className="w-4 h-4 fill-slate-950" />
+                        </div>
+                        <div>
+                          <h4 className="font-extrabold text-xs text-amber-300 font-naskh">
+                            ⚡ 1 منٹ میں خودکار مکمل رپورٹ
+                          </h4>
+                          <p className="text-[9px] text-slate-300">تمام صفحات اسکین کر کے فوراً نتیجہ انکوائری رپورٹ حاصل کریں</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowAutoScanModal(true)}
+                        className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs py-2 rounded-xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+                      >
+                        <Zap className="w-3.5 h-3.5 fill-slate-950" />
+                        <span>فوری مکمل اسکین شروع کریں 🚀</span>
+                      </button>
+                    </div>
+
                     {/* Complainant Narrative main card */}
                     <div className="bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm space-y-3.5">
                       <div className="border-r-4 border-emerald-800 pr-2.5">
@@ -3829,6 +3939,13 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* 1-CLICK INSTANT AUTO-SCAN & FULL REPORT MODAL */}
+      <AutoScanReportModal
+        isOpen={showAutoScanModal}
+        onClose={() => setShowAutoScanModal(false)}
+        onReportGenerated={handleAutoCompiledReport}
+      />
 
       {/* TARGETED OCR SCANNER MODAL */}
       <TargetedOcrModal

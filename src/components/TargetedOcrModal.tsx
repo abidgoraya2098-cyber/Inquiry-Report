@@ -1,9 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { 
   X, Upload, Camera, FileText, Sparkles, CheckCircle2, 
-  RotateCw, Trash2, ArrowRight, ShieldCheck, Copy, AlertCircle, FileCheck
+  RotateCw, Trash2, ArrowRight, ShieldCheck, Copy, AlertCircle, FileCheck, ClipboardPaste
 } from "lucide-react";
-import { convertPdfToPageImages } from "../lib/pdfToImage";
+import { convertPdfToPageImages, extractClipboardImages } from "../lib/pdfToImage";
 import { InquiryData } from "../types";
 
 export type TargetSection = 
@@ -45,6 +45,32 @@ export default function TargetedOcrModal({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Global Ctrl+V Clipboard paste listener when modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePaste = async (e: ClipboardEvent) => {
+      if (e.clipboardData && e.clipboardData.items) {
+        const pasted = await extractClipboardImages(e.clipboardData);
+        if (pasted.length > 0) {
+          const newEntries = pasted.map((b64, idx) => ({
+            id: `pasted_${Date.now()}_${idx}`,
+            name: `اسکرین شاٹ (${uploadedFiles.length + idx + 1})`,
+            base64: b64
+          }));
+          setUploadedFiles(prev => [...prev, ...newEntries]);
+          setErrorMessage(null);
+          setActiveTab("upload");
+        }
+      }
+    };
+
+    window.addEventListener("paste", handlePaste);
+    return () => {
+      window.removeEventListener("paste", handlePaste);
+    };
+  }, [isOpen, uploadedFiles.length]);
 
   if (!isOpen) return null;
 

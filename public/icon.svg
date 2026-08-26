@@ -1,132 +1,128 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
   <defs>
-    <!-- Background Gradients (Light Office Luxury) -->
-    <radialGradient id="lightBgGrad" cx="50%" cy="45%" r="55%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="70%" stop-color="#f8fafc"/>
-      <stop offset="100%" stop-color="#e2e8f0"/>
+    <!-- Background Gradients -->
+    <radialGradient id="shieldBg" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#0e294b"/>
+      <stop offset="60%" stop-color="#081b33"/>
+      <stop offset="100%" stop-color="#030c18"/>
     </radialGradient>
 
-    <!-- Gold Gradients -->
+    <radialGradient id="innerEmerald" cx="50%" cy="48%" r="52%">
+      <stop offset="0%" stop-color="#065f46"/>
+      <stop offset="70%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#022c22"/>
+    </radialGradient>
+
+    <!-- Luxury Gold Gradients -->
     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fef3c7"/>
-      <stop offset="35%" stop-color="#f59e0b"/>
-      <stop offset="70%" stop-color="#d97706"/>
+      <stop offset="0%" stop-color="#fffbeb"/>
+      <stop offset="25%" stop-color="#fde047"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="75%" stop-color="#d97706"/>
       <stop offset="100%" stop-color="#92400e"/>
     </linearGradient>
 
     <linearGradient id="goldRingGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#b45309"/>
-      <stop offset="25%" stop-color="#fcd34d"/>
-      <stop offset="50%" stop-color="#f59e0b"/>
-      <stop offset="75%" stop-color="#fef3c7"/>
+      <stop offset="0%" stop-color="#78350f"/>
+      <stop offset="20%" stop-color="#f59e0b"/>
+      <stop offset="45%" stop-color="#fef08a"/>
+      <stop offset="70%" stop-color="#d97706"/>
+      <stop offset="90%" stop-color="#fef3c7"/>
       <stop offset="100%" stop-color="#92400e"/>
     </linearGradient>
 
-    <!-- Royal Navy & Emerald Ribbon Gradient -->
-    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="ribbonNavy" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#1e3a8a"/>
       <stop offset="50%" stop-color="#0f172a"/>
       <stop offset="100%" stop-color="#064e3b"/>
     </linearGradient>
 
-    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#10b981"/>
-      <stop offset="50%" stop-color="#047857"/>
-      <stop offset="100%" stop-color="#064e3b"/>
-    </linearGradient>
-
     <!-- Drop Shadows -->
-    <filter id="subtleShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.18"/>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#f59e0b" flood-opacity="0.4"/>
     </filter>
-
-    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#b45309" flood-opacity="0.35"/>
+    
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
     </filter>
   </defs>
 
-  <!-- 1. Circular Outer Shield Background -->
-  <circle cx="256" cy="256" r="250" fill="url(#lightBgGrad)"/>
+  <!-- Outer Circular Base -->
+  <circle cx="256" cy="256" r="250" fill="url(#shieldBg)" filter="url(#shadow)"/>
   
-  <!-- Outer Decorative Ring -->
-  <circle cx="256" cy="256" r="242" fill="none" stroke="url(#goldRingGrad)" stroke-width="5" filter="url(#subtleShadow)"/>
-  <circle cx="256" cy="256" r="232" fill="none" stroke="#065f46" stroke-width="2.5" stroke-dasharray="8,5"/>
-  <circle cx="256" cy="256" r="222" fill="#ffffff" stroke="url(#goldRingGrad)" stroke-width="3"/>
+  <!-- Outer Gold Rim -->
+  <circle cx="256" cy="256" r="242" fill="none" stroke="url(#goldRingGrad)" stroke-width="7"/>
+  <circle cx="256" cy="256" r="230" fill="none" stroke="#fde047" stroke-width="2" stroke-dasharray="6,4" opacity="0.8"/>
+  <circle cx="256" cy="256" r="222" fill="url(#innerEmerald)" stroke="url(#goldRingGrad)" stroke-width="4"/>
 
-  <!-- 2. Circular Outer Header & Footer Banners -->
-  <!-- Top Arch Badge -->
-  <path d="M 90,200 A 185,185 0 0,1 422,200 L 406,230 A 155,155 0 0,0 106,230 Z" fill="url(#navyGrad)" opacity="0.08"/>
-
-  <!-- 3. Laurel Wreath (حلقہ برگِ زیتون / Laurel Branches of Honor) -->
-  <g fill="url(#goldGrad)" filter="url(#goldGlow)" opacity="0.95">
-    <!-- Left Branch Leaves -->
-    <path d="M 125,280 C 115,260 110,230 115,200 C 120,208 128,218 125,235 C 118,220 120,190 130,165 C 136,175 142,188 138,205 C 132,185 138,155 152,130 C 158,142 162,156 156,175 C 152,155 162,125 180,105 C 185,118 188,132 180,150 C 178,130 192,105 212,90 C 215,104 216,118 206,134 C 208,114 225,95 245,85 C 244,100 240,114 230,126 Z"/>
-    
-    <!-- Right Branch Leaves -->
-    <path d="M 387,280 C 397,260 402,230 397,200 C 392,208 384,218 387,235 C 394,220 392,190 382,165 C 376,175 370,188 374,205 C 380,185 374,155 360,130 C 354,142 350,156 356,175 C 360,155 350,125 332,105 C 327,118 324,132 332,150 C 334,130 320,105 300,90 C 297,104 296,118 306,134 C 304,114 287,95 267,85 C 268,100 272,114 282,126 Z"/>
+  <!-- Star Embellishments -->
+  <g fill="url(#goldGrad)">
+    <circle cx="65" cy="256" r="4"/>
+    <circle cx="447" cy="256" r="4"/>
   </g>
 
-  <!-- 4. Official Crest Center: Crescent & Star (ہلال و ستارہ) -->
-  <g transform="translate(256, 120)" filter="url(#goldGlow)">
-    <!-- Crescent Moon -->
-    <path d="M 0,-42 A 40,40 0 1,0 35,22 A 32,32 0 1,1 0,-42 Z" fill="url(#goldGrad)"/>
-    <!-- 5-Point Star -->
-    <polygon points="12,-18 16,-6 28,-6 18,2 22,14 12,6 2,14 6,2 -4,-6 8,-6" fill="url(#goldGrad)"/>
+  <!-- Golden Laurel Wreath (حلقہ برگِ زیتون) -->
+  <g fill="url(#goldGrad)" filter="url(#glow)" opacity="0.95">
+    <!-- Left Branch -->
+    <path d="M 120,290 C 110,265 105,230 112,195 C 117,204 125,214 122,230 C 116,215 118,185 128,160 C 134,170 140,183 136,200 C 130,180 136,150 150,125 C 156,137 160,151 154,170 C 150,150 160,120 178,100 C 183,113 186,127 178,145 C 176,125 190,100 210,85 C 213,99 214,113 204,129 C 206,109 223,90 243,80 C 242,95 238,109 228,121 Z"/>
+    <!-- Right Branch -->
+    <path d="M 392,290 C 402,265 407,230 400,195 C 395,204 387,214 390,230 C 396,215 394,185 384,160 C 378,170 372,183 376,200 C 382,180 376,150 362,125 C 356,137 352,151 358,170 C 362,150 352,120 334,100 C 329,113 326,127 334,145 C 336,125 322,100 302,85 C 299,99 298,113 308,129 C 306,109 289,90 269,80 C 270,95 274,109 284,121 Z"/>
   </g>
 
-  <!-- 5. Scales of Justice (میزانِ عدل - Scale Beam & Pans) -->
-  <g transform="translate(256, 235)" filter="url(#subtleShadow)">
-    <!-- Central Pillar of Justice -->
-    <path d="M -4,-65 L 4,-65 L 6,65 L -6,65 Z" fill="url(#goldRingGrad)"/>
-    <circle cx="0" cy="-65" r="7" fill="url(#goldGrad)"/>
-    <circle cx="0" cy="0" r="11" fill="url(#emeraldGrad)" stroke="url(#goldGrad)" stroke-width="2"/>
-    <circle cx="0" cy="0" r="4" fill="#ffffff"/>
+  <!-- Crescent & Star (ہلال و ستارہ) -->
+  <g transform="translate(256, 115)" filter="url(#glow)">
+    <path d="M 0,-44 A 42,42 0 1,0 36,24 A 34,34 0 1,1 0,-44 Z" fill="url(#goldGrad)"/>
+    <polygon points="12,-18 17,-5 30,-5 19,3 23,16 12,8 1,16 5,3 -6,-5 7,-5" fill="url(#goldGrad)"/>
+  </g>
+
+  <!-- Scales of Justice (میزانِ عدل) -->
+  <g transform="translate(256, 235)" filter="url(#shadow)">
+    <!-- Central Pillar -->
+    <path d="M -4,-68 L 4,-68 L 6,68 L -6,68 Z" fill="url(#goldRingGrad)"/>
+    <circle cx="0" cy="-68" r="8" fill="url(#goldGrad)"/>
+    <circle cx="0" cy="0" r="12" fill="url(#innerEmerald)" stroke="url(#goldGrad)" stroke-width="2.5"/>
+    <circle cx="0" cy="0" r="5" fill="#fef08a"/>
 
     <!-- Pillar Base -->
-    <path d="M -28,65 L 28,65 L 36,76 L -36,76 Z" fill="url(#goldRingGrad)"/>
-    <rect x="-42" y="76" width="84" height="7" rx="3" fill="url(#navyGrad)"/>
+    <path d="M -30,68 L 30,68 L 38,80 L -38,80 Z" fill="url(#goldRingGrad)"/>
+    <rect x="-44" y="80" width="88" height="8" rx="4" fill="url(#ribbonNavy)" stroke="url(#goldGrad)" stroke-width="1.5"/>
 
-    <!-- Main Scale Beam -->
-    <path d="M -92,-48 Q 0,-56 92,-48 L 90,-42 Q 0,-50 -90,-42 Z" fill="url(#goldGrad)"/>
+    <!-- Scale Beam -->
+    <path d="M -96,-50 Q 0,-58 96,-50 L 94,-43 Q 0,-51 -94,-43 Z" fill="url(#goldGrad)"/>
 
     <!-- Left Scale Strings & Pan -->
-    <line x1="-88" y1="-42" x2="-112" y2="12" stroke="#92400e" stroke-width="2"/>
-    <line x1="-88" y1="-42" x2="-64" y2="12" stroke="#92400e" stroke-width="2"/>
-    <path d="M -120,12 Q -88,38 -56,12 Z" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1.5"/>
+    <line x1="-92" y1="-43" x2="-116" y2="15" stroke="#fcd34d" stroke-width="2.5"/>
+    <line x1="-92" y1="-43" x2="-68" y2="15" stroke="#fcd34d" stroke-width="2.5"/>
+    <path d="M -124,15 Q -92,42 -60,15 Z" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1.5"/>
 
     <!-- Right Scale Strings & Pan -->
-    <line x1="88" y1="-42" x2="64" y2="12" stroke="#92400e" stroke-width="2"/>
-    <line x1="88" y1="-42" x2="112" y2="12" stroke="#92400e" stroke-width="2"/>
-    <path d="M 56,12 Q 88,38 120,12 Z" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1.5"/>
+    <line x1="92" y1="-43" x2="68" y2="15" stroke="#fcd34d" stroke-width="2.5"/>
+    <line x1="92" y1="-43" x2="116" y2="15" stroke="#fcd34d" stroke-width="2.5"/>
+    <path d="M 60,15 Q 92,42 124,15 Z" fill="url(#goldGrad)" stroke="#78350f" stroke-width="1.5"/>
   </g>
 
-  <!-- 6. Official Urdu Typography Banner (پنجاب پولیس / انکوائری رپورٹ) -->
-  <!-- Top Arch Text: پنجاب پولیس -->
-  <path id="topTextArc" d="M 120,185 A 160,160 0 0,1 392,185" fill="none"/>
-  <text fill="#064e3b" font-family="'Noto Nastaliq Urdu', 'Noto Naskh Urdu', 'Arial', sans-serif" font-size="28" font-weight="900">
+  <!-- Official Urdu Typography Top: پنجاب پولیس -->
+  <path id="topTextArc" d="M 105,182 A 175,175 0 0,1 407,182" fill="none"/>
+  <text fill="#ffffff" font-family="'Noto Nastaliq Urdu', 'Noto Naskh Urdu', 'Arial', sans-serif" font-size="32" font-weight="900" filter="url(#glow)">
     <textPath href="#topTextArc" startOffset="50%" text-anchor="middle">
       پنجاب پولیس
     </textPath>
   </text>
 
   <!-- Bottom Ribbon Container -->
-  <g transform="translate(256, 400)" filter="url(#subtleShadow)">
-    <path d="M -175,-30 L 175,-30 L 195,12 L 155,20 L 0,25 L -155,20 L -195,12 Z" fill="url(#navyGrad)" stroke="url(#goldGrad)" stroke-width="3"/>
+  <g transform="translate(256, 405)" filter="url(#shadow)">
+    <!-- Ribbon Body -->
+    <path d="M -180,-30 L 180,-30 L 200,14 L 160,24 L 0,28 L -160,24 L -200,14 Z" fill="url(#ribbonNavy)" stroke="url(#goldGrad)" stroke-width="3.5"/>
     
-    <!-- Ribbon Highlights -->
-    <path d="M -165,-22 L 165,-22" stroke="url(#goldGrad)" stroke-width="1.5" opacity="0.6"/>
+    <!-- Ribbon Gold Lining -->
+    <path d="M -170,-22 L 170,-22" stroke="url(#goldGrad)" stroke-width="1.5" opacity="0.7"/>
 
-    <!-- Bottom Urdu Text: انکوائری و تفتیش برانچ -->
-    <text x="0" y="-3" fill="#fef3c7" font-family="'Noto Nastaliq Urdu', 'Noto Naskh Urdu', 'Arial', sans-serif" font-size="20" font-weight="bold" text-anchor="middle">
+    <!-- Bottom Urdu Text: ریجنل انویسٹی گیشن برانچ -->
+    <text x="0" y="-2" fill="#fffbeb" font-family="'Noto Nastaliq Urdu', 'Noto Naskh Urdu', 'Arial', sans-serif" font-size="21" font-weight="bold" text-anchor="middle" filter="url(#glow)">
       ریجنل انویسٹی گیشن برانچ
     </text>
-    <text x="0" y="16" fill="#fcd34d" font-family="'Noto Nastaliq Urdu', 'Noto Naskh Urdu', 'Arial', sans-serif" font-size="12" font-weight="bold" text-anchor="middle" letter-spacing="1">
-      INQUIRY &amp; INVESTIGATION REPORT
+    <text x="0" y="18" fill="#fde047" font-family="'Arial', sans-serif" font-size="11" font-weight="900" text-anchor="middle" letter-spacing="1.5">
+      INQUIRY &amp; INVESTIGATION ASSISTANT
     </text>
   </g>
-
-  <!-- Star accents -->
-  <circle cx="95" cy="385" r="4" fill="url(#goldGrad)"/>
-  <circle cx="417" cy="385" r="4" fill="url(#goldGrad)"/>
 </svg>

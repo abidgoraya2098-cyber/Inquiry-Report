@@ -3,6 +3,7 @@ export interface Statement {
   personName: string;
   role: string; // e.g. 'Complainant', 'Respondent', 'Witness', 'Official'
   text: string;
+  recordedDate?: string;
 }
 
 export interface InquiryData {
