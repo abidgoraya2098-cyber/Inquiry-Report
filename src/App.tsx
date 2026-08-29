@@ -5,7 +5,7 @@ import {
   ClipboardCheck, Download, Upload, Trash2, Printer, 
   History, Plus, Edit3, RefreshCw, Shield, Trash, Save,
   Smartphone, Monitor, ChevronRight, User, BookOpen, AlertCircle, AlertTriangle, Check, Play, Settings, LogOut, Eye, EyeOff,
-  Share2, QrCode as QrIcon, Copy, CheckCheck, ExternalLink, Key, X, Zap
+  Share2, QrCode as QrIcon, Copy, CheckCheck, ExternalLink, Key, X, Zap, CheckCircle2
 } from "lucide-react";
 import StatementImageScanner from "./components/StatementImageScanner";
 import TargetedOcrModal, { TargetSection } from "./components/TargetedOcrModal";
@@ -2034,6 +2034,7 @@ export default function App() {
                 <div className="pt-2 border-t border-slate-200">
                   <StatementImageScanner 
                     onTextScanned={handleScannedComplainantStatement}
+                    onAutoScanReport={() => setShowAutoScanModal(true)}
                   />
                 </div>
               </div>
@@ -2124,6 +2125,7 @@ export default function App() {
                           <StatementImageScanner 
                             label={st.role === "Complainant" ? "دستاویزی اسکینر (درخواست گزار کا بیان یہاں سے اسکین کریں):" : "دستاویزی اسکینر (تائیدی گواہ کا بیان یہاں سے اسکین کریں):"}
                             onTextScanned={(scannedText) => handleScannedStatementText(st.id, scannedText)}
+                            onAutoScanReport={() => setShowAutoScanModal(true)}
                           />
                         </div>
                       </div>
@@ -2210,6 +2212,7 @@ export default function App() {
                           <StatementImageScanner 
                             label="دستاویزی اسکینر (الزام علیہ کا بیان یہاں سے اسکین کریں):"
                             onTextScanned={(scannedText) => handleScannedStatementText(st.id, scannedText)}
+                            onAutoScanReport={() => setShowAutoScanModal(true)}
                           />
                         </div>
                       </div>
@@ -2298,6 +2301,7 @@ export default function App() {
                             const updatedVal = currentVal ? `${currentVal}\n${scannedText}` : scannedText;
                             handleFieldChange("progressText", updatedVal);
                           }}
+                          onAutoScanReport={() => setShowAutoScanModal(true)}
                         />
                       </div>
 
@@ -2765,6 +2769,7 @@ export default function App() {
                       <div className="pt-2 border-t border-slate-100">
                         <StatementImageScanner 
                           onTextScanned={handleScannedComplainantStatement}
+                          onAutoScanReport={() => setShowAutoScanModal(true)}
                         />
                       </div>
                     </div>
@@ -2820,6 +2825,7 @@ export default function App() {
                                 <StatementImageScanner 
                                   label={st.role === "Complainant" ? "دستاویزی اسکینر (درخواست گزار بیان):" : "دستاویزی اسکینر (تائیدی بیان):"}
                                   onTextScanned={(scannedText) => handleScannedStatementText(st.id, scannedText)}
+                                  onAutoScanReport={() => setShowAutoScanModal(true)}
                                 />
                               </div>
                             </div>
@@ -2873,6 +2879,7 @@ export default function App() {
                                 <StatementImageScanner 
                                   label="دستاویزی اسکینر (الزام علیہ کا بیان):"
                                   onTextScanned={(scannedText) => handleScannedStatementText(st.id, scannedText)}
+                                  onAutoScanReport={() => setShowAutoScanModal(true)}
                                 />
                               </div>
                             </div>
@@ -2963,6 +2970,7 @@ export default function App() {
                                   const updatedVal = currentVal ? `${currentVal}\n${scannedText}` : scannedText;
                                   handleFieldChange("progressText", updatedVal);
                                 }}
+                                onAutoScanReport={() => setShowAutoScanModal(true)}
                               />
                             </div>
 
@@ -3748,50 +3756,85 @@ export default function App() {
       )}
 
       {/* =========================================================================
-          REPORT GENERATION SUCCESS MODAL POPUP
+          REPORT GENERATION SUCCESS MODAL POPUP (EXECUTIVE LUXURY POLICE THEME)
           ========================================================================= */}
       {showSuccessModal && (
-        <div className="fixed inset-0 z-[99999] bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fadeIn no-print" dir="rtl">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-300 text-center relative space-y-4 animate-scaleUp">
+        <div className="fixed inset-0 z-[99999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 font-sans animate-fadeIn no-print" dir="rtl">
+          <div className="bg-gradient-to-b from-[#07152b] via-[#0d2342] to-[#050e1d] rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border-2 border-amber-400 text-center relative space-y-5 animate-scaleUp text-white">
             
-            {/* Official Police Emblem */}
-            <div className="flex flex-col items-center">
-              <div className="relative">
-                <div className="w-16 h-16 rounded-full bg-slate-900 p-0.5 border-2 border-amber-400 shadow-md flex items-center justify-center">
+            {/* Top Celebratory Header & Police Insignia */}
+            <div className="flex flex-col items-center relative">
+              {/* Gold glowing ring & emblem */}
+              <div className="relative mb-2">
+                <div className="w-20 h-20 rounded-full bg-slate-950 p-1 border-3 border-amber-400 shadow-xl shadow-amber-400/20 flex items-center justify-center ring-4 ring-amber-400/30">
                   <img 
                     src={policeLogo} 
                     alt="پنجاب پولیس نشان" 
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full rounded-full object-contain"
                     onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
                   />
                 </div>
+                <div className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 p-1 rounded-full shadow-md font-black">
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
               </div>
 
-              <h2 className="text-lg sm:text-xl font-black text-slate-900 mt-3 leading-snug font-naskh">
-                آپ کی رپورٹ میسر ریکارڈ کے مطابق <span className="text-slate-900 font-nastaliq">عابد گورائیہ صاحب</span> تیار کر دی گئی ہے!
+              {/* Official Branch Mini Badge */}
+              <div className="inline-flex items-center gap-1.5 bg-amber-400/15 border border-amber-400/40 text-amber-300 px-3 py-1 rounded-full text-[11px] font-bold tracking-wide mb-2 shadow-xs">
+                <Shield className="w-3.5 h-3.5 text-amber-400" />
+                <span>ریجنل انویسٹی گیشن برانچ پنجاب پولیس</span>
+              </div>
+
+              {/* Main Prestigious Heading for Abid Goraya */}
+              <h2 className="text-xl sm:text-2xl font-black text-white leading-snug font-naskh">
+                جناب <span className="text-amber-300 font-nastaliq text-2xl sm:text-3xl px-1 drop-shadow-md">عابد گورائیہ صاحب!</span>
               </h2>
-              <p className="text-xs text-slate-600 font-medium mt-1 leading-relaxed font-naskh">
-                تمام قلمبند بیانات، پنسل و قلمی تحریری درخواستیں اور شواہد باضابطہ سرکاری انکوائری رپورٹ میں کامیابی سے مدون کر دیے گئے ہیں۔
+              
+              <div className="text-sm sm:text-base font-extrabold text-amber-200 mt-1 font-naskh">
+                ✨ رپورٹ میسر ریکارڈ کے مطابق 100% درست اور معیاری مرتب کر دی گئی ہے ✨
+              </div>
+
+              <p className="text-[11px] sm:text-xs text-slate-300 font-medium mt-1.5 leading-relaxed font-naskh max-w-md">
+                تمام قلمبند بیانات، پنسل و قلمی تحریری درخواستیں اور حاصل شدہ تفتیشی شواہد پنجاب پولیس کے باضابطہ قانونی قواعد و ضوابط کے عین مطابق کامیابی سے مدون کر دیے گئے ہیں۔
               </p>
             </div>
 
-            {/* Action Buttons Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-              {/* 1. Read Report */}
-              <button
-                onClick={() => {
-                  setShowSuccessModal(false);
-                  setMobileTab("preview");
-                  const element = document.getElementById("report-preview-area");
-                  if (element) element.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="bg-[#0f172a] hover:bg-[#1e293b] active:scale-95 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-800"
-              >
-                <BookOpen className="w-4 h-4 text-amber-300" />
-                <span>رپورٹ مکمل پڑھیں</span>
-              </button>
+            {/* Quick Case Summary Snapshot Box */}
+            <div className="bg-slate-950/80 border border-amber-400/30 rounded-2xl p-3 text-right text-xs space-y-1.5 shadow-inner">
+              <div className="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span className="text-slate-400 text-[10px]">درخواست گزار / سائل:</span>
+                <span className="font-black text-amber-300 text-xs">{currentInquiry.complainantName || "نامعلوم سائل"}</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                <span className="text-slate-400 text-[10px]">تھانہ و ضلع:</span>
+                <span className="font-bold text-slate-200 text-[11px]">{currentInquiry.stationName || "تھانہ صدر"} - {currentInquiry.districtName || "گوجرانوالہ"}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 text-[10px]">حتمی نتیجہ خلاصہ:</span>
+                <span className="font-medium text-amber-100 text-[10px] truncate max-w-[240px]">
+                  {currentInquiry.inquiryConclusion ? currentInquiry.inquiryConclusion.substring(0, 80) + "..." : "دریافت فریقین سے تصفیہ طلب پایا گیا۔"}
+                </span>
+              </div>
+            </div>
 
-              {/* 2. Print / Save PDF */}
+            {/* Primary Action Button (Big Luxury Gold Gradient) */}
+            <button
+              onClick={() => {
+                setShowSuccessModal(false);
+                setMobileTab("preview");
+                const element = document.getElementById("report-preview-area");
+                if (element) element.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="w-full bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-sm py-3 px-4 rounded-2xl shadow-xl shadow-amber-400/25 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 group"
+            >
+              <BookOpen className="w-4 h-4 text-slate-950 group-hover:scale-110 transition-transform" />
+              <span>📖 مکمل رپورٹ کا جائزہ لیں (Preview Report)</span>
+              <Sparkles className="w-4 h-4 text-slate-950" />
+            </button>
+
+            {/* Action Buttons Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {/* 1. Official Print / PDF */}
               <button
                 onClick={() => {
                   setShowSuccessModal(false);
@@ -3800,13 +3843,13 @@ export default function App() {
                     window.print();
                   }, 300);
                 }}
-                className="bg-white hover:bg-slate-50 active:scale-95 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-300"
+                className="bg-gradient-to-r from-emerald-800 to-teal-800 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-emerald-600/50"
               >
-                <Printer className="w-4 h-4 text-slate-700" />
+                <Printer className="w-3.5 h-3.5 text-emerald-300" />
                 <span>پرنٹ / PDF</span>
               </button>
 
-              {/* 3. Download MS Word (.doc) */}
+              {/* 2. Download MS Word (.doc) */}
               <button
                 onClick={() => {
                   setShowSuccessModal(false);
@@ -3846,13 +3889,13 @@ export default function App() {
                   document.body.removeChild(a);
                   URL.revokeObjectURL(url);
                 }}
-                className="bg-white hover:bg-slate-50 active:scale-95 text-slate-800 font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-300"
+                className="bg-gradient-to-r from-blue-800 to-indigo-900 hover:from-blue-700 hover:to-indigo-800 active:scale-95 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-blue-600/50"
               >
-                <Download className="w-4 h-4 text-slate-700" />
+                <Download className="w-3.5 h-3.5 text-blue-300" />
                 <span>ورڈ فائل (.doc)</span>
               </button>
 
-              {/* 4. Copy Report */}
+              {/* 3. Copy Report Text */}
               <button
                 onClick={() => {
                   const text = `منجانب: ${currentInquiry.senderDesignation || ""}\\nبجانب: ${currentInquiry.recipientDesignation || ""}\\nعنوان: رپورٹ درخواست ازاں ${currentInquiry.complainantName || "سائل"}\\n\\nجنابِ عالی!\\nتحریر ہے کہ درخواست عنوان بالا موصول ہونے پر فریقین کو طلب کر کے دریافت عمل میں لائی گئی ۔حالات اس طرح پائے گئے جو ذیل ہیں۔\\n\\nموقف درخواست گزار:\\n${currentInquiry.complainantStatement || ""}\\n\\nنتیجہ انکوائری:\\n${currentInquiry.inquiryConclusion || ""}\\n\\nرپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے ۔`;
@@ -3861,20 +3904,28 @@ export default function App() {
                   setShowSuccessModal(false);
                   setMobileTab("preview");
                 }}
-                className="bg-[#0f172a] hover:bg-[#1e293b] active:scale-95 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer border border-slate-800"
+                className="bg-slate-900 hover:bg-slate-800 active:scale-95 text-amber-300 font-bold text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-amber-400/40"
               >
-                <Copy className="w-4 h-4 text-amber-300" />
-                <span>رپورٹ کاپی کریں</span>
+                <Copy className="w-3.5 h-3.5 text-amber-400" />
+                <span>کاپی کریں</span>
               </button>
             </div>
 
             {/* Close Button */}
-            <div className="pt-1">
+            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
+              <button
+                onClick={handleNewInquiry}
+                className="text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>نیا کیس شروع کریں</span>
+              </button>
+              
               <button
                 onClick={() => setShowSuccessModal(false)}
-                className="text-xs text-slate-500 hover:text-slate-800 font-medium underline cursor-pointer"
+                className="text-slate-400 hover:text-white font-medium underline cursor-pointer"
               >
-                بند کریں اور فارم پر جائیں
+                بند کریں اور فارم میں ترمیم کریں
               </button>
             </div>
 

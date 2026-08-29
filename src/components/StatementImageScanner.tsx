@@ -7,9 +7,17 @@ import {
 import { convertPdfToSingleStackedImage, optimizeImageForOcr } from "../lib/pdfToImage";
 import { directClientGeminiOcr, getClientGeminiApiKey, saveClientGeminiApiKey } from "../lib/gemini";
 
+interface StatementImageScannerProps {
+  onTextScanned: (text: string) => void;
+  placeholder?: string;
+  label?: string;
+  onAutoScanReport?: () => void;
+}
+
 const StatementImageScanner = React.memo(function StatementImageScanner({ 
   onTextScanned, 
-  label = "اے آئی اسکینر (درخواست، پنسل تحریر یا ہارڈ کاپی اسکین کریں):"
+  label = "اے آئی اسکینر (درخواست، پنسل تحریر یا ہارڈ کاپی اسکین کریں):",
+  onAutoScanReport
 }: StatementImageScannerProps) {
   const [rawImage, setRawImage] = useState<string | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
@@ -850,40 +858,71 @@ const StatementImageScanner = React.memo(function StatementImageScanner({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2 w-full pt-0.5" dir="rtl">
-          <button
-            type="button"
-            onClick={() => {
-              if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                startCamera();
-              } else if (cameraInputRef.current) {
-                cameraInputRef.current.click();
-              }
-            }}
-            className="bg-[#0f172a] hover:bg-[#1e293b] text-white border border-slate-800 rounded-xl p-2.5 flex items-center justify-center gap-2 font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
-          >
-            <Camera className="w-4 h-4 text-amber-300 shrink-0" />
-            <div className="text-right">
-              <div className="text-[11px] font-bold leading-tight">کیمرہ اسکین</div>
-              <div className="text-[9px] text-slate-300 font-normal">فوٹو بنائیں</div>
-            </div>
-          </button>
+        <div className="space-y-2 w-full pt-0.5" dir="rtl">
+          {/* ⚡ 1-Click Instant Auto-Scan Full Report Button */}
+          {onAutoScanReport && (
+            <button
+              type="button"
+              onClick={onAutoScanReport}
+              className="w-full bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 hover:from-slate-900 hover:to-slate-850 text-amber-300 border-2 border-amber-400/80 hover:border-amber-300 rounded-xl p-2.5 flex items-center justify-between font-bold text-xs shadow-md transition-all active:scale-98 cursor-pointer group"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center font-black shrink-0 group-hover:scale-105 transition-transform">
+                  <Zap className="w-4 h-4 fill-slate-950" />
+                </div>
+                <div className="text-right">
+                  <div className="text-xs font-black text-amber-300 font-naskh">
+                    ⚡ فوری مکمل AI سکینر اور 1 منٹ میں تیار رپورٹ
+                  </div>
+                  <div className="text-[9px] text-slate-300">
+                    تمام صفحات دیں، مکمل نتیجہ رپورٹ خودکار تیار ہو جائے گی
+                  </div>
+                </div>
+              </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              if (fileInputRef.current) {
-                fileInputRef.current.click();
-              }
-            }}
-            className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-xl p-2.5 flex items-center justify-center gap-2 font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
-          >
-            <Upload className="w-4 h-4 text-slate-700 shrink-0" />
-            <div className="text-right">
-              <div className="text-[11px] font-bold leading-tight">فائل / تصویر اپلوڈ</div>
-              <div className="text-[9px] text-slate-500 font-normal">PDF، JPG، PNG</div>
-            </div>
-          </button>
+              <div className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-[11px] px-3 py-1.5 rounded-lg flex items-center gap-1 shrink-0 shadow-xs">
+                <span>🚀 صفحات اسکین کریں</span>
+                <Zap className="w-3 h-3 fill-slate-950" />
+              </div>
+            </button>
+          )}
+
+          {/* Section Targeted Scanner Buttons */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                  startCamera();
+                } else if (cameraInputRef.current) {
+                  cameraInputRef.current.click();
+                }
+              }}
+              className="bg-[#0f172a] hover:bg-[#1e293b] text-white border border-slate-800 rounded-xl p-2.5 flex items-center justify-center gap-2 font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
+            >
+              <Camera className="w-4 h-4 text-amber-300 shrink-0" />
+              <div className="text-right">
+                <div className="text-[11px] font-bold leading-tight">کیمرہ اسکین</div>
+                <div className="text-[9px] text-slate-300 font-normal">صرف اس خانے کی فوٹو</div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (fileInputRef.current) {
+                  fileInputRef.current.click();
+                }
+              }}
+              className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-xl p-2.5 flex items-center justify-center gap-2 font-bold text-xs shadow-xs transition-all active:scale-95 cursor-pointer"
+            >
+              <Upload className="w-4 h-4 text-slate-700 shrink-0" />
+              <div className="text-right">
+                <div className="text-[11px] font-bold leading-tight">فائل / تصویر اپلوڈ</div>
+                <div className="text-[9px] text-slate-500 font-normal">PDF، JPG، PNG</div>
+              </div>
+            </button>
+          </div>
         </div>
       )}
     </div>
