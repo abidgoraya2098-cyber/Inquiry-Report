@@ -141,13 +141,18 @@ const PasswordScreen = React.memo(function PasswordScreen({ onLogin }: PasswordS
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-slate-100 text-center space-y-1">
+        <div className="mt-6 pt-4 border-t border-slate-100 text-center space-y-1.5 font-sans">
           <p className="text-xs text-slate-500 font-medium leading-relaxed font-naskh">
-            محفوظ نظام بمطابق قواعد پنجاب پولیس
+            محفوظ سرکاری نظام بمطابق قواعد و ضوابط پنجاب پولیس
           </p>
-          <p className="text-[11px] font-bold text-slate-700 tracking-wide pt-1 border-t border-slate-100 font-nastaliq">
-            عابد عباس علی گورائیہ
-          </p>
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-2 mt-2">
+            <p className="text-xs font-black text-slate-900 font-naskh">
+              ایپ ڈویلپر: <span className="text-amber-600 font-nastaliq text-sm">عابد عباس علی گورائیہ</span>
+            </p>
+            <p className="text-xs font-bold text-slate-700 mt-0.5" dir="ltr">
+              📞 03004800071
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -1338,27 +1343,17 @@ export default function App() {
               </button>
             </div>
 
-            {/* 1-CLICK INSTANT AUTO-SCAN & 1-MIN REPORT BUTTON (PRIMARY STANDOUT) */}
-            <button 
-              onClick={() => setShowAutoScanModal(true)}
-              className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 hover:from-amber-300 hover:to-amber-200 text-slate-950 px-3 py-1 rounded-lg border border-amber-300 font-black text-[11px] transition-all flex items-center gap-1.5 shadow-md cursor-pointer active:scale-95 shrink-0"
-              title="فوری مکمل AI سکینر اور 1 منٹ میں تیار رپورٹ (Instant 1-Minute Full Report)"
-            >
-              <Zap className="w-3.5 h-3.5 fill-slate-950" />
-              <span>⚡ 1 منٹ میں مکمل رپورٹ</span>
-            </button>
-
             {/* TARGETED OCR SCANNER BUTTON */}
             <button 
               onClick={() => {
                 setTargetedOcrInitialSection("all");
                 setShowTargetedOcrModal(true);
               }}
-              className="bg-gradient-to-r from-emerald-800 to-teal-800 hover:from-emerald-700 hover:to-teal-700 text-amber-300 px-2.5 py-1 rounded-lg border border-emerald-500 font-bold text-[11px] transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95 shrink-0"
+              className="bg-gradient-to-r from-emerald-800 to-teal-800 hover:from-emerald-700 hover:to-teal-700 text-amber-300 px-3 py-1 rounded-lg border border-emerald-500 font-bold text-[11px] transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95 shrink-0"
               title="خانہ وار الگ الگ AI سکینر (Targeted OCR Scanner)"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>خانہ وار سکینر</span>
+              <span>خانہ وار AI سکینر</span>
             </button>
 
             {/* SEARCH SAVED INQUIRIES BUTTON */}
@@ -4025,6 +4020,77 @@ export default function App() {
         initialTarget={targetedOcrInitialSection}
         onApplyData={handleApplyTargetedOcrData}
       />
+
+      {/* =========================================================================
+          EXECUTIVE LUXURY SIGNATURE FOOTER (DEVELOPER ABID ABBAS ALI GORAYA)
+          ========================================================================= */}
+      <footer className="bg-gradient-to-r from-[#051124] via-[#0b2144] to-[#040e1d] border-t-2 border-amber-400 text-white py-6 px-4 text-center mt-12 no-print shadow-2xl relative z-20" dir="rtl">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          
+          {/* Right: Police Monogram & Official Branch Info */}
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-full bg-slate-950 p-1 border-2 border-amber-400 shadow-xl shadow-amber-400/20 flex items-center justify-center shrink-0">
+              <img 
+                src={policeLogo} 
+                alt="پنجاب پولیس مونوگرام" 
+                className="w-full h-full object-contain rounded-full" 
+                onError={(e) => { (e.target as HTMLImageElement).src = POLICE_LOGO_BASE64; }}
+              />
+            </div>
+            <div className="text-right">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-amber-300 font-naskh">ریجنل انویسٹی گیشن برانچ پنجاب پولیس</span>
+                <span className="bg-amber-400/20 text-amber-300 text-[10px] px-2 py-0.5 rounded-full border border-amber-400/40 font-bold">آفیشل پورٹل</span>
+              </div>
+              <p className="text-[11px] text-slate-300 font-medium mt-0.5">
+                جدید ترین قانونی و تفتیشی انکوائری رپورٹنگ و ریکارڈ سسٹم
+              </p>
+            </div>
+          </div>
+
+          {/* Center & Left: Executive Developer Signature Badge & Contact Controls */}
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2.5 font-sans">
+            
+            {/* Developer Gold Identity Badge */}
+            <div className="bg-slate-950/90 border border-amber-400/60 rounded-2xl px-4 py-2 flex items-center gap-2.5 shadow-xl">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-amber-300 text-slate-950 flex items-center justify-center font-black text-sm shadow-md shrink-0">
+                👑
+              </div>
+              <div className="text-right">
+                <div className="text-[10px] text-slate-400 font-bold">ایپ ڈیزائنر و ڈویلپر:</div>
+                <div className="text-sm font-black text-amber-300 font-nastaliq tracking-wide">عابد عباس علی گورائیہ</div>
+              </div>
+            </div>
+
+            {/* Direct Phone Call Button */}
+            <a 
+              href="tel:03004800071" 
+              className="bg-gradient-to-r from-emerald-800 to-teal-800 hover:from-emerald-700 hover:to-teal-700 active:scale-95 text-white border border-emerald-500/80 rounded-2xl px-4 py-2.5 flex items-center gap-2 shadow-xl transition-all text-xs font-black cursor-pointer"
+              title="براہِ راست کال کریں"
+            >
+              <span>📞 03004800071</span>
+            </a>
+
+            {/* Direct WhatsApp Button */}
+            <a 
+              href="https://wa.me/923004800071" 
+              target="_blank" 
+              rel="noreferrer"
+              className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 active:scale-95 text-slate-950 font-black rounded-2xl px-3.5 py-2.5 flex items-center gap-1.5 shadow-xl transition-all text-xs cursor-pointer border border-emerald-300"
+              title="واٹس ایپ پر رابطہ کریں"
+            >
+              <span>💬 واٹس ایپ</span>
+            </a>
+          </div>
+
+        </div>
+
+        {/* Copyright and System Build Subline */}
+        <div className="max-w-7xl mx-auto mt-4 pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 font-sans gap-2">
+          <span>تمام جملہ حقوق بحق پنجاب پولیس و ایپ ڈویلپر <strong className="text-amber-300 font-nastaliq">عابد عباس علی گورائیہ</strong> محفوظ ہیں © {new Date().getFullYear()}</span>
+          <span className="text-amber-400 font-mono font-bold">Inquiry Management System v3.5 (Executive Police Edition)</span>
+        </div>
+      </footer>
 
     </div>
   );
