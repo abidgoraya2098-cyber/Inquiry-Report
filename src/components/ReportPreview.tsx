@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Printer, Edit3, Copy, Check, RotateCcw, Scale, Sparkles, Type, Download, FileDown, CheckCheck } from "lucide-react";
 import { InquiryData } from "../types";
+import { directClientCorrectSpelling, getClientGeminiApiKey } from "../lib/gemini";
 
 interface ReportPreviewProps {
   data: InquiryData;
@@ -214,33 +215,40 @@ ${getFormattedConclusion()}
     setAiMessage(null);
     try {
       const textToCorrect = editMode ? editedText : getCompiledReportText();
-      const customKey = typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : "";
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (customKey) {
-        headers["x-gemini-api-key"] = customKey;
+      const customKey = getClientGeminiApiKey();
+      let corrected = "";
+
+      // 1. Try server endpoint
+      try {
+        const response = await fetch("/api/correct-spelling", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(customKey ? { "x-gemini-api-key": customKey } : {})
+          },
+          body: JSON.stringify({ 
+            text: textToCorrect,
+            apiKey: customKey || undefined
+          })
+        });
+
+        if (response.ok) {
+          const resData = await response.json();
+          if (resData.correctedText) {
+            corrected = resData.correctedText;
+          }
+        }
+      } catch (serverErr) {
+        console.warn("Server spell check notice:", serverErr);
       }
 
-      const response = await fetch("/api/correct-spelling", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ 
-          text: textToCorrect,
-          apiKey: customKey || undefined
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error("سرور سے رابطہ ناکام رہا۔");
+      // 2. Direct client fallback
+      if (!corrected) {
+        corrected = await directClientCorrectSpelling(textToCorrect, customKey);
       }
 
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("سرور سے درست جواب موصول نہیں ہوا۔");
-      }
-
-      const resData = await response.json();
-      if (resData.correctedText) {
-        setEditedText(resData.correctedText);
+      if (corrected) {
+        setEditedText(corrected);
         setEditMode(true);
         setAiMessage("کامیابی! اے آئی نے املا اور گرامر کی تمام غلطیاں درست کر دی ہیں۔");
       }

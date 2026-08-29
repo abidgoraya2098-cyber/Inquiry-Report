@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { 
   X, Upload, Camera, FileText, Sparkles, CheckCircle2, 
-  RotateCw, Trash2, ArrowRight, ShieldCheck, Copy, AlertCircle, FileCheck, ClipboardPaste
+  RotateCw, Trash2, ArrowRight, ShieldCheck, Copy, AlertCircle, FileCheck
 } from "lucide-react";
-import { convertPdfToPageImages, extractClipboardImages } from "../lib/pdfToImage";
+import { convertPdfToPageImages } from "../lib/pdfToImage";
+import { directClientGeminiOcr, getClientGeminiApiKey } from "../lib/gemini";
 import { InquiryData } from "../types";
 
 export type TargetSection = 
@@ -45,32 +46,6 @@ export default function TargetedOcrModal({
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // Global Ctrl+V Clipboard paste listener when modal is open
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handlePaste = async (e: ClipboardEvent) => {
-      if (e.clipboardData && e.clipboardData.items) {
-        const pasted = await extractClipboardImages(e.clipboardData);
-        if (pasted.length > 0) {
-          const newEntries = pasted.map((b64, idx) => ({
-            id: `pasted_${Date.now()}_${idx}`,
-            name: `اسکرین شاٹ (${uploadedFiles.length + idx + 1})`,
-            base64: b64
-          }));
-          setUploadedFiles(prev => [...prev, ...newEntries]);
-          setErrorMessage(null);
-          setActiveTab("upload");
-        }
-      }
-    };
-
-    window.addEventListener("paste", handlePaste);
-    return () => {
-      window.removeEventListener("paste", handlePaste);
-    };
-  }, [isOpen, uploadedFiles.length]);
 
   if (!isOpen) return null;
 
@@ -115,26 +90,12 @@ export default function TargetedOcrModal({
 
   // OCR Processing Core
   const performOcr = async (images: string[]): Promise<string> => {
-    const customKey = typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : "";
+    const customKey = getClientGeminiApiKey();
     const extractedTexts: string[] = [];
 
     for (let i = 0; i < images.length; i++) {
       setProcessStatus(`صفحہ ${i + 1} از ${images.length} اسکین کیا جا رہا ہے...`);
       const img = images[i];
-      let cleanBase64 = img;
-      let mimeType = "image/jpeg";
-
-      if (img.includes(";base64,")) {
-        const parts = img.split(";base64,");
-        cleanBase64 = parts[1];
-        const match = parts[0].match(/data:(.*?);/);
-        if (match && match[1]) mimeType = match[1];
-      }
-      cleanBase64 = cleanBase64.replace(/[\r\n\s]/g, "");
-
-      const prompt = `یہ پولیس ریکارڈ، درخواست، یا انکوائری رپورٹ کی تصویر ہے۔
-براہ کرم اس میں موجود تمام اردو تحریر (کمپیوٹر ٹائپنگ، پنسل یا بال پوائنٹ کی لکھائی، ڈائری نمبر، افسران کے نوٹس، تاریخ، اور دستخط) کو انتہائی باریک بینی سے پڑھ کر صاف اردو متن (Unicode Text) میں لکھیں۔ کوئی فقرہ چھوڑے بغیر مکمل متن فراہم کریں۔`;
-
       let pageText = "";
 
       // 1. Try server endpoint
@@ -161,47 +122,11 @@ export default function TargetedOcrModal({
       }
 
       // 2. Direct Client REST API Fallback
-      if (!pageText && customKey) {
-        const models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite", "gemini-1.5-pro"];
-        for (const model of models) {
-          try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${customKey}`;
-            const payload = {
-              contents: [
-                {
-                  parts: [
-                    { inlineData: { mimeType, data: cleanBase64 } },
-                    { text: prompt }
-                  ]
-                }
-              ],
-              safetySettings: [
-                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_CIVIC_INTEGRITY", threshold: "BLOCK_NONE" }
-              ],
-              generationConfig: { temperature: 0.1 }
-            };
-
-            const directRes = await fetch(url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload)
-            });
-
-            if (directRes.ok) {
-              const data = await directRes.json();
-              const text = data.candidates?.[0]?.content?.parts?.map((p: any) => p.text || "").join("\n") || "";
-              if (text.trim()) {
-                pageText = text.trim();
-                break;
-              }
-            }
-          } catch (directErr) {
-            console.warn(`Direct client OCR ${model} error:`, directErr);
-          }
+      if (!pageText) {
+        try {
+          pageText = await directClientGeminiOcr(img, undefined, customKey);
+        } catch (directErr) {
+          console.warn("Direct client OCR error:", directErr);
         }
       }
 

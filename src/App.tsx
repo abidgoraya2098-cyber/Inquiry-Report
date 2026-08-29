@@ -14,6 +14,7 @@ import ReportPreview from "./components/ReportPreview";
 import { convertPdfToPageImages, optimizeImageForOcr } from "./lib/pdfToImage";
 import { POLICE_LOGO_BASE64 } from "./assets/logoBase64";
 import { InquiryData, Statement } from "./types";
+import { saveClientGeminiApiKey, getClientGeminiApiKey, directClientGenerateInquiry } from "./lib/gemini";
 const policeLogo = POLICE_LOGO_BASE64;
 
 // Background silent security: Obfuscate/encrypt data to protect it from being scraped or read by unauthorized extensions
@@ -329,6 +330,7 @@ export default function App() {
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [customApiKeyInput, setCustomApiKeyInput] = useState(() => (typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : ""));
   const [keySaveMessage, setKeySaveMessage] = useState<string | null>(null);
+
   // Auto Scan & 1-Minute Full Report Modal State
   const [showAutoScanModal, setShowAutoScanModal] = useState(false);
 
@@ -974,36 +976,55 @@ export default function App() {
         apiStatements.push(...currentInquiry.statements);
       }
 
-      const customKey = typeof window !== "undefined" ? localStorage.getItem("GEMINI_CUSTOM_API_KEY") || "" : "";
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (customKey) {
-        headers["x-gemini-api-key"] = customKey;
+      const customKey = getClientGeminiApiKey();
+      let factsAndFindings: string[] = [];
+      let inquiryConclusion = "";
+
+      // 1. Try server endpoint
+      try {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (customKey) {
+          headers["x-gemini-api-key"] = customKey;
+        }
+
+        const response = await fetch("/api/generate-inquiry", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            ...currentInquiry,
+            statements: apiStatements,
+            subjectTitle: `رپورٹ درخواست ازاں ${currentInquiry.complainantName || "سائل"}`,
+            apiKey: customKey || undefined
+          })
+        });
+
+        if (response.ok) {
+          const data = await safeJsonParse(response);
+          if (data) {
+            factsAndFindings = data.factsAndFindings || [];
+            inquiryConclusion = data.inquiryConclusion || "";
+          }
+        }
+      } catch (serverErr) {
+        console.warn("Server generate inquiry notice:", serverErr);
       }
 
-      const response = await fetch("/api/generate-inquiry", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
+      // 2. Direct client fallback
+      if (!inquiryConclusion) {
+        const directResult = await directClientGenerateInquiry({
           ...currentInquiry,
-          statements: apiStatements,
-          subjectTitle: `رپورٹ درخواست ازان ${currentInquiry.complainantName || "سائل"}`,
-          apiKey: customKey || undefined
-        })
-      });
-
-      if (!response.ok) {
-        const errData = await safeJsonParse(response);
-        throw new Error(errData?.error || "سرور سے رابطہ ناکام رہا۔");
+          statements: apiStatements
+        }, customKey);
+        factsAndFindings = directResult.factsAndFindings || [];
+        inquiryConclusion = directResult.inquiryConclusion || "";
       }
 
-      const data = await safeJsonParse(response);
-      if (!data) {
-        throw new Error("سرور سے جواب حاصل نہ ہو سکا۔");
+      if (factsAndFindings.length > 0) {
+        handleFieldChange("factsAndFindings", factsAndFindings);
       }
-      if (data.factsAndFindings && Array.isArray(data.factsAndFindings)) {
-        handleFieldChange("factsAndFindings", data.factsAndFindings);
+      if (inquiryConclusion) {
+        handleFieldChange("inquiryConclusion", inquiryConclusion);
       }
-      handleFieldChange("inquiryConclusion", data.inquiryConclusion || "");
       
       // Auto-switch mobile view tab to preview & open celebratory completion modal
       setMobileTab("preview");
@@ -3906,7 +3927,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => {
-                  localStorage.removeItem("GEMINI_CUSTOM_API_KEY");
+                  saveClientGeminiApiKey("");
                   setCustomApiKeyInput("");
                   setKeySaveMessage("API Key حذف کر دی گئی ہے۔ اب سرور کی ڈیفالٹ Key استعمال ہو گی۔");
                 }}
@@ -3919,10 +3940,10 @@ export default function App() {
                 onClick={() => {
                   const key = customApiKeyInput.trim();
                   if (key) {
-                    localStorage.setItem("GEMINI_CUSTOM_API_KEY", key);
+                    saveClientGeminiApiKey(key);
                     setKeySaveMessage("API Key کامیابی سے محفوظ ہو گئی!");
                   } else {
-                    localStorage.removeItem("GEMINI_CUSTOM_API_KEY");
+                    saveClientGeminiApiKey("");
                     setKeySaveMessage("خالی ہونے کی وجہ سے Key صاف کر دی گئی ہے۔");
                   }
                   setTimeout(() => {
@@ -3945,6 +3966,10 @@ export default function App() {
         isOpen={showAutoScanModal}
         onClose={() => setShowAutoScanModal(false)}
         onReportGenerated={handleAutoCompiledReport}
+        senderDesignation={currentInquiry.senderDesignation}
+        recipientDesignation={currentInquiry.recipientDesignation}
+        stationName={currentInquiry.stationName}
+        districtName={currentInquiry.districtName}
       />
 
       {/* TARGETED OCR SCANNER MODAL */}
