@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Printer, Edit3, Copy, Check, RotateCcw, Scale, Sparkles, Type, Download, FileDown, CheckCheck } from "lucide-react";
 import { InquiryData } from "../types";
 import { directClientCorrectSpelling, getClientGeminiApiKey } from "../lib/gemini";
+import { exportInquiryReportToWord } from "../lib/wordExport";
 
 interface ReportPreviewProps {
   data: InquiryData;
@@ -136,70 +137,7 @@ ${getFormattedConclusion()}
   };
 
   const handleDownloadWord = () => {
-    const title = getSubjectTitle().replace(/[/\\?%*:|"<>]/g, '_');
-    const content = editMode ? editedText : getCompiledReportText();
-    
-    // Create Microsoft Word HTML document with RTL Urdu styling
-    const htmlContent = `
-      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-      <head>
-        <meta charset='utf-8'>
-        <title>${title}</title>
-        <style>
-          @page {
-            size: A4 portrait;
-            margin: 1in;
-          }
-          body {
-            font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Arial', serif;
-            direction: rtl;
-            text-align: right;
-            line-height: 2.2;
-            font-size: 14pt;
-            color: #000000;
-          }
-          h1, h2, h3, h4 {
-            font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Arial', serif;
-            margin-bottom: 8pt;
-          }
-          p {
-            margin-bottom: 12pt;
-            line-height: 2.2;
-            text-align: justify;
-          }
-          .header-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15pt;
-          }
-          .signature-area {
-            margin-top: 40pt;
-            text-align: left;
-            direction: ltr;
-          }
-          .stamp-box {
-            display: inline-block;
-            text-align: center;
-            direction: rtl;
-            font-weight: bold;
-          }
-        </style>
-      </head>
-      <body>
-        <pre style="font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Arial', serif; white-space: pre-wrap; word-wrap: break-word; font-size: 14pt; line-height: 2.2; direction: rtl; text-align: right;">${content}</pre>
-      </body>
-      </html>
-    `;
-
-    const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Inquiry_Report_${complainantName || 'Abid_Goraya'}_${Date.now()}.doc`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    exportInquiryReportToWord(data, editMode ? editedText : undefined);
   };
 
   const handleReset = () => {

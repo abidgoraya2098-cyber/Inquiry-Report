@@ -5,7 +5,8 @@ import {
   ClipboardCheck, Download, Upload, Trash2, Printer, 
   History, Plus, Edit3, RefreshCw, Shield, Trash, Save,
   Smartphone, Monitor, ChevronRight, User, BookOpen, AlertCircle, AlertTriangle, Check, Play, Settings, LogOut, Eye, EyeOff,
-  Share2, QrCode as QrIcon, Copy, CheckCheck, ExternalLink, Key, X, Zap, CheckCircle2
+  Share2, QrCode as QrIcon, Copy, CheckCheck, ExternalLink, Key, X, Zap, CheckCircle2,
+  ChevronDown, MoreVertical
 } from "lucide-react";
 import StatementImageScanner from "./components/StatementImageScanner";
 import TargetedOcrModal, { TargetSection } from "./components/TargetedOcrModal";
@@ -13,8 +14,8 @@ import AutoScanReportModal from "./components/AutoScanReportModal";
 import ReportPreview from "./components/ReportPreview";
 import { convertPdfToPageImages, optimizeImageForOcr } from "./lib/pdfToImage";
 import { POLICE_LOGO_BASE64 } from "./assets/logoBase64";
-import { InquiryData, Statement } from "./types";
 import { saveClientGeminiApiKey, getClientGeminiApiKey, directClientGenerateInquiry } from "./lib/gemini";
+import { exportInquiryReportToWord } from "./lib/wordExport";
 const policeLogo = POLICE_LOGO_BASE64;
 
 // Background silent security: Obfuscate/encrypt data to protect it from being scraped or read by unauthorized extensions
@@ -193,6 +194,7 @@ export default function App() {
   // Search Saved Inquiries Modal State
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [modalSearchQuery, setModalSearchQuery] = useState("");
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
 
   // PWA Install State
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -1306,8 +1308,8 @@ export default function App() {
             </div>
           </div>
 
-          {/* Visual Mode Selector and Quick Actions (All aligned neatly) */}
-          <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
+          {/* Visual Mode Selector and Streamlined Actions */}
+          <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-end relative">
             
             {/* VIEW MODE TOGGLE (Desktop vs Mobile view) */}
             <div className="bg-[#071626] border border-[#1b3d63] rounded-lg p-0.5 flex items-center shadow-inner text-[10px] font-bold">
@@ -1332,37 +1334,17 @@ export default function App() {
                 }`}
               >
                 <Smartphone className="w-3 h-3" />
-                <span>📱 موبائل ایپ</span>
+                <span>📱 موبائل</span>
               </button>
             </div>
 
-            {/* Compact SEARCH SAVED INQUIRIES BUTTON */}
-            <button 
-              onClick={() => setShowSearchModal(true)}
-              className="bg-[#091b2e] hover:bg-[#122e4d] text-amber-300 border border-amber-500/50 hover:border-amber-400 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs active:scale-95 shrink-0"
-              title="محفوظ انکوائری رپورٹس تلاش کریں"
-            >
-              <History className="w-3.5 h-3.5 text-amber-400" />
-              <span>محفوظ فائلز ({inquiries.length})</span>
-            </button>
-
-            {/* Quick new template button */}
-            <button 
-              onClick={handleNewInquiry}
-              className="bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1 rounded-lg border border-emerald-500 font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-xs shrink-0"
-              title="نیا خالی انکوائری ٹیمپلیٹ مرتب کریں"
-            >
-              <Plus className="w-3.5 h-3.5 text-amber-300" />
-              <span>نیا ٹیمپلیٹ</span>
-            </button>
-
-            {/* 1-CLICK INSTANT AUTO-SCAN & 1-MIN REPORT BUTTON */}
+            {/* 1-CLICK INSTANT AUTO-SCAN & 1-MIN REPORT BUTTON (PRIMARY STANDOUT) */}
             <button 
               onClick={() => setShowAutoScanModal(true)}
-              className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 hover:from-amber-300 hover:to-amber-200 text-slate-950 px-3.5 py-1 rounded-lg border border-amber-300 font-black text-[11px] transition-all flex items-center gap-1.5 shadow-md cursor-pointer active:scale-95 shrink-0"
+              className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-400 hover:from-amber-300 hover:to-amber-200 text-slate-950 px-3 py-1 rounded-lg border border-amber-300 font-black text-[11px] transition-all flex items-center gap-1.5 shadow-md cursor-pointer active:scale-95 shrink-0"
               title="فوری مکمل AI سکینر اور 1 منٹ میں تیار رپورٹ (Instant 1-Minute Full Report)"
             >
-              <Zap className="w-3.5 h-3.5 text-slate-950 fill-slate-950" />
+              <Zap className="w-3.5 h-3.5 fill-slate-950" />
               <span>⚡ 1 منٹ میں مکمل رپورٹ</span>
             </button>
 
@@ -1372,73 +1354,117 @@ export default function App() {
                 setTargetedOcrInitialSection("all");
                 setShowTargetedOcrModal(true);
               }}
-              className="bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-600 hover:to-teal-600 text-amber-300 px-3 py-1 rounded-lg border border-emerald-400 font-black text-[11px] transition-all flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 shrink-0 animate-pulse"
+              className="bg-gradient-to-r from-emerald-800 to-teal-800 hover:from-emerald-700 hover:to-teal-700 text-amber-300 px-2.5 py-1 rounded-lg border border-emerald-500 font-bold text-[11px] transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95 shrink-0"
               title="خانہ وار الگ الگ AI سکینر (Targeted OCR Scanner)"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>خانہ وار AI سکینر</span>
+              <span>خانہ وار سکینر</span>
             </button>
 
-            {/* SHARE PORTAL BUTTON */}
+            {/* SEARCH SAVED INQUIRIES BUTTON */}
             <button 
-              onClick={() => setShowShareModal(true)}
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-1 rounded-lg border border-amber-400 font-black text-[11px] transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95 shrink-0"
-              title="پورٹل کا لنک اور کیو آر کوڈ شیئر کریں"
-            >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>شیئر QR</span>
-            </button>
-
-            {/* GEMINI AI KEY SETTINGS BUTTON */}
-            <button
-              onClick={() => setShowApiKeyModal(true)}
+              onClick={() => setShowSearchModal(true)}
               className="bg-[#091b2e] hover:bg-[#122e4d] text-amber-300 border border-slate-700 hover:border-amber-400 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs active:scale-95 shrink-0"
-              title="Google Gemini AI Key سیٹنگز"
+              title="محفوظ انکوائری رپورٹس تلاش کریں"
             >
-              <Key className="w-3.5 h-3.5 text-amber-400" />
-              <span>AI Key</span>
+              <History className="w-3.5 h-3.5 text-amber-400" />
+              <span>فائلز ({inquiries.length})</span>
             </button>
 
-            {/* Always Visible Install Button */}
-            <button
-              onClick={handleInstallClick}
-              className="bg-[#01875f] hover:bg-[#00704e] text-white px-2.5 py-1 rounded-lg font-extrabold text-[11px] flex items-center gap-1 transition-all shadow-xs cursor-pointer active:scale-95 shrink-0 border border-emerald-400"
-              title="ایپ انسٹال کریں (PWA App Install)"
-            >
-              <Download className="w-3.5 h-3.5 text-amber-300" />
-              <span>انسٹال کریں</span>
-            </button>
-
-            {/* Admin Controls Dashboard Button (only shown if isAdmin is true) */}
-            {isAdmin && (
-              <button 
-                onClick={() => {
-                  setShowAdminPanel(!showAdminPanel);
-                  if (!showAdminPanel) {
-                    fetchSessions();
-                  }
-                }}
-                className={`px-2.5 py-1 rounded-lg border font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs ${
-                  showAdminPanel 
-                    ? "bg-amber-400 text-slate-950 border-amber-500" 
-                    : "bg-[#182a4d] text-indigo-200 border-indigo-700 hover:bg-[#203663]"
-                }`}
-                title="ایڈمنسٹریٹر پینل"
-              >
-                <Shield className="w-3.5 h-3.5 text-amber-300" />
-                <span>نگرانی پینل</span>
-              </button>
-            )}
-
-            {/* Log Out button */}
+            {/* Quick new template button */}
             <button 
-              onClick={handleLogout}
-              className="bg-rose-950/90 hover:bg-rose-900 border border-rose-700/80 text-rose-200 px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs shrink-0 active:scale-95"
-              title="سسٹم سے لاگ آؤٹ کریں"
+              onClick={handleNewInquiry}
+              className="bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white px-2 py-1 rounded-lg border border-slate-700 font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer active:scale-95 shadow-xs shrink-0"
+              title="نیا خالی انکوائری ٹیمپلیٹ مرتب کریں"
             >
-              <LogOut className="w-3 h-3 text-rose-400" />
-              <span>لاگ آؤٹ</span>
+              <Plus className="w-3.5 h-3.5 text-amber-300" />
+              <span>نیا</span>
             </button>
+
+            {/* MORE OPTIONS & SETTINGS DROPDOWN */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowOptionsMenu(!showOptionsMenu)}
+                className="bg-[#071626] hover:bg-[#122e4d] text-slate-200 border border-[#1b3d63] px-2.5 py-1 rounded-lg font-bold text-[11px] transition-all flex items-center gap-1 cursor-pointer shadow-xs active:scale-95 shrink-0"
+                title="مزید آپشنز اور سیٹنگز"
+              >
+                <Settings className="w-3.5 h-3.5 text-amber-400" />
+                <span>مزید</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${showOptionsMenu ? "rotate-180" : ""}`} />
+              </button>
+
+              {/* Dropdown Menu Popup */}
+              {showOptionsMenu && (
+                <div 
+                  className="absolute left-0 mt-2 w-48 bg-[#07152b] border border-amber-400/40 rounded-2xl shadow-2xl p-1.5 z-50 space-y-1 animate-scaleUp text-right"
+                  dir="rtl"
+                >
+                  {/* Share QR */}
+                  <button
+                    onClick={() => {
+                      setShowOptionsMenu(false);
+                      setShowShareModal(true);
+                    }}
+                    className="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-slate-200 hover:bg-slate-800/80 hover:text-amber-300 flex items-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <Share2 className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>پورٹل شیئر و QR</span>
+                  </button>
+
+                  {/* Gemini API Key */}
+                  <button
+                    onClick={() => {
+                      setShowOptionsMenu(false);
+                      setShowApiKeyModal(true);
+                    }}
+                    className="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-slate-200 hover:bg-slate-800/80 hover:text-amber-300 flex items-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <Key className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>Gemini AI Key</span>
+                  </button>
+
+                  {/* Install PWA App */}
+                  <button
+                    onClick={() => {
+                      setShowOptionsMenu(false);
+                      handleInstallClick();
+                    }}
+                    className="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-slate-200 hover:bg-slate-800/80 hover:text-emerald-300 flex items-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <Download className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>موبائل ایپ انسٹال کریں</span>
+                  </button>
+
+                  {/* Admin Panel (if admin) */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        setShowOptionsMenu(false);
+                        setShowAdminPanel(!showAdminPanel);
+                        if (!showAdminPanel) fetchSessions();
+                      }}
+                      className="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-indigo-200 hover:bg-indigo-950/80 flex items-center gap-2 cursor-pointer transition-colors border-t border-slate-800"
+                    >
+                      <Shield className="w-4 h-4 text-indigo-400 shrink-0" />
+                      <span>ایڈمن نگرانی پینل</span>
+                    </button>
+                  )}
+
+                  {/* Logout */}
+                  <button
+                    onClick={() => {
+                      setShowOptionsMenu(false);
+                      handleLogout();
+                    }}
+                    className="w-full text-right px-3 py-2 rounded-xl text-xs font-bold text-rose-300 hover:bg-rose-950/80 flex items-center gap-2 cursor-pointer transition-colors border-t border-slate-800"
+                  >
+                    <LogOut className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>لاگ آؤٹ</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
           </div>
 
         </div>
@@ -2033,8 +2059,9 @@ export default function App() {
                 {/* Scanners & Upload directly under narrative */}
                 <div className="pt-2 border-t border-slate-200">
                   <StatementImageScanner 
+                    label="سائل کا موقف اسکین کریں (موقف درخواست گزار):"
+                    sectionTitle="موقف درخواست گزار"
                     onTextScanned={handleScannedComplainantStatement}
-                    onAutoScanReport={() => setShowAutoScanModal(true)}
                   />
                 </div>
               </div>
@@ -2124,8 +2151,8 @@ export default function App() {
                         <div className="pt-2 border-t border-slate-100 mt-2">
                           <StatementImageScanner 
                             label={st.role === "Complainant" ? "دستاویزی اسکینر (درخواست گزار کا بیان یہاں سے اسکین کریں):" : "دستاویزی اسکینر (تائیدی گواہ کا بیان یہاں سے اسکین کریں):"}
+                            sectionTitle={st.role === "Complainant" ? "بیان سائل" : "تائیدی بیان سائل"}
                             onTextScanned={(scannedText) => handleScannedStatementText(st.id, scannedText)}
-                            onAutoScanReport={() => setShowAutoScanModal(true)}
                           />
                         </div>
                       </div>
@@ -2211,8 +2238,8 @@ export default function App() {
                         <div className="pt-2 border-t border-slate-100 mt-2">
                           <StatementImageScanner 
                             label="دستاویزی اسکینر (الزام علیہ کا بیان یہاں سے اسکین کریں):"
+                            sectionTitle="بیان الزام علیہ"
                             onTextScanned={(scannedText) => handleScannedStatementText(st.id, scannedText)}
-                            onAutoScanReport={() => setShowAutoScanModal(true)}
                           />
                         </div>
                       </div>
@@ -2296,12 +2323,12 @@ export default function App() {
                         
                         <StatementImageScanner 
                           label="دستاویزی اسکینر سے متن اسکین کریں:"
+                          sectionTitle="پراگرس رپورٹ"
                           onTextScanned={(scannedText) => {
                             const currentVal = currentInquiry.progressText || "";
                             const updatedVal = currentVal ? `${currentVal}\n${scannedText}` : scannedText;
                             handleFieldChange("progressText", updatedVal);
                           }}
-                          onAutoScanReport={() => setShowAutoScanModal(true)}
                         />
                       </div>
 
@@ -2768,8 +2795,9 @@ export default function App() {
                       {/* Scanner tool inline */}
                       <div className="pt-2 border-t border-slate-100">
                         <StatementImageScanner 
+                          label="سائل کا موقف اسکین کریں:"
+                          sectionTitle="موقف درخواست گزار"
                           onTextScanned={handleScannedComplainantStatement}
-                          onAutoScanReport={() => setShowAutoScanModal(true)}
                         />
                       </div>
                     </div>
@@ -2824,8 +2852,8 @@ export default function App() {
                               <div className="pt-2 border-t border-slate-100 mt-1">
                                 <StatementImageScanner 
                                   label={st.role === "Complainant" ? "دستاویزی اسکینر (درخواست گزار بیان):" : "دستاویزی اسکینر (تائیدی بیان):"}
+                                  sectionTitle={st.role === "Complainant" ? "بیان سائل" : "تائیدی بیان"}
                                   onTextScanned={(scannedText) => handleScannedStatementText(st.id, scannedText)}
-                                  onAutoScanReport={() => setShowAutoScanModal(true)}
                                 />
                               </div>
                             </div>
@@ -2878,8 +2906,8 @@ export default function App() {
                               <div className="pt-2 border-t border-slate-100 mt-1">
                                 <StatementImageScanner 
                                   label="دستاویزی اسکینر (الزام علیہ کا بیان):"
+                                  sectionTitle="بیان الزام علیہ"
                                   onTextScanned={(scannedText) => handleScannedStatementText(st.id, scannedText)}
-                                  onAutoScanReport={() => setShowAutoScanModal(true)}
                                 />
                               </div>
                             </div>
@@ -2965,12 +2993,12 @@ export default function App() {
                               
                               <StatementImageScanner 
                                 label="متن اسکینر:"
+                                sectionTitle="پراگرس رپورٹ"
                                 onTextScanned={(scannedText) => {
                                   const currentVal = currentInquiry.progressText || "";
                                   const updatedVal = currentVal ? `${currentVal}\n${scannedText}` : scannedText;
                                   handleFieldChange("progressText", updatedVal);
                                 }}
-                                onAutoScanReport={() => setShowAutoScanModal(true)}
                               />
                             </div>
 
@@ -3854,40 +3882,7 @@ export default function App() {
                 onClick={() => {
                   setShowSuccessModal(false);
                   setMobileTab("preview");
-                  const title = `رپورٹ درخواست ازاں ${currentInquiry.complainantName || "سائل"}`;
-                  const docHtml = `
-                    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-                    <head>
-                      <meta charset='utf-8'>
-                      <title>${title}</title>
-                      <style>
-                        @page { size: A4 portrait; margin: 1in; }
-                        body { font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Arial', serif; direction: rtl; text-align: right; line-height: 2.2; font-size: 14pt; }
-                        p { margin-bottom: 12pt; text-align: justify; }
-                      </style>
-                    </head>
-                    <body>
-                      <p><b>منجانب:</b> ${currentInquiry.senderDesignation || "سینیئر سپرنٹنڈنٹ آف پولیس"}</p>
-                      <p><b>بجانب:</b> ${currentInquiry.recipientDesignation || "جناب ریجنل پولیس آفیسر صاحب"}</p>
-                      <p><b>عنوان:</b> ${title}</p>
-                      <p><b>جنابِ عالی!</b></p>
-                      <p>تحریر ہے کہ درخواست عنوان بالا موصول ہونے پر فریقین کو طلب کر کے دریافت عمل میں لائی گئی ۔حالات اس طرح پائے گئے جو ذیل ہیں۔</p>
-                      <p><b>موقف درخواست گزار:</b> ${currentInquiry.complainantStatement || ""}</p>
-                      ${(currentInquiry.factsAndFindings || []).length > 0 ? `<p><b>اہم حقائق:</b><br/>${(currentInquiry.factsAndFindings || []).join("<br/>")}</p>` : ''}
-                      <p><b>نتیجہ انکوائری:</b> ${currentInquiry.inquiryConclusion || ""}</p>
-                      <p>رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے ۔</p>
-                    </body>
-                    </html>
-                  `;
-                  const blob = new Blob(['\\ufeff', docHtml], { type: 'application/msword;charset=utf-8' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `Inquiry_Report_${currentInquiry.complainantName || 'Abid_Goraya'}_${Date.now()}.doc`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
+                  exportInquiryReportToWord(currentInquiry);
                 }}
                 className="bg-gradient-to-r from-blue-800 to-indigo-900 hover:from-blue-700 hover:to-indigo-800 active:scale-95 text-white font-bold text-xs py-2.5 px-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-blue-600/50"
               >
