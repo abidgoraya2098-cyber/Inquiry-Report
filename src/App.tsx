@@ -6,11 +6,12 @@ import {
   History, Plus, Edit3, RefreshCw, Shield, Trash, Save,
   Smartphone, Monitor, ChevronRight, User, BookOpen, AlertCircle, AlertTriangle, Check, Play, Settings, LogOut, Eye, EyeOff,
   Share2, QrCode as QrIcon, Copy, CheckCheck, ExternalLink, Key, X, Zap, CheckCircle2,
-  ChevronDown, MoreVertical
+  ChevronDown, MoreVertical, Compass, MapPin, Search
 } from "lucide-react";
 import StatementImageScanner from "./components/StatementImageScanner";
 import TargetedOcrModal, { TargetSection } from "./components/TargetedOcrModal";
 import AutoScanReportModal from "./components/AutoScanReportModal";
+import { GujranwalaSocietiesModal, SocietyItem } from "./components/GujranwalaSocietiesModal";
 import ReportPreview from "./components/ReportPreview";
 import { convertPdfToPageImages, optimizeImageForOcr } from "./lib/pdfToImage";
 import { POLICE_LOGO_BASE64 } from "./assets/logoBase64";
@@ -167,12 +168,12 @@ export default function App() {
     createdAt: new Date().toLocaleDateString("ur-PK"),
     stationName: "تھانہ صدر، گوجرانوالہ",
     districtName: "ضلع گوجرانوالہ",
-    inquiryOfficer: "سینیئر سپرنٹینڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ۔ گوجرانوالہ ریجن",
+    inquiryOfficer: "سپرنٹنڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ، گوجرانوالہ",
     inquiryType: "other",
     lawSections: "",
-    senderDesignation: "سینیئر سپرنٹینڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ۔ گوجرانوالہ ریجن",
+    senderDesignation: "سپرنٹنڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ، گوجرانوالہ",
     recipientDesignation: "جناب ریجنل پولیس آفیسر صاحب، گوجرانوالہ",
-    attention: "توجہ: انچارج شکایت سیل",
+    attention: "(انچارج شکایات سیل)",
     reportNumber: "____________",
     reportDate: "____________",
     subjectTitle: "",
@@ -344,6 +345,41 @@ export default function App() {
   // Targeted OCR Modal State
   const [showTargetedOcrModal, setShowTargetedOcrModal] = useState(false);
   const [targetedOcrInitialSection, setTargetedOcrInitialSection] = useState<TargetSection>("all");
+
+  // Gujranwala Societies & Areas Directory Modal State
+  const [showSocietiesModal, setShowSocietiesModal] = useState(false);
+
+  const handleSelectSocietyArea = useCallback((area: SocietyItem, targetMode: "address" | "station" | "subject" = "address") => {
+    setCurrentInquiry(prev => {
+      if (targetMode === "station") {
+        return {
+          ...prev,
+          stationName: area.policeStation
+        };
+      }
+
+      if (targetMode === "subject") {
+        return {
+          ...prev,
+          subjectTitle: prev.subjectTitle ? `${prev.subjectTitle} (${area.nameUrdu})` : `رپورٹ درخواست متعلقہ ${area.nameUrdu}`
+        };
+      }
+
+      // Default: Apply to Complainant Address / Name
+      let updatedName = prev.complainantName || "";
+      if (updatedName && !updatedName.includes(area.nameUrdu)) {
+        updatedName = `${updatedName} سکنہ ${area.nameUrdu}، گوجرانوالہ`;
+      } else if (!updatedName) {
+        updatedName = `سائل سکنہ ${area.nameUrdu}، گوجرانوالہ`;
+      }
+
+      return {
+        ...prev,
+        complainantName: updatedName,
+        stationName: prev.stationName || area.policeStation
+      };
+    });
+  }, []);
 
   const handleAutoCompiledReport = useCallback((data: Partial<InquiryData>) => {
     setCurrentInquiry(prev => {
@@ -1343,6 +1379,25 @@ export default function App() {
               </button>
             </div>
 
+            {/* 🏡 GUJRANWALA SOCIETIES & FAMOUS AREAS SEARCH BAR BUTTON */}
+            <button 
+              type="button"
+              onClick={() => setShowSocietiesModal(true)}
+              className="bg-gradient-to-r from-[#061833] via-[#0c2a54] to-[#061833] hover:from-[#092247] hover:to-[#092247] text-amber-300 border-2 border-amber-400/80 hover:border-amber-300 px-3 py-1 rounded-xl font-black text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg active:scale-95 group shrink-0"
+              title="گوجرانوالہ کی تمام ہاؤسنگ سوسائٹیز اور مشہور علاقے تلاش کریں"
+            >
+              <div className="w-5 h-5 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center font-black shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                <Search className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
+              </div>
+              <div className="flex items-center gap-1.5 text-right">
+                <span className="text-slate-300 text-[11px] hidden sm:inline font-medium">سوسائٹیز سرچ:</span>
+                <span className="text-amber-300 font-black text-xs">ڈی ایچ اے، ماسٹر سٹی، ماڈل ٹاؤن...</span>
+              </div>
+              <span className="bg-amber-400/20 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-md border border-amber-400/40 font-mono font-bold">
+                70+
+              </span>
+            </button>
+
             {/* TARGETED OCR SCANNER BUTTON */}
             <button 
               onClick={() => {
@@ -2014,12 +2069,23 @@ export default function App() {
                 </h3>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">درخواست گزار / سائل کا نام:</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-bold text-slate-700">درخواست گزار / سائل کا نام مع سکنہ:</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowSocietiesModal(true)}
+                      className="bg-amber-100 hover:bg-amber-200 text-slate-950 border border-amber-300 text-[10px] px-2 py-0.5 rounded-lg font-black flex items-center gap-1 transition-all cursor-pointer shadow-2xs active:scale-95"
+                      title="گوجرانوالہ کی سوسائٹی یا علاقہ منتخب کر کے پتہ میں لگائیں"
+                    >
+                      <Compass className="w-3 h-3 text-amber-800" />
+                      <span>گوجرانوالہ سوسائٹیز ڈائریکٹری 🔍</span>
+                    </button>
+                  </div>
                   <input
                     type="text"
                     value={currentInquiry.complainantName || ""}
                     onChange={(e) => handleFieldChange("complainantName", e.target.value)}
-                    placeholder="مثلاً: مسمات رخسانہ بی بی زوجہ محمد طفیل"
+                    placeholder="مثلاً: مسمات رخسانہ بی بی زوجہ محمد طفیل سکنہ ڈی ایچ اے گوجرانوالہ"
                     className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-slate-800 focus:border-slate-800 text-slate-900 font-bold text-right shadow-2xs"
                   />
                 </div>
@@ -2750,12 +2816,22 @@ export default function App() {
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-extrabold text-slate-500 mb-1">درخواست گزار کا نام:</label>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block text-[10px] font-extrabold text-slate-500">درخواست گزار کا نام مع سکنہ:</label>
+                          <button
+                            type="button"
+                            onClick={() => setShowSocietiesModal(true)}
+                            className="bg-amber-100 hover:bg-amber-200 text-slate-950 border border-amber-300 text-[9px] px-2 py-0.5 rounded-lg font-black flex items-center gap-1 transition-all cursor-pointer shadow-2xs active:scale-95"
+                          >
+                            <Compass className="w-2.5 h-2.5 text-amber-800" />
+                            <span>سوسائٹیز و علاقے 🔍</span>
+                          </button>
+                        </div>
                         <input
                           type="text"
                           value={currentInquiry.complainantName || ""}
                           onChange={(e) => handleFieldChange("complainantName", e.target.value)}
-                          placeholder="مثلاً: مسمات رخسانہ بی بی"
+                          placeholder="مثلاً: مسمات رخسانہ بی بی سکنہ ڈی ایچ اے گوجرانوالہ"
                           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-900 font-bold"
                         />
                       </div>
@@ -4019,6 +4095,13 @@ export default function App() {
         onClose={() => setShowTargetedOcrModal(false)}
         initialTarget={targetedOcrInitialSection}
         onApplyData={handleApplyTargetedOcrData}
+      />
+
+      {/* GUJRANWALA HOUSING SOCIETIES & LOCAL AREAS MODAL */}
+      <GujranwalaSocietiesModal
+        isOpen={showSocietiesModal}
+        onClose={() => setShowSocietiesModal(false)}
+        onSelectArea={handleSelectSocietyArea}
       />
 
       {/* =========================================================================

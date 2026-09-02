@@ -42,29 +42,25 @@ const ReportPreview = React.memo(function ReportPreview({ data, onPrint }: Repor
     return `رپورٹ درخواست ازاں ${complainantName || "_________________"}`;
   };
 
-  // Helper to format complainant statement with "گزارش ہے کہ سائل"
+  // Helper to format complainant statement
   const getFormattedComplainantStatement = () => {
     if (!complainantStatement || !complainantStatement.trim()) {
-      return "گزارش ہے کہ سائل کا موقف درج کرنا ابھی باقی ہے۔";
+      return "سائل کا موقف درج کرنا ابھی باقی ہے۔";
     }
-    const trimmed = complainantStatement.trim();
-    if (trimmed.startsWith("گزارش ہے کہ سائل") || trimmed.startsWith("گزارش ہے کہ سائلہ") || trimmed.startsWith("گزارش ہے کہ")) {
-      return trimmed;
-    }
-    return `گزارش ہے کہ سائل ${trimmed}`;
+    return complainantStatement.trim();
   };
 
   // Helper to format inquiry conclusion with required opening phrase
   const getFormattedConclusion = () => {
     let text = inquiryConclusion ? inquiryConclusion.trim() : "";
     if (!text) {
-      return "دریافت فریقین، ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ نتیجہ انکوائری تفصیلی تحریر کیا جانا باقی ہے۔";
+      return "دوران انکوائری پیش آمدہ حالات و ملاحظہ ریکارڈ سے پایا گیا ہے کہ نتیجہ انکوائری تفصیلی تحریر کیا جانا باقی ہے۔";
     }
     text = text.replace(/رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے[\s۔]*$/g, "").trim();
     text = text.replace(/^دوران انکوائری پیش آمدہ حالات و ملاحظہ ریکارڈ سے پایا گیا ہے کہ\s*/g, "");
     text = text.replace(/^دریافت فریقین[،,]\s*ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ\s*/g, "");
 
-    return `دریافت فریقین، ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ ${text}`;
+    return `دوران انکوائری پیش آمدہ حالات و ملاحظہ ریکارڈ سے پایا گیا ہے کہ ${text}`;
   };
 
   // Helper to generate the default compiled report text
@@ -74,55 +70,54 @@ const ReportPreview = React.memo(function ReportPreview({ data, onPrint }: Repor
     );
     
     const respondentStatements = statements.filter(
-      st => st.role === "Respondent" || st.role === "Respondent_Witness"
+      st => st.role === "Respondent" || st.role === "Respondent_Witness" || st.role === "Police_Officer" || st.role === "Other"
     );
 
     const complainantBlock = complainantStatements.length > 0
       ? complainantStatements.map((st) => {
-          return `بیان ازاں مسمی / مسمات ${st.personName} (مکمل نام، ولدیت و سکونت/پتہ) :\n\t\tبیان کیا ہے کہ ${st.text}`;
+          return `بیان ازاں ${st.personName || "سائل"}:-\n${st.text}`;
         }).join("\n\n")
-      : "کوئی بیان درج نہیں کیا گیا۔";
+      : "";
 
     const respondentBlock = respondentStatements.length > 0
       ? respondentStatements.map((st) => {
-          return `بیان ازاں مسمی / مسمات ${st.personName} (مکمل نام، ولدیت و سکونت/پتہ) :\n\t\tبیان کیا ہے کہ ${st.text}`;
+          return `بیان ازاں ${st.personName}:-\n${st.text}`;
         }).join("\n\n")
-      : "کوئی بیان درج نہیں کیا گیا۔";
+      : "";
 
     const findingsBlock = factsAndFindings && factsAndFindings.length > 0
-      ? `\n\nدورانِ انکوائری سامنے آنے والے اہم حقائق و امور :\n${factsAndFindings.join("\n")}`
+      ? `\n\nدورانِ انکوائری سامنے آنے والے اہم حقائق و امور:-\n${factsAndFindings.join("\n")}`
       : "";
 
     const progressBlock = showProgressReport
       ? `\n\n${progressHeading || "پراگرس رپورٹ:"}\n${progressText || "تفتیش مقدمہ جاری ہے۔"}`
       : "";
 
-    return `منجانب: ${senderDesignation}
-بجانب: ${recipientDesignation}
-${attention ? `توجہ: ${attention}\n` : ""}نمبر: ____________                 تاریخ: ____________
+    const allStatementsText = [complainantBlock, respondentBlock].filter(Boolean).join("\n\n");
 
-عنوان : ${getSubjectTitle()}
-بحوالہ یاداشت نمبری: ______________
+    return `منجانب:    ${senderDesignation}
+بجانب:    ${recipientDesignation}
+${attention ? `توجہ:     ${attention}\n` : ""}نمبر: ____________                 تاریخ: ____________
 
-جنابِ عالی!
-تحریر ہے کہ درخواست عنوان بالا موصول ہونے پر فریقین کو طلب کر کے دریافت عمل میں لائی گئی ۔حالات اس طرح پائے گئے جو ذیل ہیں۔
+عنوان:-   ${getSubjectTitle()}
+بحوالہ یادداشت نمبر ${data.referenceNumber || "_________________"} مورخہ ${data.referenceDate || "_________________"}
 
-موقف درخواست گزار :
+جناب عالی!
+تحریر ہے کہ درخواست عنوان بالا موصول ہونے پر فریقین کو طلب کر کے دریافت عمل میں لائی گئی۔ حالات اس طرح پائے گئے ہیں۔
+
+خلاصہ درخواست ازاں ${complainantName || "سائل"}:-
 ${getFormattedComplainantStatement()}
 
-بیان ازان :
-${complainantBlock}
+${allStatementsText}${findingsBlock}${progressBlock}
 
-الزام علیہ درخواست کا بیان :
-${respondentBlock}${findingsBlock}${progressBlock}
-
-نتیجہ انکوائری :
+نتیجہ انکوائری:-
 ${getFormattedConclusion()}
 
-رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے ۔
+رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے۔
 
-                                                               سینیئر سپرنٹنڈنٹ آف پولیس
-                                                               ریجنل انویسٹی گیشن برانچ گوجرانوالہ ریجن`;
+
+                              سپرنٹنڈنٹ آف پولیس
+                        ریجنل انویسٹی گیشن برانچ، گوجرانوالہ`;
   };
 
   useEffect(() => {
@@ -223,9 +218,9 @@ ${getFormattedConclusion()}
   };
 
   const getFontClass = () => {
-    if (activeFont === "nastaleeq") return "font-nastaliq leading-[2.2]";
-    if (activeFont === "naskh") return "font-naskh leading-relaxed";
-    return "font-system leading-relaxed";
+    if (activeFont === "nastaleeq") return "font-nastaliq leading-[1.3] tracking-normal";
+    if (activeFont === "naskh") return "font-naskh leading-normal";
+    return "font-system leading-normal";
   };
 
   return (
@@ -369,101 +364,111 @@ ${getFormattedConclusion()}
           <textarea
             value={editedText}
             onChange={(e) => setEditedText(e.target.value)}
-            className="w-full flex-1 min-h-[400px] bg-slate-50 border border-slate-300 rounded-lg p-4 text-xs font-semibold leading-relaxed text-right text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800"
+            className="w-full flex-1 min-h-[400px] bg-slate-50 border border-slate-300 rounded-lg p-4 text-xs font-semibold leading-normal text-right text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800"
             dir="rtl"
             style={{ fontFamily: activeFont === "nastaleeq" ? "Noto Nastaliq Urdu" : activeFont === "naskh" ? "Noto Naskh Urdu" : "inherit" }}
           />
         </div>
       ) : (
         <div 
-          className={`flex-1 bg-white border border-slate-300 rounded-xl p-6 sm:p-10 shadow-xs space-y-6 text-slate-950 font-naskh select-text ${getFontClass()}`}
+          className={`flex-1 bg-white border border-slate-300 rounded-xl p-6 sm:p-10 shadow-xs space-y-4 text-slate-950 font-naskh select-text ${getFontClass()}`}
           dir="rtl"
         >
           {/* Official Letterhead Header */}
-          <div className="space-y-1.5 pb-4 border-b-2 border-slate-300 text-sm sm:text-base font-bold">
+          <div className="space-y-1 pb-3 text-sm sm:text-base font-bold">
             <div className="flex justify-between items-start gap-4">
               <div className="space-y-0.5">
-                <p className="font-extrabold text-slate-900">منجانب: {senderDesignation}</p>
-                <p className="font-bold text-slate-800">بجانب: {recipientDesignation}</p>
-                {attention && <p className="font-semibold text-slate-700">{attention}</p>}
+                <div className="flex items-start gap-2">
+                  <span className="shrink-0 font-extrabold text-slate-900">منجانب:</span>
+                  <div>
+                    <p className="font-extrabold text-slate-900">سپرنٹنڈنٹ آف پولیس</p>
+                    <p className="font-bold text-slate-800">ریجنل انویسٹی گیشن برانچ، گوجرانوالہ</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 pt-1">
+                  <span className="shrink-0 font-extrabold text-slate-900">بجانب:</span>
+                  <p className="font-bold text-slate-800">{recipientDesignation}</p>
+                </div>
+                {attention && (
+                  <div className="flex items-start gap-2">
+                    <span className="shrink-0 font-extrabold text-slate-900">توجہ:</span>
+                    <p className="font-semibold text-slate-700">{attention}</p>
+                  </div>
+                )}
               </div>
-              <div className="text-left font-sans text-xs text-slate-600 space-y-1 shrink-0" dir="ltr">
-                <p>No: ______________</p>
-                <p>Dated: ____________</p>
+              <div className="text-right text-xs sm:text-sm text-slate-800 space-y-1 shrink-0 font-bold">
+                <p>نمبر: ____________</p>
+                <p>تاریخ: ____________</p>
               </div>
             </div>
           </div>
 
-          {/* Subject & Reference */}
-          <div className="space-y-1 font-bold text-sm sm:text-base">
+          {/* Subject & Reference in ONE line under Title */}
+          <div className="space-y-1 font-bold text-sm sm:text-base pt-1">
             <p className="text-slate-950 font-extrabold flex items-baseline gap-2">
-              <span className="shrink-0">عنوان :</span>
-              <span className="underline underline-offset-4 decoration-slate-400">{getSubjectTitle()}</span>
+              <span className="shrink-0">عنوان:-</span>
+              <span className="underline underline-offset-2">{getSubjectTitle()}</span>
             </p>
-            <p className="text-slate-600 text-xs sm:text-sm">
-              بحوالہ یاداشت نمبری: ______________
+            <p className="text-slate-900 text-xs sm:text-sm font-semibold">
+              بحوالہ یادداشت نمبر {data.referenceNumber || "_________________"} مورخہ {data.referenceDate || "_________________"}
             </p>
           </div>
 
           {/* Formal Salutation & Intro */}
-          <div className="space-y-2 text-sm sm:text-base leading-relaxed">
-            <p className="font-extrabold text-slate-900">جنابِ عالی!</p>
-            <p className="text-justify font-medium text-slate-800">
-              تحریر ہے کہ درخواست عنوان بالا موصول ہونے پر فریقین کو طلب کر کے دریافت عمل میں لائی گئی ۔حالات اس طرح پائے گئے جو ذیل ہیں۔
+          <div className="space-y-1 text-sm sm:text-base leading-normal pt-1">
+            <p className="font-extrabold text-slate-900">جناب عالی!</p>
+            <p className="text-justify font-medium text-slate-900 leading-normal">
+              تحریر ہے کہ درخواست عنوان بالا موصول ہونے پر فریقین کو طلب کر کے دریافت عمل میں لائی گئی۔ حالات اس طرح پائے گئے ہیں۔
             </p>
           </div>
 
           {/* Complainant Narrative */}
-          <div className="space-y-1 text-sm sm:text-base leading-relaxed">
-            <p className="font-extrabold text-slate-900 underline underline-offset-2">موقف درخواست گزار :</p>
-            <p className="text-justify font-medium text-slate-800 whitespace-pre-wrap">
+          <div className="space-y-1 text-sm sm:text-base leading-normal pt-1">
+            <p className="font-extrabold text-slate-900 underline underline-offset-2">
+              خلاصہ درخواست ازاں {complainantName || "سائل"}:-
+            </p>
+            <p className="text-justify font-medium text-slate-900 whitespace-pre-wrap leading-normal">
               {getFormattedComplainantStatement()}
             </p>
           </div>
 
           {/* Complainant & Witness Statements */}
-          <div className="space-y-3 text-sm sm:text-base leading-relaxed">
-            <p className="font-extrabold text-slate-900 underline underline-offset-2">بیان ازان :</p>
-            {complainantStatements.length === 0 ? (
-              <p className="text-slate-400 italic text-xs">کوئی بیان درج نہیں کیا گیا ۔</p>
-            ) : (
-              complainantStatements.map((st) => (
-                <div key={st.id} className="space-y-1 pr-2 border-r-2 border-slate-300">
-                  <p className="font-bold text-slate-900">
-                    بیان ازاں مسمی / مسمات <span className="font-extrabold underline">{st.personName || "_________________"}</span> (مکمل نام، ولدیت و سکونت/پتہ) :
+          {complainantStatements.length > 0 && (
+            <div className="space-y-2 text-sm sm:text-base leading-normal pt-1">
+              {complainantStatements.map((st) => (
+                <div key={st.id} className="space-y-0.5">
+                  <p className="font-extrabold text-slate-900 underline underline-offset-2">
+                    بیان ازاں {st.personName || "سائل"}:-
                   </p>
-                  <p className="text-justify font-medium text-slate-800 pl-4 whitespace-pre-wrap">
-                    بیان کیا ہے کہ {st.text}
+                  <p className="text-justify font-medium text-slate-900 whitespace-pre-wrap leading-normal">
+                    {st.text}
                   </p>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
 
-          {/* Respondent Statements */}
-          <div className="space-y-3 text-sm sm:text-base leading-relaxed">
-            <p className="font-extrabold text-slate-900 underline underline-offset-2">الزام علیہ درخواست کا بیان :</p>
-            {respondentStatements.length === 0 ? (
-              <p className="text-slate-400 italic text-xs">کوئی بیان درج نہیں کیا گیا ۔</p>
-            ) : (
-              respondentStatements.map((st) => (
-                <div key={st.id} className="space-y-1 pr-2 border-r-2 border-slate-300">
-                  <p className="font-bold text-slate-900">
-                    بیان ازاں مسمی / مسمات <span className="font-extrabold underline">{st.personName || "_________________"}</span> (مکمل نام، ولدیت و سکونت/پتہ) :
+          {/* Respondent & Police Statements */}
+          {respondentStatements.length > 0 && (
+            <div className="space-y-2 text-sm sm:text-base leading-normal pt-1">
+              {respondentStatements.map((st) => (
+                <div key={st.id} className="space-y-0.5">
+                  <p className="font-extrabold text-slate-900 underline underline-offset-2">
+                    بیان ازاں {st.personName || "الزام علیہ"}:-
                   </p>
-                  <p className="text-justify font-medium text-slate-800 pl-4 whitespace-pre-wrap">
-                    بیان کیا ہے کہ {st.text}
+                  <p className="text-justify font-medium text-slate-900 whitespace-pre-wrap leading-normal">
+                    {st.text}
                   </p>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Facts & Findings (if any) */}
           {factsAndFindings && factsAndFindings.length > 0 && (
-            <div className="space-y-2 text-sm sm:text-base leading-relaxed">
-              <p className="font-extrabold text-slate-900 underline underline-offset-2">دورانِ انکوائری سامنے آنے والے اہم حقائق و امور :</p>
-              <ul className="list-disc list-inside space-y-1 text-slate-800 pr-2">
+            <div className="space-y-1 text-sm sm:text-base leading-normal pt-1">
+              <p className="font-extrabold text-slate-900 underline underline-offset-2">دورانِ انکوائری سامنے آنے والے اہم حقائق و امور:-</p>
+              <ul className="list-disc list-inside space-y-0.5 text-slate-900 pr-2 leading-normal">
                 {factsAndFindings.map((finding, idx) => (
                   <li key={idx} className="text-justify">{finding}</li>
                 ))}
@@ -473,11 +478,11 @@ ${getFormattedConclusion()}
 
           {/* Progress Report (if checked) */}
           {showProgressReport && (
-            <div className="space-y-2 text-sm sm:text-base leading-relaxed">
+            <div className="space-y-1 text-sm sm:text-base leading-normal pt-1">
               <p className="font-extrabold text-slate-900 underline underline-offset-2">
                 {progressHeading || "پراگرس رپورٹ:"}
               </p>
-              <p className="text-justify font-medium text-slate-800 whitespace-pre-wrap">
+              <p className="text-justify font-medium text-slate-900 whitespace-pre-wrap leading-normal">
                 {progressText || "تفتیش مقدمہ جاری ہے۔"}
               </p>
 
@@ -494,22 +499,22 @@ ${getFormattedConclusion()}
             </div>
           )}
 
-          {/* Final Conclusion */}
-          <div className="space-y-2 pt-2 text-sm sm:text-base leading-relaxed border-t border-slate-200">
-            <p className="font-extrabold text-slate-900 underline underline-offset-2">نتیجہ انکوائری :</p>
-            <p className="text-justify font-medium text-slate-800 whitespace-pre-wrap">
+          {/* Final Conclusion (NO BOX, NO BORDER) */}
+          <div className="space-y-1 pt-2 text-sm sm:text-base leading-normal">
+            <p className="font-extrabold text-slate-900 underline underline-offset-2">نتیجہ انکوائری:-</p>
+            <p className="text-justify font-medium text-slate-900 whitespace-pre-wrap leading-normal">
               {getFormattedConclusion()}
             </p>
-            <p className="font-bold text-slate-900 pt-2">
-              رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے ۔
+            <p className="font-bold text-slate-900 pt-2 text-center">
+              رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے۔
             </p>
           </div>
 
           {/* Official Stamp */}
-          <div className="pt-8 flex justify-start mt-12 border-t border-slate-200" dir="ltr" style={{ direction: 'ltr' }}>
-            <div className="text-center font-extrabold text-slate-900 leading-relaxed pr-12" dir="rtl" style={{ direction: 'rtl', fontSize: '18px' }}>
-              <p className="font-bold">سینیئر سپرنٹنڈنٹ آف پولیس</p>
-              <p className="text-slate-700 mt-0.5" style={{ fontSize: '15px' }}>ریجنل انویسٹی گیشن برانچ۔ گوجرانوالہ ریجن</p>
+          <div className="pt-6 flex justify-start mt-6" dir="ltr" style={{ direction: 'ltr' }}>
+            <div className="text-center font-extrabold text-slate-900 leading-normal pr-8" dir="rtl" style={{ direction: 'rtl', fontSize: '18px' }}>
+              <p className="font-bold">سپرنٹنڈنٹ آف پولیس</p>
+              <p className="text-slate-800 mt-0.5" style={{ fontSize: '15px' }}>ریجنل انویسٹی گیشن برانچ، گوجرانوالہ</p>
             </div>
           </div>
         </div>

@@ -86,17 +86,20 @@ export function buildSmartFallbackInquiryReport(
 ): Partial<InquiryData> {
   const stationName = metadata.stationName || "تھانہ صدر، گوجرانوالہ";
   const districtName = metadata.districtName || "ضلع گوجرانوالہ";
-  const senderDesignation = metadata.senderDesignation || "سینیئر سپرنٹنڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ۔ گوجرانوالہ ریجن";
+  const senderDesignation = metadata.senderDesignation || "سپرنٹنڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ، گوجرانوالہ";
   const recipientDesignation = metadata.recipientDesignation || "جناب ریجنل پولیس آفیسر صاحب، گوجرانوالہ";
   const complainantName = metadata.complainantName || "مسمی محمد اسلم ولد نور محمد، سکونت گوجرانوالہ";
 
   return {
     senderDesignation,
     recipientDesignation,
+    attention: "(انچارج شکایات سیل)",
     stationName,
     districtName,
     lawSections: "درخواست تنازعہ لین دین و امانت میں خیانت",
     subjectTitle: `رپورٹ درخواست ازاں ${complainantName}`,
+    referenceNumber: metadata.referenceNumber || "_________________",
+    referenceDate: metadata.referenceDate || "_________________",
     complainantName,
     complainantStatement: "سائل نے حاضر ہو کر تحریری درخواست گزاری کہ مخالف فریق نے کاروباری لین دین کے سلسلے میں طے شدہ معاہدے کی خلاف ورزی کی ہے اور تصفیہ سے انکاری ہے۔ سائل نے پیش کردہ کاغذات و رسیدات کی روشنی میں فوری داد رسی اور قانونی کارروائی کی استدعا کی ہے۔",
     statements: [
@@ -128,7 +131,7 @@ export function buildSmartFallbackInquiryReport(
       "3۔ تائیدی گواہان کے بیانات سے سائل کے موقف کی جزوی تصدیق ہوئی تاہم فریق مخالف نے بھی اپنے کلیمز پیش کیے۔",
       "4۔ فریقین کو مکمل موقع فراہم کیا گیا تاکہ وہ اپنے موقف کے حق میں مزید ثبوت پیش کر سکیں۔"
     ],
-    inquiryConclusion: "دریافت فریقین، ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ معاملہ فریقین کے مابین دیوانی نوعیت کے مالی لین دین اور حساب کتاب کا ہے۔ فریقین کو پابند کیا گیا ہے کہ وہ مجاز عدالت یا باہمی تصفیہ کے ذریعے اپنا تنازعہ حل کریں اور امن و امان میں خلل نہ ڈالیں۔"
+    inquiryConclusion: "دوران انکوائری پیش آمدہ حالات و ملاحظہ ریکارڈ سے پایا گیا ہے کہ معاملہ فریقین کے مابین دیوانی نوعیت کے مالی لین دین اور حساب کتاب کا ہے۔ فریقین کو پابند کیا گیا ہے کہ وہ مجاز عدالت یا باہمی تصفیہ کے ذریعے اپنا تنازعہ حل کریں اور امن و امان میں خلل نہ ڈالیں۔"
   };
 }
 
@@ -247,24 +250,26 @@ export async function directClientAutoCompileReport(
 
   const systemInstruction = `You are an elite, highly experienced Punjab Police Inquiry Officer and Legal Advisor (انکوائری افسر و قانونی تفتیشی مشیر), specialized in Regional Investigation Branch (ریجنل انویسٹی گیشن برانچ) inquiry documentation.
 Your task is to analyze all provided pages/images of a police file, handwritten application (درخواست سائل), recorded statements of parties (بیانات فریقین), witness testimonies (تائیدی گواہان), respondent defense (بیان الزام علیہ), Roznamcha daily diaries, stamp papers, or progress reports.
-Extract all key facts and immediately construct a complete, structured, professional, and authoritative Police Inquiry Report in Urdu.
+Extract all key facts and immediately construct a complete, structured, professional, and authoritative Police Inquiry Report in Urdu with 1.0 single line-spacing, no surrounding boxes or divider lines.
 
 Return a valid JSON object matching this schema:
 {
   "complainantName": "سائل یا درخواست گزار کا مکمل نام مع ولدیت و پتہ",
-  "complainantStatement": "سائل کا موقف یا درخواست کا مفصل متن",
+  "complainantStatement": "سائل کا موقف یا خلاصہ درخواست کا مفصل متن",
   "statements": [
     {
       "id": "unique_string",
-      "personName": "نام فریق مع ولدیت و سکونت",
-      "role": "Complainant | Complainant_Witness | Respondent | Respondent_Witness",
+      "personName": "نام فریق مع ولدیت، سکونت یا سرکاری عہدہ",
+      "role": "Complainant | Complainant_Witness | Respondent | Respondent_Witness | Police_Officer",
       "text": "بیان کا مکمل تحریری متن"
     }
   ],
   "stationName": "متعلقہ تھانہ کا نام",
   "districtName": "ضلع کا نام",
   "lawSections": "متعلقہ دفعات یا تنازعہ کا عنوان",
-  "subjectTitle": "رپورٹ کا باضابطہ عنوان",
+  "subjectTitle": "رپورٹ درخواست ازاں [سائل مع ولدیت و سکنہ]",
+  "referenceNumber": "ڈائری نمبر / شکایت نمبر",
+  "referenceDate": "مورخہ تاریخ",
   "showProgressReport": boolean,
   "progressHeading": "پراگرس رپورٹ کی ہیڈنگ (اگر ہو)",
   "progressText": "پراگرس رپورٹ کا متن (اگر ہو)",
@@ -273,18 +278,18 @@ Return a valid JSON object matching this schema:
     "2۔ فریقین کے مابین لین دین / تنازعہ کا پس منظر...",
     "3۔ پیش کردہ دستاویزات و شواہد کی تفصیل..."
   ],
-  "inquiryConclusion": "دریافت فریقین، ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ [جامع اور فیصلہ کن قانونی نتیجہ انکوائری اور واضح سفارش تحریر کریں]"
+  "inquiryConclusion": "دوران انکوائری پیش آمدہ حالات و ملاحظہ ریکارڈ سے پایا گیا ہے کہ [جامع اور فیصلہ کن قانونی نتیجہ انکوائری اور واضح سفارش تحریر کریں]"
 }
 
 Key Requirements:
 1. Decipher both typed Urdu text and faint, light pencil or pen handwriting accurately.
 2. In 'factsAndFindings', create clear, sequential, numbered bullet points (1۔ , 2۔ , 3۔) summarizing all crucial facts, financial amounts, stamp papers, cheques, family background, and police history.
-3. In 'inquiryConclusion', summarize who is at fault, whether the application is genuine or false/compromised, and clearly conclude with final legal recommendation (e.g. refer to civil court, register FIR, file closure, compromise). It MUST start with: "دریافت فریقین، ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ ". Do NOT append "رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے" at the end of inquiryConclusion.
-4. Maintain formal, authoritative police vocabulary.`;
+3. In 'inquiryConclusion', summarize who is at fault, whether the application is genuine or false/compromised, and clearly conclude with final legal recommendation (e.g. refer to civil court, register FIR, file closure, compromise). It MUST start with: "دوران انکوائری پیش آمدہ حالات و ملاحظہ ریکارڈ سے پایا گیا ہے کہ ". Do NOT append "رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے" at the end of inquiryConclusion.
+4. Maintain formal, authoritative police vocabulary with 100% correct spelling.`;
 
   const prompt = `براہ کرم منسلک تمام صفحات و تصاویر کا مکمل، باریک بینی سے تفتیشی اور قانونی جائزہ لیں اور چند سیکنڈز میں مکمل تیار شدہ انکوائری رپورٹ کا اسٹرکچرڈ JSON ڈیٹا واپس کریں۔
 رپورٹ کا سیاق و سباق (اگر دستیاب ہو):
-- منجانب: ${metadata.senderDesignation || "سینیئر سپرنٹنڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ۔ گوجرانوالہ ریجن"}
+- منجانب: ${metadata.senderDesignation || "سپرنٹنڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ، گوجرانوالہ"}
 - بجانب: ${metadata.recipientDesignation || "جناب ریجنل پولیس آفیسر صاحب، گوجرانوالہ"}
 - تھانہ: ${metadata.stationName || "تھانہ صدر، گوجرانوالہ"}
 - ضلع: ${metadata.districtName || "ضلع گوجرانوالہ"}`;
@@ -352,7 +357,7 @@ export async function directClientCorrectSpelling(
 
   const systemInstruction = `You are an expert Urdu proofreader, legal typist, and Punjab Police report formatter.
 Your task is to correct any spelling mistakes (املا کی غلطیاں), typo issues, and grammar problems in the provided Urdu report text.
-Keep all the layout fields, formal structure, margins, symbols, and names intact. Do not rewrite the facts or alter the legal meaning. 
+Keep all the layout fields, single line-spacing, margins, symbols, and names intact. Do not rewrite the facts or alter the legal meaning. 
 Only correct spelling (e.g. ensure correct spelling of words like "بالمشافہ", "درخواست گزار", "الزام علیہ", "نتیجہ انکوائری").
 Ensure there are no spelling mistakes in the output. Keep the output as raw Urdu text with zero commentary or extra English.`;
 
@@ -406,9 +411,9 @@ export async function directClientGenerateInquiry(
   const apiKey = (userKey || getClientGeminiApiKey()).trim();
 
   const systemInstruction = `You are an expert Pakistani Police Legal Advisor and Inquiry Specialist (انکوائری افسر / قانونی تفتیشی مشیر). 
-Your task is to analyze police inquiry statements and draft two critical sections of an official Police Inquiry Report (نتیجہ انکوائری) in professional Urdu:
+Your task is to analyze police inquiry statements and draft two critical sections of an official Police Inquiry Report (نتیجہ انکوائری) in professional Urdu with 1.0 line-spacing and 100% correct spelling:
 1. Facts and Findings (دورانِ انکوائری ذیل امور سامنے آئے ہیں): A structured array of logical, factual bullet points detailing exactly what transpired. Extract names, financial transaction details, family or social relations, property details, and previous police involvement.
-2. Inquiry Conclusion (نتیجہ انکوائری): A comprehensive formal administrative conclusion paragraph in formal police station (تھانہ) Urdu summarizing who is at fault, whether the complaint is genuine or false/baseless, and direct legal recommendations. It MUST start with: "دریافت فریقین، ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ ". Do NOT append "رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے" at the end.`;
+2. Inquiry Conclusion (نتیجہ انکوائری): A comprehensive formal administrative conclusion paragraph in formal police station (تھانہ) Urdu summarizing who is at fault, whether the complaint is genuine or false/baseless, and direct legal recommendations. It MUST start with: "دوران انکوائری پیش آمدہ حالات و ملاحظہ ریکارڈ سے پایا گیا ہے کہ ". Do NOT append "رپورٹ مرتب ہو کر برائے مناسب حکم ارسال خدمت ہے" at the end.`;
 
   const statements = inquiryData.statements || [];
   const formattedStatements = statements
@@ -418,11 +423,11 @@ Your task is to analyze police inquiry statements and draft two critical section
   const prompt = `براہ کرم درج ذیل بیانات اور انکوائری کے مشاہدات کا تفصیلی جائزہ لے کر ایک مربوط، منطقی اور مستند رپورٹ کے دو اہم حصے تیار کریں۔
 
 رپورٹ کا سیاق و سباق:
-- منجانب: ${inquiryData.senderDesignation || "سینیئر سپرنٹنڈنٹ آف پولیس"}
-- بجانب: ${inquiryData.recipientDesignation || "جناب ریجنل پولیس آفیسر صاحب"}
+- منجانب: ${inquiryData.senderDesignation || "سپرنٹنڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ، گوجرانوالہ"}
+- بجانب: ${inquiryData.recipientDesignation || "جناب ریجنل پولیس آفیسر صاحب، گوجرانوالہ"}
 - عنوان: ${inquiryData.subjectTitle || "درخواست عنوان بالا"}
 - حوالہ: نمبر ${inquiryData.referenceNumber || "شکایت نمبر"} مورخہ ${inquiryData.referenceDate || "تاریخ"}
-- تھانہ: ${inquiryData.stationName || "تھانہ"}، ضلع: ${inquiryData.districtName || "ضلع"}
+- تھانہ: ${inquiryData.stationName || "تھانہ صدر"}، ضلع: ${inquiryData.districtName || "ضلع گوجرانوالہ"}
 - متعلقہ دفعات: ${inquiryData.lawSections || "تفصیل درج نہیں"}
 - انکوائری افسر: ${inquiryData.inquiryOfficer || "تفتیشی افسر"}
 
@@ -488,6 +493,6 @@ ${inquiryData.observations || "موقع ملاحظہ کی تفاصیل کلام 
       "2۔ فریقین کے مابین تنازعہ کے تمام پہلوؤں اور پیش کردہ ثبوتوں کی روشنی میں حقائق کی چھان بین کی گئی۔",
       "3۔ تائیدی بیانات اور شواہد کی روشنی میں اصل صورتحال کا تعین کیا گیا۔"
     ],
-    inquiryConclusion: "دریافت فریقین، ملاحظہ ریکارڈ و بالمشافہ گفتگو سے پایا گیا ہے کہ معاملہ فریقین کے مابین تنازعہ کا ہے جس کو باہمی تصفیہ یا مجاز عدالت کے ذریعے یکسو کیا جانا مناسب ہے۔ فریقین کو پابند کیا گیا ہے کہ وہ امن و امان قائم رکھیں۔"
+    inquiryConclusion: "دوران انکوائری پیش آمدہ حالات و ملاحظہ ریکارڈ سے پایا گیا ہے کہ معاملہ فریقین کے مابین تنازعہ کا ہے جس کو باہمی تصفیہ یا مجاز عدالت کے ذریعے یکسو کیا جانا مناسب ہے۔ فریقین کو پابند کیا گیا ہے کہ وہ امن و امان قائم رکھیں۔"
   };
 }
