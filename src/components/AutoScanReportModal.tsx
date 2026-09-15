@@ -27,7 +27,7 @@ export default function AutoScanReportModal({
   isOpen,
   onClose,
   onReportGenerated,
-  senderDesignation = "سینیئر سپرنٹنڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ۔ گوجرانوالہ ریجن",
+  senderDesignation = "سپرنٹنڈنٹ آف پولیس، ریجنل انویسٹی گیشن برانچ، گوجرانوالہ",
   recipientDesignation = "جناب ریجنل پولیس آفیسر صاحب، گوجرانوالہ",
   stationName = "تھانہ صدر، گوجرانوالہ",
   districtName = "ضلع گوجرانوالہ"
